@@ -13,13 +13,14 @@ import {
   TooltipValueType,
 } from 'recharts';
 import { MonthlyStats } from '@/types/stats';
-import { ChartCard, ChartTitle } from '../shared/styled';
+import { ChartCard, ChartTitle, ChartArea } from '../shared/styled';
 
 interface MonthlyComparisonChartProps {
   data: MonthlyStats[];
+  bare?: boolean;
 }
 
-const MonthlyComparisonChart: React.FC<MonthlyComparisonChartProps> = ({ data }) => {
+const MonthlyComparisonChart: React.FC<MonthlyComparisonChartProps> = ({ data, bare }) => {
   const years = new Map<number, MonthlyStats[]>();
   for (const item of data) {
     const year = parseInt(item.month.slice(0, 4));
@@ -42,24 +43,26 @@ const MonthlyComparisonChart: React.FC<MonthlyComparisonChartProps> = ({ data })
   const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)'];
 
   return (
-    <ChartCard>
+    <ChartCard $bare={bare}>
       <ChartTitle>Este año contra el anterior</ChartTitle>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
-          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}km`} />
-          <Tooltip
-            contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 13 }}
-            formatter={(value: TooltipValueType | undefined, name: string | number | undefined) => [`${value ?? 0} km`, String(name ?? '')] as [string, string]}
-            cursor={{ fill: 'var(--accent-muted)' }}
-          />
-          <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-secondary)' }} />
-          {yearKeys.map((year, idx) => (
-            <Bar key={year} dataKey={year.toString()} fill={COLORS[idx % COLORS.length]} radius={[3, 3, 0, 0]} maxBarSize={20} />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+      <ChartArea>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}km`} />
+            <Tooltip
+              contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 13 }}
+              formatter={(value: TooltipValueType | undefined, name: string | number | undefined) => [`${value ?? 0} km`, String(name ?? '')] as [string, string]}
+              cursor={{ fill: 'var(--accent-muted)' }}
+            />
+            <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-secondary)' }} />
+            {yearKeys.map((year, idx) => (
+              <Bar key={year} dataKey={year.toString()} fill={COLORS[idx % COLORS.length]} radius={[3, 3, 0, 0]} maxBarSize={20} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartArea>
     </ChartCard>
   );
 };

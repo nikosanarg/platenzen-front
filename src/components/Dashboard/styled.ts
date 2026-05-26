@@ -76,6 +76,41 @@ export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary' }>`
   }
 `;
 
+export const HomeTabsBar = styled.nav`
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 64px;
+  z-index: 9;
+`;
+
+export const HomeTabsInner = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  gap: 0;
+`;
+
+export const HomeTabBtn = styled.button<{ $active: boolean }>`
+  background: none;
+  border: none;
+  border-bottom: 2px solid ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
+  padding: 0.875rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: ${({ $active }) => ($active ? '700' : '400')};
+  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
+  cursor: pointer;
+  margin-bottom: -1px;
+  letter-spacing: 0.01em;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--text-secondary);
+  }
+`;
+
 export const DashboardContent = styled.main`
   max-width: 1400px;
   margin: 0 auto;
@@ -111,11 +146,33 @@ export const StatsGrid = styled.div`
 
 export const ChartsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1rem;
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
+  }
+`;
+
+export const PatternsGrid = styled.div`
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 700px) {
+    grid-template-columns: 1fr 1fr;
+
+    > :nth-child(3) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: 1fr 1fr 2fr;
+
+    > :nth-child(3) {
+      grid-column: auto;
+    }
   }
 `;
 

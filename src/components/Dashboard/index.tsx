@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import HeroSection from '@/components/HeroSection';
@@ -16,6 +16,7 @@ import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import RawDataSection from '@/components/RawDataSection';
+import CollapsibleSection from '@/components/CollapsibleSection';
 import { IconRun } from '@/components/Icon';
 import {
   DashboardRoot,
@@ -26,15 +27,19 @@ import {
   HeaderRight,
   CacheInfo,
   HeaderButton,
+  HomeTabsBar,
+  HomeTabsInner,
+  HomeTabBtn,
   DashboardContent,
-  SectionTitle,
-  ChartsGrid,
+  PatternsGrid,
   FullWidthChart,
   LoadingOverlay,
   LoadingText,
   LoadingCount,
   Spinner,
 } from './styled';
+
+type HomeTab = 'progreso' | 'objetivos';
 
 interface DashboardProps {
   activities: StravaActivity[];
@@ -66,6 +71,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   onRefresh,
   onLogout,
 }) => {
+  const [activeTab, setActiveTab] = useState<HomeTab>('progreso');
+
   return (
     <DashboardRoot>
       <DashboardHeader>
@@ -88,6 +95,19 @@ const Dashboard: React.FC<DashboardProps> = ({
         </HeaderRight>
       </DashboardHeader>
 
+      {!loading && (
+        <HomeTabsBar>
+          <HomeTabsInner>
+            <HomeTabBtn $active={activeTab === 'progreso'} onClick={() => setActiveTab('progreso')}>
+              Progreso
+            </HomeTabBtn>
+            <HomeTabBtn $active={activeTab === 'objetivos'} onClick={() => setActiveTab('objetivos')}>
+              Objetivos
+            </HomeTabBtn>
+          </HomeTabsInner>
+        </HomeTabsBar>
+      )}
+
       {loading ? (
         <LoadingOverlay>
           <Spinner />
@@ -96,51 +116,57 @@ const Dashboard: React.FC<DashboardProps> = ({
         </LoadingOverlay>
       ) : (
         <DashboardContent>
-          <HeroSection stats={stats} />
+          {activeTab === 'progreso' && (
+            <>
+              <HeroSection stats={stats} />
 
-          <ActiveMission stats={stats} />
+              {(() => {
+                const perms = computePermissions(stats);
+                const totalTiers = perms.reduce((s, p) => s + p.unlockedTiers, 0);
+                const level = getLevelInfo(computeXP(stats, totalTiers));
+                return <PredictionsSection stats={stats} permissions={perms} levelInfo={level} />;
+              })()}
 
-          {(() => {
-            const perms = computePermissions(stats);
-            const totalTiers = perms.reduce((s, p) => s + p.unlockedTiers, 0);
-            const level = getLevelInfo(computeXP(stats, totalTiers));
-            return <PredictionsSection stats={stats} permissions={perms} levelInfo={level} />;
-          })()}
+              <EstadoActual stats={stats} />
 
-          <EstadoActual stats={stats} />
+              <PersonalRecords activities={activities} stats={stats} />
 
-          <GamificationPanel stats={stats} />
+              <section>
+                <FullWidthChart>
+                  <ActivityHeatmap
+                    data={stats.daily}
+                    currentStreak={stats.currentStreak}
+                    longestStreak={stats.longestStreak}
+                  />
+                </FullWidthChart>
+              </section>
 
-          <PersonalRecords activities={activities} stats={stats} />
+              <CollapsibleSection
+                title="Patrones y Tendencias"
+                subtitle="cómo, cuándo y cuánto entrenás"
+                defaultOpen
+              >
+                <PatternsGrid>
+                  <HourlyDistributionChart data={stats.hourlyDistribution} />
+                  <WeekdayDistributionChart data={stats.weekdayDistribution} />
+                  <PerformanceTabs
+                    monthly={stats.monthly}
+                    paceEvolution={stats.paceEvolution}
+                    cumulativeDistance={stats.cumulativeDistance}
+                  />
+                </PatternsGrid>
+              </CollapsibleSection>
 
-          <section>
-            <FullWidthChart>
-              <ActivityHeatmap
-                data={stats.daily}
-                currentStreak={stats.currentStreak}
-                longestStreak={stats.longestStreak}
-              />
-            </FullWidthChart>
-          </section>
+              <RawDataSection stats={stats} />
+            </>
+          )}
 
-          <section>
-            <SectionTitle>Tus patrones</SectionTitle>
-            <ChartsGrid>
-              <HourlyDistributionChart data={stats.hourlyDistribution} />
-              <WeekdayDistributionChart data={stats.weekdayDistribution} />
-            </ChartsGrid>
-          </section>
-
-          <section>
-            <SectionTitle>Cómo venís</SectionTitle>
-            <PerformanceTabs
-              monthly={stats.monthly}
-              paceEvolution={stats.paceEvolution}
-              cumulativeDistance={stats.cumulativeDistance}
-            />
-          </section>
-
-          <RawDataSection stats={stats} />
+          {activeTab === 'objetivos' && (
+            <>
+              <ActiveMission stats={stats} />
+              <GamificationPanel stats={stats} />
+            </>
+          )}
         </DashboardContent>
       )}
     </DashboardRoot>

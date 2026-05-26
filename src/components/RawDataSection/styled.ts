@@ -6,17 +6,20 @@ export const ToggleBtn = styled.button`
   background: none;
   border: none;
   padding: 0;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  letter-spacing: 0.04em;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  width: 100%;
+  justify-content: space-between;
 
   &:hover {
-    color: var(--text-secondary);
+    color: var(--text-primary);
   }
 `;
 

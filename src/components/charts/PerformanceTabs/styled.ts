@@ -3,7 +3,8 @@ import styled from 'styled-components';
 export const TabsRoot = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
+  flex: 1;
+  min-height: 0;
 `;
 
 export const TabBar = styled.div`
@@ -31,4 +32,9 @@ export const TabBtn = styled.button<{ $active: boolean }>`
   }
 `;
 
-export const TabPanel = styled.div``;
+export const TabPanel = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+`;

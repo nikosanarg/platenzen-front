@@ -14,6 +14,7 @@ import { getCurrentStreak, getLongestStreak } from '@/utils/streaks';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Lun → Sáb → Dom
 
 function computeSportDistribution(activities: StravaActivity[]): SportCount[] {
   const map = new Map<string, SportCount>();
@@ -30,7 +31,9 @@ function computeSportDistribution(activities: StravaActivity[]): SportCount[] {
 function computeHourlyDistribution(activities: StravaActivity[]): HourCount[] {
   const counts: number[] = new Array<number>(24).fill(0);
   for (const act of activities) {
-    const h = new Date(act.start_date_local).getHours();
+    // Parse hour directly from the local date string to avoid JS timezone conversion.
+    // Strava's start_date_local carries a "Z" suffix but is actually local time.
+    const h = parseInt(act.start_date_local.slice(11, 13), 10);
     counts[h]++;
   }
   return counts.map((count, hour) => ({
@@ -43,13 +46,16 @@ function computeHourlyDistribution(activities: StravaActivity[]): HourCount[] {
 function computeWeekdayDistribution(activities: StravaActivity[]): WeekdayCount[] {
   const counts: number[] = new Array<number>(7).fill(0);
   for (const act of activities) {
-    const day = new Date(act.start_date_local).getDay();
+    // Construct date from the local date string components to avoid timezone shift.
+    const [yr, mo, da] = act.start_date_local.slice(0, 10).split('-').map(Number);
+    const day = new Date(yr, mo - 1, da).getDay();
     counts[day]++;
   }
-  return counts.map((count, day) => ({
+  // Return Mon→Sat→Sun order (weekdays first, weekend last).
+  return WEEKDAY_ORDER.map((day) => ({
     day,
     label: WEEKDAY_LABELS[day],
-    count,
+    count: counts[day],
   }));
 }
 

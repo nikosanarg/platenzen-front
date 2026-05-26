@@ -6,6 +6,7 @@ import WeeklyDistanceChart from '../WeeklyDistanceChart';
 import PaceEvolutionChart from '../PaceEvolutionChart';
 import CumulativeDistanceChart from '../CumulativeDistanceChart';
 import MonthlyComparisonChart from '../MonthlyComparisonChart';
+import { ChartCard, ChartTitle } from '../shared/styled';
 import { TabsRoot, TabBar, TabBtn, TabPanel } from './styled';
 
 interface PerformanceTabsProps {
@@ -22,21 +23,24 @@ const PerformanceTabs: React.FC<PerformanceTabsProps> = ({ monthly, paceEvolutio
   const [active, setActive] = useState<Tab>(tabs[0]);
 
   return (
-    <TabsRoot>
-      <TabBar>
-        {tabs.map((tab) => (
-          <TabBtn key={tab} $active={active === tab} onClick={() => setActive(tab)}>
-            {tab}
-          </TabBtn>
-        ))}
-      </TabBar>
-      <TabPanel>
-        {active === 'Distancia' && <WeeklyDistanceChart data={monthly} />}
-        {active === 'Ritmo' && <PaceEvolutionChart data={paceEvolution} />}
-        {active === 'Volumen' && <CumulativeDistanceChart data={cumulativeDistance} />}
-        {active === 'Comparación' && <MonthlyComparisonChart data={monthly} />}
-      </TabPanel>
-    </TabsRoot>
+    <ChartCard>
+      <ChartTitle>Cómo venís</ChartTitle>
+      <TabsRoot>
+        <TabBar>
+          {tabs.map((tab) => (
+            <TabBtn key={tab} $active={active === tab} onClick={() => setActive(tab)}>
+              {tab}
+            </TabBtn>
+          ))}
+        </TabBar>
+        <TabPanel>
+          {active === 'Distancia' && <WeeklyDistanceChart data={monthly} bare />}
+          {active === 'Ritmo' && <PaceEvolutionChart data={paceEvolution} bare />}
+          {active === 'Volumen' && <CumulativeDistanceChart data={cumulativeDistance} bare />}
+          {active === 'Comparación' && <MonthlyComparisonChart data={monthly} bare />}
+        </TabPanel>
+      </TabsRoot>
+    </ChartCard>
   );
 };
 

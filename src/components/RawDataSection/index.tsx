@@ -22,7 +22,7 @@ interface RawDataSectionProps {
 }
 
 const RawDataSection: React.FC<RawDataSectionProps> = ({ stats }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const bestWeek = stats.weekly.length > 0
     ? Math.max(...stats.weekly.map((w) => w.distance))
