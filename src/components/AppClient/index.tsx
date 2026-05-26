@@ -33,10 +33,39 @@ async function bootstrapFromRefreshToken(refreshToken: string): Promise<StoredTo
   }
 }
 
+function readAndClearOAuthCookie(): StoredToken | null {
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)strava_oauth=([^;]+)/);
+    if (!match) return null;
+    const data = JSON.parse(decodeURIComponent(match[1])) as RefreshResponse;
+    document.cookie = 'strava_oauth=; max-age=0; path=/';
+    if (!data.access_token || !data.refresh_token) return null;
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresAt: data.expires_at,
+      createdAt: Date.now(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 const AppClient: React.FC = () => {
   const { hasToken, saveToken, clearToken, getValidToken } = useToken();
   const { activities, status, error, loadingCount, isFromCache, cacheAge, fetch, refresh } = useActivities();
   const didInitLoad = useRef(false);
+
+  // Handle OAuth callback: read short-lived cookie set by /api/strava/callback
+  useEffect(() => {
+    const fromOAuth = readAndClearOAuthCookie();
+    if (fromOAuth) {
+      saveToken(fromOAuth);
+      didInitLoad.current = true;
+      fetch(() => Promise.resolve(fromOAuth.accessToken));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (hasToken && status === 'idle' && !didInitLoad.current) {
@@ -61,13 +90,21 @@ const AppClient: React.FC = () => {
     didInitLoad.current = false;
   };
 
+  // Surface OAuth errors from URL param
+  const oauthError = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('oauth_error')
+    : null;
+
   const showTokenInput = !hasToken || status === 'error';
 
   if (showTokenInput) {
+    const errorMsg = oauthError
+      ? 'La autorización con Strava fue rechazada o falló. Intentá de nuevo.'
+      : status === 'error' ? error : null;
     return (
       <TokenInput
         onSubmit={handleRefreshTokenSubmit}
-        error={status === 'error' ? error : null}
+        error={errorMsg}
       />
     );
   }
