@@ -14,6 +14,7 @@ import {
   TokenButton,
   TokenError,
   OAuthButton,
+  RevokeHint,
   Divider,
   DividerText,
   StepsBox,
@@ -67,13 +68,21 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
 
         <TokenTitle>Tus estadísticas de Strava</TokenTitle>
         <TokenSubtitle>
-          Platenzen analiza tu historial de actividades — distancia, ritmo, rachas, récords — y lo muestra
-          en un dashboard personal. Nada se sube a ningún servidor: todo queda guardado en este dispositivo.
+          Platenzen analiza tu historial de actividades y muestra métricas, récords y tendencias en un
+          dashboard personal. Solo accede a tus propias actividades — sin almacenar información en
+          servidores ni compartir nada con otros usuarios. Todo queda guardado únicamente en este dispositivo.
         </TokenSubtitle>
 
         <OAuthButton onClick={handleOAuth} as="button" type="button">
-          Conectar con Strava
+          Permitir en Strava
         </OAuthButton>
+        <RevokeHint>
+          Si querés revocar el acceso en cualquier momento, podés hacerlo desde{' '}
+          <a href="https://www.strava.com/settings/apps" target="_blank" rel="noopener noreferrer">
+            strava.com/settings/apps
+          </a>
+          .
+        </RevokeHint>
 
         <Divider>
           <DividerText>Si el botón no funciona, seguí estos pasos</DividerText>
@@ -87,20 +96,21 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
               <a href="https://www.strava.com/settings/api" target="_blank" rel="noopener noreferrer">
                 strava.com/settings/api
               </a>
-              {' '}(necesitás tener cuenta en Strava).
+              {' '}(necesitás tener cuenta en Strava y una app creada).
             </StepText>
           </Step>
           <Step>
             <StepNum>2</StepNum>
             <StepText>
-              En esa página buscá la sección llamada <strong>"Tu token de actualización"</strong> (o <em>Your Refresh Token</em> si está en inglés).
+              Bajá hasta <strong>"My API Application"</strong> y buscá <strong>"Your Refresh Token"</strong>.{' '}
+              <strong>Importante:</strong> ese token solo funciona si autorizaste tu app con el permiso <code>activity:read_all</code>.
+              Si lo copiás sin haber hecho eso, va a dar error de permisos.
             </StepText>
           </Step>
           <Step>
             <StepNum>3</StepNum>
             <StepText>
-              Copiá el valor que aparece debajo — es una cadena larga de letras y números,
-              del estilo <code>f957a4a562...</code>
+              Copiá el valor — es una cadena larga del estilo <code>f957a4a562...</code>
             </StepText>
           </Step>
           <Step>

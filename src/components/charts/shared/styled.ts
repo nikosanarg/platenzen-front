@@ -22,5 +22,5 @@ export const ChartTitle = styled.h3`
 
 export const ChartArea = styled.div`
   flex: 1;
-  min-height: 220px;
+  min-height: 155px;
 `;

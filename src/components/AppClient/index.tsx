@@ -95,12 +95,23 @@ const AppClient: React.FC = () => {
     ? new URLSearchParams(window.location.search).get('oauth_error')
     : null;
 
+  // Clear stored token when the access token is missing the required scope —
+  // the saved refresh token can't be upgraded, user needs to re-authorize via OAuth.
+  useEffect(() => {
+    if (status === 'error' && error === 'scope_missing') {
+      clearToken();
+      didInitLoad.current = false;
+    }
+  }, [status, error, clearToken]);
+
   const showTokenInput = !hasToken || status === 'error';
 
   if (showTokenInput) {
     const errorMsg = oauthError
       ? 'La autorización con Strava fue rechazada o falló. Intentá de nuevo.'
-      : status === 'error' ? error : null;
+      : error === 'scope_missing'
+        ? 'El token no tiene permiso para leer actividades. Usá el botón "Conectar con Strava" para autorizar correctamente.'
+        : status === 'error' ? error : null;
     return (
       <TokenInput
         onSubmit={handleRefreshTokenSubmit}

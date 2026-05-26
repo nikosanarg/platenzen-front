@@ -149,6 +149,19 @@ export const OAuthButton = styled.a`
   }
 `;
 
+export const RevokeHint = styled.p`
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+
+  a {
+    color: var(--text-muted);
+    text-decoration: underline;
+  }
+`;
+
 export const Divider = styled.div`
   display: flex;
   align-items: center;

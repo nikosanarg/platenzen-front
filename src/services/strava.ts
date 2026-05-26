@@ -26,6 +26,13 @@ async function fetchPage(
     if (res.status === 401) {
       throw new StravaError(401, 'Token inválido o expirado. Ingresá un nuevo token.');
     }
+    if (res.status === 403) {
+      const body = await res.json().catch(() => ({})) as { errors?: Array<{ field?: string }> };
+      const missingScope = body.errors?.some((e) => e.field === 'activity:read_permission');
+      if (missingScope) {
+        throw new StravaError(403, 'scope_missing');
+      }
+    }
     throw new StravaError(res.status, `Error al conectar con Strava (${res.status})`);
   }
 

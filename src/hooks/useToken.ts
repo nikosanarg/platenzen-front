@@ -15,12 +15,12 @@ export interface StoredToken {
 function readStored(): StoredToken | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(TOKEN_KEY);
+    const raw = sessionStorage.getItem(TOKEN_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<StoredToken>;
     // Discard tokens from the old format (missing refreshToken or expiresAt)
     if (!parsed.refreshToken || !parsed.expiresAt) {
-      localStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
       return null;
     }
     return parsed as StoredToken;
@@ -30,7 +30,7 @@ function readStored(): StoredToken | null {
 }
 
 function writeStored(token: StoredToken): void {
-  localStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+  sessionStorage.setItem(TOKEN_KEY, JSON.stringify(token));
 }
 
 function isExpired(token: StoredToken): boolean {
@@ -67,7 +67,7 @@ export function useToken() {
   }, []);
 
   const clearToken = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
     setStored(null);
   }, []);
 
