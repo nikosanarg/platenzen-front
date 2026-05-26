@@ -5,16 +5,17 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import HeroSection from '@/components/HeroSection';
 import ActiveMission from '@/components/ActiveMission';
+import EstadoActual from '@/components/EstadoActual';
 import GamificationPanel from '@/components/GamificationPanel';
 import PersonalRecords from '@/components/PersonalRecords';
-import InsightsSection from '@/components/InsightsSection';
-import WeeklyDistanceChart from '@/components/charts/WeeklyDistanceChart';
-import MonthlyComparisonChart from '@/components/charts/MonthlyComparisonChart';
-import PaceEvolutionChart from '@/components/charts/PaceEvolutionChart';
-import CumulativeDistanceChart from '@/components/charts/CumulativeDistanceChart';
+import PredictionsSection from '@/components/PredictionsSection';
+import { computePermissions } from '@/lib/gamification';
+import { computeXP, getLevelInfo } from '@/lib/levels';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
+import PerformanceTabs from '@/components/charts/PerformanceTabs';
+import RawDataSection from '@/components/RawDataSection';
 import { IconRun } from '@/components/Icon';
 import {
   DashboardRoot,
@@ -99,13 +100,26 @@ const Dashboard: React.FC<DashboardProps> = ({
 
           <ActiveMission stats={stats} />
 
+          {(() => {
+            const perms = computePermissions(stats);
+            const totalTiers = perms.reduce((s, p) => s + p.unlockedTiers, 0);
+            const level = getLevelInfo(computeXP(stats, totalTiers));
+            return <PredictionsSection stats={stats} permissions={perms} levelInfo={level} />;
+          })()}
+
+          <EstadoActual stats={stats} />
+
           <GamificationPanel stats={stats} />
 
           <PersonalRecords activities={activities} stats={stats} />
 
           <section>
             <FullWidthChart>
-              <ActivityHeatmap data={stats.daily} />
+              <ActivityHeatmap
+                data={stats.daily}
+                currentStreak={stats.currentStreak}
+                longestStreak={stats.longestStreak}
+              />
             </FullWidthChart>
           </section>
 
@@ -119,15 +133,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 
           <section>
             <SectionTitle>Cómo venís</SectionTitle>
-            <ChartsGrid>
-              <WeeklyDistanceChart data={stats.monthly} />
-              <MonthlyComparisonChart data={stats.monthly} />
-              {stats.paceEvolution.length > 0 && <PaceEvolutionChart data={stats.paceEvolution} />}
-              <CumulativeDistanceChart data={stats.cumulativeDistance} />
-            </ChartsGrid>
+            <PerformanceTabs
+              monthly={stats.monthly}
+              paceEvolution={stats.paceEvolution}
+              cumulativeDistance={stats.cumulativeDistance}
+            />
           </section>
 
-          <InsightsSection stats={stats} />
+          <RawDataSection stats={stats} />
         </DashboardContent>
       )}
     </DashboardRoot>

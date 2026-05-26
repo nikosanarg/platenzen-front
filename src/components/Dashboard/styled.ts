@@ -79,23 +79,24 @@ export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary' }>`
 export const DashboardContent = styled.main`
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 3.5rem;
 
   @media (max-width: 600px) {
-    padding: 1.25rem 1rem;
-    gap: 2rem;
+    padding: 1.5rem 1rem;
+    gap: 2.5rem;
   }
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 1.1rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
   margin-bottom: 1rem;
-  letter-spacing: -0.01em;
 `;
 
 export const StatsGrid = styled.div`

@@ -58,6 +58,8 @@ export interface ProcessedStats {
   longestActivity: number;
   currentStreak: number;
   longestStreak: number;
+  currentYearDistance: number;
+  currentYearActivities: number;
   monthly: MonthlyStats[];
   weekly: WeeklyStats[];
   daily: DayStats[];

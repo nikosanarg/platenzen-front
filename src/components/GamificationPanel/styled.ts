@@ -1,4 +1,9 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const pulse = keyframes`
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+`;
 
 export const PanelRoot = styled.section``;
 
@@ -9,16 +14,24 @@ export const SubSection = styled.div`
 `;
 
 export const SubSectionTitle = styled.h3`
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-muted);
 `;
 
+export const CollectionCount = styled.div`
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: -0.25rem;
+`;
+
+/* ── Medallero ─────────────────────────────────────────────── */
+
 export const MedalleroGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 0.75rem;
 
   @media (max-width: 600px) {
@@ -38,7 +51,6 @@ export const MedalleroCard = styled.div`
   text-align: center;
   position: relative;
   overflow: hidden;
-  cursor: default;
 
   &::before {
     content: '';
@@ -60,28 +72,39 @@ export const MedalleroCode = styled.div`
   justify-content: center;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: #fff;
 `;
 
-export const MedalleroPermission = styled.div`
+export const MedalleroCategory = styled.div`
+  font-size: 0.72rem;
+  color: var(--text-muted);
+`;
+
+export const MedalleroTierName = styled.div`
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
 `;
 
-export const MedalleroMission = styled.div`
-  font-size: 0.68rem;
-  color: var(--text-muted);
+export const TierDots = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 `;
 
-export const MedalleroCheck = styled.div`
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  color: var(--accent);
+export const TierDot = styled.span<{ $filled: boolean }>`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${({ $filled }) => ($filled ? 'var(--accent)' : 'var(--border-light)')};
+  flex-shrink: 0;
 `;
+
+/* ── Mission items ─────────────────────────────────────────── */
 
 export const MissionsStack = styled.div`
   display: flex;
@@ -89,14 +112,27 @@ export const MissionsStack = styled.div`
   gap: 0.625rem;
 `;
 
-export const MissionItem = styled.div<{ $featured?: boolean }>`
+export const MissionItem = styled.div<{ $cerca?: boolean }>`
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid ${({ $cerca }) => ($cerca ? 'var(--accent)' : 'var(--border)')};
   border-radius: var(--radius);
-  padding: ${({ $featured }) => ($featured ? '1.25rem 1.375rem' : '1rem 1.125rem')};
+  padding: 1rem 1.125rem;
   display: flex;
   flex-direction: column;
-  gap: ${({ $featured }) => ($featured ? '0.75rem' : '0.5rem')};
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+
+  ${({ $cerca }) =>
+    $cerca &&
+    `&::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      opacity: 0.04;
+      pointer-events: none;
+    }`}
 `;
 
 export const MissionHeader = styled.div`
@@ -106,14 +142,14 @@ export const MissionHeader = styled.div`
 `;
 
 export const MissionCodeBadge = styled.div`
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: 1.5px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text-muted);
@@ -125,20 +161,19 @@ export const MissionInfo = styled.div`
   min-width: 0;
 `;
 
-export const MissionTitle = styled.div<{ $featured?: boolean }>`
-  font-size: ${({ $featured }) => ($featured ? '0.9rem' : '0.8rem')};
+export const MissionCategory = styled.div`
+  font-size: 0.68rem;
+  color: var(--text-muted);
+`;
+
+export const MissionTierName = styled.div`
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
 `;
 
-export const MissionDescription = styled.div`
+export const MissionProgressText = styled.div`
   font-size: 0.73rem;
-  color: var(--text-muted);
-  margin-top: 0.1rem;
-`;
-
-export const MissionReward = styled.div`
-  font-size: 0.7rem;
   color: var(--text-secondary);
 `;
 
@@ -165,20 +200,69 @@ export const ProgressFill = styled.div<{ $pct: number }>`
 `;
 
 export const ProgressLabel = styled.div`
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 `;
 
+export const CercaBadge = styled.span`
+  position: absolute;
+  top: 0.625rem;
+  right: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+`;
+
+/* ── Secretos ──────────────────────────────────────────────── */
+
+export const SecretGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+export const SecretCard = styled.div`
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+`;
+
+export const SecretBadge = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--border-light);
+  animation: ${pulse} 3s ease-in-out infinite;
+`;
+
+export const SecretLabel = styled.div`
+  font-size: 0.7rem;
+  color: var(--border-light);
+  animation: ${pulse} 3s ease-in-out infinite;
+`;
+
 export const EmptyUnlocked = styled.div`
   font-size: 0.875rem;
   color: var(--text-muted);
-  padding: 1rem 0;
-`;
-
-export const CollectionCount = styled.div`
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
+  padding: 0.5rem 0;
 `;

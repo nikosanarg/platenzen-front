@@ -5,6 +5,7 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computePersonalRecords, formatProjectedTime, timeAgo } from '@/lib/personalRecords';
 import { secPerKmToString } from '@/utils/pace';
+import { distanceEquivalence } from '@/utils/equivalences';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   RecordsRoot,
@@ -16,6 +17,7 @@ import {
   RecordSub,
   RecordDate,
   RecordActivity,
+  RecordEquiv,
 } from './styled';
 
 interface PersonalRecordsProps {
@@ -26,7 +28,15 @@ interface PersonalRecordsProps {
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({ activities, stats }) => {
   const records = computePersonalRecords(activities, stats.weekly);
 
-  const cards: Array<{ label: string; value: string; unit?: string; sub?: string; date?: string; activity?: string }> = [];
+  const cards: Array<{
+    label: string;
+    value: string;
+    unit?: string;
+    sub?: string;
+    equiv?: string;
+    date?: string;
+    activity?: string;
+  }> = [];
 
   if (records.best5k) {
     cards.push({
@@ -67,6 +77,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ activities, stats }) 
       value: String(whole),
       unit: `,${dec} km`,
       sub: formatProjectedTime(records.longest.timeSeconds),
+      equiv: distanceEquivalence(km) ?? undefined,
       date: timeAgo(records.longest.date),
       activity: records.longest.activityName,
     });
@@ -89,6 +100,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ activities, stats }) 
       value: String(records.bestWeek.distanceKm),
       unit: ' km',
       sub: records.bestWeek.weekLabel,
+      equiv: distanceEquivalence(records.bestWeek.distanceKm) ?? undefined,
     });
   }
 
@@ -106,6 +118,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ activities, stats }) 
               {c.unit && <RecordUnit>{c.unit}</RecordUnit>}
             </RecordValue>
             {c.sub && <RecordSub>{c.sub}</RecordSub>}
+            {c.equiv && <RecordEquiv>{c.equiv}</RecordEquiv>}
             {c.activity && <RecordActivity title={c.activity}>{c.activity}</RecordActivity>}
             {c.date && <RecordDate>{c.date}</RecordDate>}
           </RecordCard>

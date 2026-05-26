@@ -108,6 +108,10 @@ export function computeStats(activities: StravaActivity[]): ProcessedStats {
 
   const daily = groupByDay(activities);
 
+  const currentYear = new Date().getFullYear().toString();
+  const yearActs = activities.filter((a) => a.start_date_local.startsWith(currentYear));
+  const currentYearDistance = Math.round(yearActs.reduce((s, a) => s + metersToKm(a.distance), 0) * 10) / 10;
+
   return {
     totalDistance: Math.round(totalDistance * 10) / 10,
     totalTime,
@@ -118,6 +122,8 @@ export function computeStats(activities: StravaActivity[]): ProcessedStats {
     longestActivity: Math.round(longestActivity * 10) / 10,
     currentStreak: getCurrentStreak(daily),
     longestStreak: getLongestStreak(daily),
+    currentYearDistance,
+    currentYearActivities: yearActs.length,
     monthly: groupByMonth(activities),
     weekly: groupByWeek(activities),
     daily,

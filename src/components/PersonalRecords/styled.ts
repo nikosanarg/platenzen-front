@@ -63,3 +63,10 @@ export const RecordActivity = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 `;
+
+export const RecordEquiv = styled.div`
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.125rem;
+`;

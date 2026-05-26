@@ -10,10 +10,16 @@ import {
   HeatmapCell,
   HeatmapLegend,
   LegendLabel,
+  ConsistencyRow,
+  ConsistencyStat,
+  ConsistencyValue,
+  ConsistencyLabel,
 } from './styled';
 
 interface ActivityHeatmapProps {
   data: DayStats[];
+  currentStreak: number;
+  longestStreak: number;
 }
 
 function buildGrid(data: DayStats[]): Map<string, number> {
@@ -34,7 +40,6 @@ function getWeeksInLastYear(): string[][] {
   const today = new Date();
   const start = new Date(today);
   start.setFullYear(start.getFullYear() - 1);
-  // rewind to last Sunday
   start.setDate(start.getDate() - start.getDay());
 
   const weeks: string[][] = [];
@@ -50,13 +55,16 @@ function getWeeksInLastYear(): string[][] {
   return weeks;
 }
 
-const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
+const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, currentStreak, longestStreak }) => {
   const countMap = buildGrid(data);
   const weeks = getWeeksInLastYear();
 
+  const activeWeeks = weeks.filter((week) => week.some((date) => (countMap.get(date) ?? 0) > 0)).length;
+  const consistencyPct = weeks.length > 0 ? Math.round((activeWeeks / weeks.length) * 100) : 0;
+
   return (
     <HeatmapCard>
-      <HeatmapTitle>Tu año en kilómetros</HeatmapTitle>
+      <HeatmapTitle>Tu año en actividad</HeatmapTitle>
       <HeatmapGrid>
         {weeks.map((week, wi) => (
           <HeatmapCol key={wi}>
@@ -80,6 +88,24 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
         ))}
         <LegendLabel>Más</LegendLabel>
       </HeatmapLegend>
+      <ConsistencyRow>
+        <ConsistencyStat>
+          <ConsistencyValue>{currentStreak}</ConsistencyValue>
+          <ConsistencyLabel>Racha actual</ConsistencyLabel>
+        </ConsistencyStat>
+        <ConsistencyStat>
+          <ConsistencyValue>{longestStreak}</ConsistencyValue>
+          <ConsistencyLabel>Récord</ConsistencyLabel>
+        </ConsistencyStat>
+        <ConsistencyStat>
+          <ConsistencyValue>{activeWeeks}/{weeks.length}</ConsistencyValue>
+          <ConsistencyLabel>Semanas activas</ConsistencyLabel>
+        </ConsistencyStat>
+        <ConsistencyStat>
+          <ConsistencyValue>{consistencyPct}%</ConsistencyValue>
+          <ConsistencyLabel>Consistencia</ConsistencyLabel>
+        </ConsistencyStat>
+      </ConsistencyRow>
     </HeatmapCard>
   );
 };

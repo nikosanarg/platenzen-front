@@ -59,3 +59,36 @@ export const LegendLabel = styled.span`
   font-size: 0.7rem;
   color: var(--text-muted);
 `;
+
+export const ConsistencyRow = styled.div`
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.875rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    gap: 1rem;
+  }
+`;
+
+export const ConsistencyStat = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+`;
+
+export const ConsistencyValue = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1;
+`;
+
+export const ConsistencyLabel = styled.div`
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+`;

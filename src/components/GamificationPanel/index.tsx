@@ -2,103 +2,213 @@
 
 import React from 'react';
 import { ProcessedStats } from '@/types/stats';
-import { computeMissions, formatCurrentValue, formatTargetValue } from '@/lib/gamification';
-import { IconCheck } from '@/components/Icon';
+import { PermissionProgress } from '@/types/gamification';
+import { computePermissions, formatProgressText } from '@/lib/gamification';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   PanelRoot,
   SubSection,
   SubSectionTitle,
+  CollectionCount,
   MedalleroGrid,
   MedalleroCard,
   MedalleroCode,
-  MedalleroPermission,
-  MedalleroMission,
-  MedalleroCheck,
+  MedalleroCategory,
+  MedalleroTierName,
+  TierDots,
+  TierDot,
   MissionsStack,
   MissionItem,
   MissionHeader,
   MissionCodeBadge,
   MissionInfo,
-  MissionTitle,
-  MissionDescription,
-  MissionReward,
+  MissionCategory,
+  MissionTierName,
+  MissionProgressText,
   ProgressRow,
   ProgressTrack,
   ProgressFill,
   ProgressLabel,
+  CercaBadge,
+  SecretGrid,
+  SecretCard,
+  SecretBadge,
+  SecretLabel,
   EmptyUnlocked,
-  CollectionCount,
 } from './styled';
 
 interface GamificationPanelProps {
   stats: ProcessedStats;
 }
 
+function totalUnlockedTiers(permissions: PermissionProgress[]): number {
+  return permissions.reduce((s, p) => s + p.unlockedTiers, 0);
+}
+
+function totalTiers(permissions: PermissionProgress[]): number {
+  return permissions.reduce((s, p) => s + p.category.tiers.length, 0);
+}
+
 const GamificationPanel: React.FC<GamificationPanelProps> = ({ stats }) => {
-  const missions = computeMissions(stats);
-  const unlocked = missions.filter((m) => m.completed);
-  // Skip the top mission — it's shown in ActiveMission already
-  const pending = missions
-    .filter((m) => !m.completed)
-    .sort((a, b) => b.progress - a.progress)
-    .slice(1, 4);
+  const permissions = computePermissions(stats);
+
+  const unlocked = permissions.filter((p) => p.unlockedTiers > 0 && !p.category.isSecret);
+  const legendary = permissions.filter(
+    (p) => p.category.isSecret && p.isRevealed
+  );
+  const secrets = permissions.filter(
+    (p) => p.category.isSecret && !p.isRevealed
+  );
+
+  // Pending: not fully unlocked, not secret-unrevealed, skip top 1 (in ActiveMission)
+  const allPending = permissions
+    .filter((p) => !p.allUnlocked && p.isRevealed && !p.category.isSecret)
+    .sort((a, b) => b.progressToNext - a.progressToNext);
+
+  const cerca = allPending.filter((p) => p.progressToNext >= 0.7);
+  const regular = allPending.filter((p) => p.progressToNext < 0.7).slice(0, 3);
+
+  const unlockedCount = totalUnlockedTiers(permissions);
+  const total = totalTiers(permissions);
 
   return (
     <PanelRoot>
       <SectionTitle>Permisos</SectionTitle>
 
+      {/* Medallero */}
       <SubSection>
-        <SubSectionTitle>
-          Desbloqueados
-        </SubSectionTitle>
+        <SubSectionTitle>Desbloqueados</SubSectionTitle>
         <CollectionCount>
-          {unlocked.length} de {missions.length} permisos desbloqueados
+          {unlockedCount} de {total} tiers desbloqueados
         </CollectionCount>
 
         {unlocked.length === 0 ? (
-          <EmptyUnlocked>Completá tu primera misión para ganar un permiso.</EmptyUnlocked>
+          <EmptyUnlocked>Completá tu primera misión para empezar el medallero.</EmptyUnlocked>
         ) : (
           <MedalleroGrid>
-            {unlocked.map(({ mission }) => (
-              <MedalleroCard key={mission.id}>
-                <MedalleroCheck>
-                  <IconCheck size={12} color="var(--accent)" />
-                </MedalleroCheck>
-                <MedalleroCode>{mission.permissionCode}</MedalleroCode>
-                <MedalleroPermission>{mission.permission}</MedalleroPermission>
-                <MedalleroMission>{mission.title}</MedalleroMission>
+            {unlocked.map((p) => (
+              <MedalleroCard key={p.category.id}>
+                <MedalleroCode>{p.category.permissionCode}</MedalleroCode>
+                <MedalleroCategory>{p.category.categoryName}</MedalleroCategory>
+                <MedalleroTierName>{p.currentTierName}</MedalleroTierName>
+                <TierDots>
+                  {p.category.tiers.map((t) => (
+                    <TierDot key={t.level} $filled={t.level <= p.unlockedTiers} />
+                  ))}
+                </TierDots>
               </MedalleroCard>
             ))}
           </MedalleroGrid>
         )}
       </SubSection>
 
-      {pending.length > 0 && (
-        <SubSection style={{ marginTop: '1.75rem' }}>
-          <SubSectionTitle>Lo que estás por desbloquear</SubSectionTitle>
+      {/* Cerca de desbloquear (Task 15) */}
+      {cerca.length > 0 && (
+        <SubSection style={{ marginTop: '1.5rem' }}>
+          <SubSectionTitle>Cerca de desbloquear</SubSectionTitle>
           <MissionsStack>
-            {pending.map((mp, i) => (
-              <MissionItem key={mp.mission.id} $featured={i === 0}>
+            {cerca.map((p) => (
+              <MissionItem key={p.category.id} $cerca>
+                <CercaBadge>{Math.round(p.progressToNext * 100)}%</CercaBadge>
                 <MissionHeader>
-                  <MissionCodeBadge>{mp.mission.permissionCode}</MissionCodeBadge>
+                  <MissionCodeBadge>{p.category.permissionCode}</MissionCodeBadge>
                   <MissionInfo>
-                    <MissionTitle $featured={i === 0}>{mp.mission.title}</MissionTitle>
-                    <MissionDescription>{mp.mission.description}</MissionDescription>
+                    <MissionCategory>{p.category.categoryName}</MissionCategory>
+                    <MissionTierName>{p.nextTier?.name}</MissionTierName>
                   </MissionInfo>
                 </MissionHeader>
                 <ProgressRow>
                   <ProgressTrack>
-                    <ProgressFill $pct={mp.progress} />
+                    <ProgressFill $pct={p.progressToNext} />
                   </ProgressTrack>
-                  <ProgressLabel>
-                    {formatCurrentValue(mp)} / {formatTargetValue(mp.mission)}
-                  </ProgressLabel>
+                  <ProgressLabel>{formatProgressText(p)}</ProgressLabel>
                 </ProgressRow>
-                <MissionReward>{mp.mission.permission}</MissionReward>
               </MissionItem>
             ))}
           </MissionsStack>
+        </SubSection>
+      )}
+
+      {/* Lo que estás por desbloquear (skip top 1 already in ActiveMission) */}
+      {regular.length > 0 && (
+        <SubSection style={{ marginTop: '1.5rem' }}>
+          <SubSectionTitle>Lo que estás por desbloquear</SubSectionTitle>
+          <MissionsStack>
+            {regular.map((p) => (
+              <MissionItem key={p.category.id}>
+                <MissionHeader>
+                  <MissionCodeBadge>{p.category.permissionCode}</MissionCodeBadge>
+                  <MissionInfo>
+                    <MissionCategory>
+                      {p.category.categoryName}
+                      {p.unlockedTiers > 0 && ` · Tier ${p.unlockedTiers + 1}`}
+                    </MissionCategory>
+                    <MissionTierName>{p.nextTier?.name}</MissionTierName>
+                    <MissionProgressText>{p.category.unitLabel}</MissionProgressText>
+                  </MissionInfo>
+                </MissionHeader>
+                <ProgressRow>
+                  <ProgressTrack>
+                    <ProgressFill $pct={p.progressToNext} />
+                  </ProgressTrack>
+                  <ProgressLabel>{formatProgressText(p)}</ProgressLabel>
+                </ProgressRow>
+              </MissionItem>
+            ))}
+          </MissionsStack>
+        </SubSection>
+      )}
+
+      {/* Legendarios (revealed secrets) */}
+      {legendary.length > 0 && (
+        <SubSection style={{ marginTop: '1.5rem' }}>
+          <SubSectionTitle>Legendarios</SubSectionTitle>
+          <MissionsStack>
+            {legendary.map((p) => (
+              <MissionItem key={p.category.id} $cerca={p.unlockedTiers > 0}>
+                {p.unlockedTiers > 0 && (
+                  <TierDots style={{ marginBottom: '0.25rem' }}>
+                    {p.category.tiers.map((t) => (
+                      <TierDot key={t.level} $filled={t.level <= p.unlockedTiers} />
+                    ))}
+                  </TierDots>
+                )}
+                <MissionHeader>
+                  <MissionCodeBadge>{p.category.permissionCode}</MissionCodeBadge>
+                  <MissionInfo>
+                    <MissionCategory>{p.category.categoryName}</MissionCategory>
+                    <MissionTierName>
+                      {p.currentTierName ?? p.nextTier?.name}
+                    </MissionTierName>
+                    <MissionProgressText>{p.category.unitLabel}</MissionProgressText>
+                  </MissionInfo>
+                </MissionHeader>
+                {!p.allUnlocked && (
+                  <ProgressRow>
+                    <ProgressTrack>
+                      <ProgressFill $pct={p.progressToNext} />
+                    </ProgressTrack>
+                    <ProgressLabel>{formatProgressText(p)}</ProgressLabel>
+                  </ProgressRow>
+                )}
+              </MissionItem>
+            ))}
+          </MissionsStack>
+        </SubSection>
+      )}
+
+      {/* Secretos (unrevealed) */}
+      {secrets.length > 0 && (
+        <SubSection style={{ marginTop: '1.5rem' }}>
+          <SubSectionTitle>Secretos</SubSectionTitle>
+          <SecretGrid>
+            {secrets.map((p) => (
+              <SecretCard key={p.category.id}>
+                <SecretBadge>?</SecretBadge>
+                <SecretLabel>Por descubrir</SecretLabel>
+              </SecretCard>
+            ))}
+          </SecretGrid>
         </SubSection>
       )}
     </PanelRoot>

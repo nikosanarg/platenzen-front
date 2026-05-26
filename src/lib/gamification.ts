@@ -1,231 +1,327 @@
 import { ProcessedStats } from '@/types/stats';
-import { Mission, MissionProgress } from '@/types/gamification';
-import { getRecentAvgKm } from '@/lib/momentum';
+import { PermissionCategory, PermissionProgress, PermissionTier } from '@/types/gamification';
 
-const MISSIONS: Mission[] = [
+const PERMISSION_CATEGORIES: PermissionCategory[] = [
   {
-    id: 'first_run',
-    title: 'Primera corrida',
-    description: 'Completá cualquier actividad registrada',
-    permission: 'Medialunas en el bar',
+    id: 'medialunas',
+    categoryName: 'Medialunas',
     permissionCode: 'ML',
-    targetValue: 1,
-    unit: 'actividad',
+    unitLabel: 'actividades totales',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Medialunas en el bar', targetValue: 1 },
+      { level: 2, name: 'Media docena', targetValue: 15 },
+      { level: 3, name: 'Docena', targetValue: 35 },
+      { level: 4, name: 'Factura completa', targetValue: 75 },
+    ],
   },
   {
-    id: 'run_5k',
-    title: '5K completado',
-    description: 'Corré 5km en una sola salida',
-    permission: 'Cerveza fría',
+    id: 'cerveza',
+    categoryName: 'Cerveza',
     permissionCode: 'CF',
-    targetValue: 5,
-    unit: 'km',
+    unitLabel: 'km en una sola salida',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Cerveza fría', targetValue: 5 },
+      { level: 2, name: 'Pinta', targetValue: 10 },
+      { level: 3, name: 'Porrón', targetValue: 21 },
+      { level: 4, name: 'Chopp doble', targetValue: 42 },
+    ],
   },
   {
-    id: 'run_3_week',
-    title: 'Semana activa',
-    description: 'Corré 3 veces en una misma semana',
-    permission: 'Empanadas',
+    id: 'empanadas',
+    categoryName: 'Empanadas',
     permissionCode: 'EM',
-    targetValue: 3,
-    unit: 'salidas',
+    unitLabel: 'salidas en una semana',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Empanadas', targetValue: 3 },
+      { level: 2, name: 'Media docena de empanadas', targetValue: 4 },
+      { level: 3, name: 'Cena de empanadas', targetValue: 5 },
+    ],
   },
   {
-    id: 'sub_5_pace',
-    title: 'Velocista',
-    description: 'Alcanzá un ritmo de 5:00/km o menos',
-    permission: 'Helado doble',
+    id: 'helado',
+    categoryName: 'Helado',
     permissionCode: 'HD',
-    targetValue: 300,
-    unit: 'seg/km',
+    unitLabel: 'ritmo mínimo alcanzado',
     higherIsBetter: false,
+    tiers: [
+      { level: 1, name: 'Helado doble', targetValue: 330 },
+      { level: 2, name: 'Cuarto kilo', targetValue: 300 },
+      { level: 3, name: 'Medio kilo', targetValue: 270 },
+      { level: 4, name: 'Kilo', targetValue: 240 },
+    ],
   },
   {
-    id: 'run_10k',
-    title: '10K completado',
-    description: 'Corré 10km en una sola salida',
-    permission: 'Pizza completa',
+    id: 'pizza',
+    categoryName: 'Pizza',
     permissionCode: 'PC',
-    targetValue: 10,
-    unit: 'km',
+    unitLabel: 'km acumulados',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Pizza al molde', targetValue: 50 },
+      { level: 2, name: 'Especial de la casa', targetValue: 150 },
+      { level: 3, name: 'Pizza con amigos', targetValue: 400 },
+    ],
   },
   {
-    id: 'streak_7',
-    title: 'Racha de fuego',
-    description: 'Corré 7 días seguidos',
-    permission: 'Botella de vino',
+    id: 'vino',
+    categoryName: 'Vino',
     permissionCode: 'BV',
-    targetValue: 7,
-    unit: 'días',
+    unitLabel: 'días de racha',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Botella de vino', targetValue: 5 },
+      { level: 2, name: 'Vino joven', targetValue: 7 },
+      { level: 3, name: 'Reserva', targetValue: 14 },
+      { level: 4, name: 'Gran reserva', targetValue: 30 },
+    ],
   },
   {
-    id: 'total_100km',
-    title: 'Centenar',
-    description: 'Acumulá 100km corridos en total',
-    permission: 'Cena en restaurant',
+    id: 'cena',
+    categoryName: 'Cena',
     permissionCode: 'CR',
-    targetValue: 100,
-    unit: 'km',
+    unitLabel: 'horas de carrera',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Cena simple', targetValue: 36000 },
+      { level: 2, name: 'Cena con vino', targetValue: 108000 },
+      { level: 3, name: 'Cena de celebración', targetValue: 360000 },
+    ],
   },
   {
-    id: 'run_21k',
-    title: 'Medio maratonista',
-    description: 'Corré 21km en una sola salida',
-    permission: 'Asado completo',
-    permissionCode: 'AC',
-    targetValue: 21.097,
-    unit: 'km',
+    id: 'asado',
+    categoryName: 'Asado',
+    permissionCode: 'AS',
+    unitLabel: 'km en una semana',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Asado completo', targetValue: 20 },
+      { level: 2, name: 'Asado de fin de semana', targetValue: 35 },
+      { level: 3, name: 'Asado largo', targetValue: 50 },
+      { level: 4, name: 'Parrillada para varios', targetValue: 70 },
+    ],
   },
   {
-    id: 'total_500km',
-    title: 'Medio millar',
-    description: 'Acumulá 500km corridos en total',
-    permission: 'Fin de semana de viaje',
-    permissionCode: 'FV',
-    targetValue: 500,
-    unit: 'km',
-    higherIsBetter: true,
-  },
-  {
-    id: 'run_42k',
-    title: 'Maratonista',
-    description: 'Corré una maratón completa (42km)',
-    permission: 'Vacaciones pagas',
+    id: 'vacaciones',
+    categoryName: 'Vacaciones',
     permissionCode: 'VP',
-    targetValue: 42.195,
-    unit: 'km',
+    unitLabel: 'km acumulados',
     higherIsBetter: true,
+    tiers: [
+      { level: 1, name: 'Vacaciones pagas', targetValue: 200 },
+      { level: 2, name: 'Fin de semana de viaje', targetValue: 500 },
+      { level: 3, name: 'Semana de viaje', targetValue: 1000 },
+      { level: 4, name: 'Quincena', targetValue: 2000 },
+    ],
+  },
+  {
+    id: 'racha_legendaria',
+    categoryName: 'Racha legendaria',
+    permissionCode: 'RL',
+    unitLabel: 'días de racha',
+    higherIsBetter: true,
+    isSecret: true,
+    revealThreshold: 15,
+    tiers: [
+      { level: 1, name: 'Corredor incansable', targetValue: 30 },
+      { level: 2, name: 'Leyenda local', targetValue: 60 },
+      { level: 3, name: 'Leyenda regional', targetValue: 90 },
+    ],
+  },
+  {
+    id: 'millar',
+    categoryName: 'El millar',
+    permissionCode: 'MK',
+    unitLabel: 'km acumulados',
+    higherIsBetter: true,
+    isSecret: true,
+    revealThreshold: 400,
+    tiers: [
+      { level: 1, name: 'El primer millar', targetValue: 1000 },
+      { level: 2, name: 'Doble millar', targetValue: 2000 },
+      { level: 3, name: 'Los cinco años', targetValue: 5000 },
+    ],
   },
 ];
 
-function getCurrentValue(missionId: string, stats: ProcessedStats): number {
-  switch (missionId) {
-    case 'first_run':
-      return Math.min(stats.totalActivities, 1);
-    case 'run_5k':
-    case 'run_10k':
-    case 'run_21k':
-    case 'run_42k':
+function getCategoryValue(id: string, stats: ProcessedStats): number {
+  switch (id) {
+    case 'medialunas':
+      return stats.totalActivities;
+    case 'cerveza':
       return stats.longestActivity;
-    case 'sub_5_pace':
-      return stats.bestPace > 0 ? stats.bestPace : Infinity;
-    case 'run_3_week':
+    case 'empanadas':
       return stats.weekly.length > 0 ? Math.max(...stats.weekly.map((w) => w.count)) : 0;
-    case 'streak_7':
+    case 'helado':
+      return stats.bestPace > 0 ? stats.bestPace : Infinity;
+    case 'pizza':
+      return stats.totalDistance;
+    case 'vino':
+    case 'racha_legendaria':
       return stats.longestStreak;
-    case 'total_100km':
-    case 'total_500km':
+    case 'cena':
+      return stats.totalTime;
+    case 'asado':
+      return stats.weekly.length > 0 ? Math.max(...stats.weekly.map((w) => w.distance)) : 0;
+    case 'vacaciones':
+    case 'millar':
       return stats.totalDistance;
     default:
       return 0;
   }
 }
 
-export function computeMissions(stats: ProcessedStats): MissionProgress[] {
-  return MISSIONS.map((mission) => {
-    const current = getCurrentValue(mission.id, stats);
-    const completed = mission.higherIsBetter
-      ? current >= mission.targetValue
-      : current <= mission.targetValue && current > 0 && current !== Infinity;
+function computeProgress(
+  category: PermissionCategory,
+  currentValue: number,
+  unlockedTiers: number,
+  nextTier: PermissionTier
+): number {
+  if (category.higherIsBetter) {
+    const prevThreshold = unlockedTiers > 0 ? category.tiers[unlockedTiers - 1].targetValue : 0;
+    const range = nextTier.targetValue - prevThreshold;
+    return range > 0 ? Math.min(Math.max((currentValue - prevThreshold) / range, 0), 1) : 0;
+  } else {
+    if (currentValue === 0 || currentValue === Infinity) return 0;
+    const prevThreshold =
+      unlockedTiers > 0 ? category.tiers[unlockedTiers - 1].targetValue : nextTier.targetValue * 1.5;
+    const range = prevThreshold - nextTier.targetValue;
+    return range > 0 ? Math.min(Math.max((prevThreshold - currentValue) / range, 0), 1) : 0;
+  }
+}
 
-    let progress: number;
-    if (completed) {
-      progress = 1;
-    } else if (mission.higherIsBetter) {
-      progress = Math.min(current / mission.targetValue, 1);
-    } else {
-      progress = current > 0 && current !== Infinity ? Math.min(mission.targetValue / current, 1) : 0;
+export function computePermissions(stats: ProcessedStats): PermissionProgress[] {
+  return PERMISSION_CATEGORIES.map((category) => {
+    const currentValue = getCategoryValue(category.id, stats);
+
+    let unlockedTiers = 0;
+    for (const tier of category.tiers) {
+      const met = category.higherIsBetter
+        ? currentValue >= tier.targetValue
+        : currentValue > 0 && currentValue !== Infinity && currentValue <= tier.targetValue;
+      if (met) unlockedTiers++;
+      else break;
     }
 
-    return { mission, currentValue: current, completed, progress };
+    const allUnlocked = unlockedTiers === category.tiers.length;
+    const nextTier = allUnlocked ? null : category.tiers[unlockedTiers];
+    const currentTierName = unlockedTiers > 0 ? category.tiers[unlockedTiers - 1].name : null;
+    const progressToNext = nextTier ? computeProgress(category, currentValue, unlockedTiers, nextTier) : 1;
+
+    const isRevealed =
+      !category.isSecret ||
+      unlockedTiers > 0 ||
+      (category.revealThreshold !== undefined && currentValue >= category.revealThreshold);
+
+    return {
+      category,
+      currentValue,
+      unlockedTiers,
+      currentTierName,
+      nextTier,
+      progressToNext,
+      allUnlocked,
+      isRevealed,
+    };
   });
 }
 
-export function formatCurrentValue(mp: MissionProgress): string {
-  const { mission, currentValue } = mp;
-  if (mission.id === 'sub_5_pace') {
-    if (currentValue === Infinity || currentValue === 0) return '—';
-    const mins = Math.floor(currentValue / 60);
-    const secs = Math.round(currentValue % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}/km`;
-  }
-  if (mission.unit === 'km') return `${currentValue.toFixed(1)} km`;
-  if (mission.unit === 'días') return `${currentValue} días`;
-  if (mission.unit === 'salidas') return `${currentValue} salidas`;
-  return `${currentValue}`;
+function formatPace(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}/km`;
 }
 
-export function formatTargetValue(mission: Mission): string {
-  if (mission.id === 'sub_5_pace') {
-    const mins = Math.floor(mission.targetValue / 60);
-    const secs = Math.round(mission.targetValue % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}/km`;
+export function formatProgressText(progress: PermissionProgress): string {
+  const { category, currentValue, nextTier } = progress;
+  if (!nextTier) return 'completado';
+
+  switch (category.id) {
+    case 'medialunas':
+      return `${Math.min(Math.round(currentValue), nextTier.targetValue)} de ${nextTier.targetValue} actividades`;
+    case 'cerveza':
+      return `${currentValue.toFixed(1)} de ${nextTier.targetValue} km`;
+    case 'empanadas':
+      return `${currentValue} de ${nextTier.targetValue} salidas/semana`;
+    case 'helado':
+      return currentValue === Infinity || currentValue === 0
+        ? `objetivo: ${formatPace(nextTier.targetValue)}`
+        : `${formatPace(currentValue)} → ${formatPace(nextTier.targetValue)}`;
+    case 'vino':
+    case 'racha_legendaria':
+      return `${currentValue} de ${nextTier.targetValue} días`;
+    case 'cena': {
+      const h = Math.floor(currentValue / 3600);
+      const th = Math.floor(nextTier.targetValue / 3600);
+      return `${h}h de ${th}h`;
+    }
+    case 'asado':
+      return `${currentValue.toFixed(1)} de ${nextTier.targetValue} km/semana`;
+    case 'pizza':
+    case 'vacaciones':
+    case 'millar':
+      return `${currentValue.toFixed(1)} de ${nextTier.targetValue} km`;
+    default:
+      return `${Math.round(currentValue)} / ${nextTier.targetValue}`;
   }
-  if (mission.unit === 'km') {
-    return `${mission.targetValue % 1 === 0 ? mission.targetValue : Math.round(mission.targetValue)} km`;
-  }
-  if (mission.unit === 'días') return `${mission.targetValue} días`;
-  if (mission.unit === 'salidas') return `${mission.targetValue} salidas`;
-  return `${mission.targetValue}`;
 }
 
-// Returns estimated weeks to completion for cumulative distance missions
-export function computeEtaWeeks(mp: MissionProgress, avgKmPerWeek: number): number | null {
-  if (mp.completed || avgKmPerWeek <= 0) return null;
-  const { mission, currentValue } = mp;
-  if (!['total_100km', 'total_500km'].includes(mission.id)) return null;
-  const remaining = mission.targetValue - currentValue;
-  if (remaining <= 0) return null;
-  return remaining / avgKmPerWeek;
+// Returns ETA in weeks for cumulative-km categories only
+export function computeEtaWeeks(progress: PermissionProgress, avgKmPerWeek: number): number | null {
+  if (progress.allUnlocked || !progress.nextTier || avgKmPerWeek <= 0) return null;
+  const cumIds = ['pizza', 'vacaciones', 'millar'];
+  if (!cumIds.includes(progress.category.id)) return null;
+  const remaining = progress.nextTier.targetValue - progress.currentValue;
+  return remaining > 0 ? remaining / avgKmPerWeek : null;
 }
 
 export function formatEta(weeks: number): string {
   if (weeks < 1) return 'en menos de una semana';
   if (weeks < 2) return 'en alrededor de una semana';
-  if (weeks < 5) return `en alrededor de ${Math.round(weeks)} semanas`;
+  if (weeks < 5) return `en ~${Math.round(weeks)} semanas`;
   const months = weeks / 4.33;
   if (months < 2) return 'en alrededor de un mes';
-  if (months < 12) return `en alrededor de ${Math.round(months)} meses`;
-  return null as unknown as string; // too far out, don't show
+  if (months < 12) return `en ~${Math.round(months)} meses`;
+  return '';
 }
 
-// Returns the next milestone text for the hero section
-export function getNextMilestoneText(missions: MissionProgress[], avgKmPerWeek: number): string | null {
-  const pending = missions
-    .filter((m) => !m.completed)
-    .sort((a, b) => b.progress - a.progress);
+export function getNextMilestoneText(permissions: PermissionProgress[], avgKmPerWeek: number): string | null {
+  const candidates = permissions
+    .filter((p) => !p.allUnlocked && p.isRevealed && p.nextTier)
+    .sort((a, b) => b.progressToNext - a.progressToNext);
 
-  if (pending.length === 0) return null;
-  const next = pending[0];
-  const { mission, currentValue } = next;
+  if (candidates.length === 0) return null;
+  const top = candidates[0];
+  const { category, currentValue, nextTier } = top;
+  if (!nextTier) return null;
 
-  if (['total_100km', 'total_500km'].includes(mission.id)) {
-    const rem = mission.targetValue - currentValue;
-    return `te faltan ${rem.toFixed(1)} km para ${mission.permission}`;
+  switch (category.id) {
+    case 'pizza':
+    case 'vacaciones':
+    case 'millar': {
+      const rem = nextTier.targetValue - currentValue;
+      return `te faltan ${rem.toFixed(1)} km para ${nextTier.name}`;
+    }
+    case 'cerveza': {
+      const rem = nextTier.targetValue - currentValue;
+      return `corrés ${rem.toFixed(1)} km más en una salida y desbloqueás ${nextTier.name}`;
+    }
+    case 'vino':
+    case 'racha_legendaria': {
+      const rem = nextTier.targetValue - currentValue;
+      return `${rem} día${rem > 1 ? 's' : ''} más de racha para desbloquear ${nextTier.name}`;
+    }
+    case 'helado':
+      return `alcanzá ${formatPace(nextTier.targetValue)} para desbloquear ${nextTier.name}`;
+    case 'medialunas': {
+      const rem = nextTier.targetValue - Math.round(currentValue);
+      return `${rem} actividad${rem > 1 ? 'es' : ''} más para desbloquear ${nextTier.name}`;
+    }
+    default:
+      return `seguís avanzando hacia ${nextTier.name}`;
   }
-  if (['run_5k', 'run_10k', 'run_21k', 'run_42k'].includes(mission.id)) {
-    const rem = mission.targetValue - currentValue;
-    return `con ${rem.toFixed(1)} km más en tu próxima salida desbloqueás ${mission.permission}`;
-  }
-  if (mission.id === 'streak_7') {
-    const rem = mission.targetValue - currentValue;
-    return `${rem} día${rem > 1 ? 's' : ''} más de racha para desbloquear ${mission.permission}`;
-  }
-  if (mission.id === 'sub_5_pace') {
-    return `alcanzá 5:00/km para desbloquear ${mission.permission}`;
-  }
-  if (mission.id === 'run_3_week') {
-    const rem = mission.targetValue - currentValue;
-    return `${rem} salida${rem > 1 ? 's' : ''} más esta semana para desbloquear ${mission.permission}`;
-  }
-  return null;
 
-  void avgKmPerWeek; // used by caller for ETA when needed
+  void avgKmPerWeek;
 }

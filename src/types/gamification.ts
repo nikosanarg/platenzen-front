@@ -1,17 +1,27 @@
-export interface Mission {
-  id: string;
-  title: string;
-  description: string;
-  permission: string;
-  permissionCode: string; // 2-letter visual badge
+export interface PermissionTier {
+  level: number;
+  name: string;
   targetValue: number;
-  unit: string;
-  higherIsBetter: boolean;
 }
 
-export interface MissionProgress {
-  mission: Mission;
+export interface PermissionCategory {
+  id: string;
+  categoryName: string;
+  permissionCode: string;
+  unitLabel: string;
+  higherIsBetter: boolean;
+  tiers: PermissionTier[];
+  isSecret?: boolean;
+  revealThreshold?: number; // category metric value above which to show secret
+}
+
+export interface PermissionProgress {
+  category: PermissionCategory;
   currentValue: number;
-  completed: boolean;
-  progress: number; // 0–1
+  unlockedTiers: number; // 0 = none
+  currentTierName: string | null;
+  nextTier: PermissionTier | null;
+  progressToNext: number; // 0–1
+  allUnlocked: boolean;
+  isRevealed: boolean; // always true for non-secret; conditional for secrets
 }

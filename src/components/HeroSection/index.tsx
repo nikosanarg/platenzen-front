@@ -4,7 +4,7 @@ import React from 'react';
 import { ProcessedStats } from '@/types/stats';
 import { computeXP, getLevelInfo } from '@/lib/levels';
 import { computeMomentum, momentumLabel } from '@/lib/momentum';
-import { computeMissions, getNextMilestoneText } from '@/lib/gamification';
+import { computePermissions, getNextMilestoneText } from '@/lib/gamification';
 import { IconTrendUp, IconTrendFlat, IconTrendDown } from '@/components/Icon';
 import {
   HeroCard,
@@ -36,12 +36,12 @@ function formatXP(n: number): string {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
-  const missions = computeMissions(stats);
-  const unlocked = missions.filter((m) => m.completed);
-  const xp = computeXP(stats, unlocked.length);
+  const permissions = computePermissions(stats);
+  const totalUnlockedTiers = permissions.reduce((s, p) => s + p.unlockedTiers, 0);
+  const xp = computeXP(stats, totalUnlockedTiers);
   const level = getLevelInfo(xp);
   const momentum = computeMomentum(stats.weekly);
-  const nextText = getNextMilestoneText(missions, 0);
+  const nextText = getNextMilestoneText(permissions, 0);
 
   const streakNarrative = (() => {
     if (stats.currentStreak >= 3) {
