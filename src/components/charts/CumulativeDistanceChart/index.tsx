@@ -23,7 +23,7 @@ const CumulativeDistanceChart: React.FC<CumulativeDistanceChartProps> = ({ data 
 
   return (
     <ChartCard>
-      <ChartTitle>Distancia acumulada</ChartTitle>
+      <ChartTitle>Lo que sumaste hasta hoy</ChartTitle>
       <ResponsiveContainer width="100%" height={220}>
         <AreaChart data={sampled} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <defs>

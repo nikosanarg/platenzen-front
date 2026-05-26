@@ -38,7 +38,7 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
     <TokenContainer>
       <TokenCard>
         <LogoRow>
-          <LogoIcon>🏃</LogoIcon>
+          <LogoIcon>P</LogoIcon>
           <LogoText>Platenzen</LogoText>
         </LogoRow>
         <TokenTitle>Conectá tu cuenta de Strava</TokenTitle>

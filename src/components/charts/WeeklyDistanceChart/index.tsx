@@ -23,7 +23,7 @@ const WeeklyDistanceChart: React.FC<WeeklyDistanceChartProps> = ({ data }) => {
 
   return (
     <ChartCard>
-      <ChartTitle>Distancia por mes</ChartTitle>
+      <ChartTitle>Tu distancia mes a mes</ChartTitle>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={recent} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />

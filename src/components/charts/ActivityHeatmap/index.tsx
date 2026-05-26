@@ -56,7 +56,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
 
   return (
     <HeatmapCard>
-      <HeatmapTitle>Actividad — último año</HeatmapTitle>
+      <HeatmapTitle>Tu año en kilómetros</HeatmapTitle>
       <HeatmapGrid>
         {weeks.map((week, wi) => (
           <HeatmapCol key={wi}>

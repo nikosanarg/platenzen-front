@@ -12,7 +12,7 @@ interface HourlyDistributionChartProps {
 const HourlyDistributionChart: React.FC<HourlyDistributionChartProps> = ({ data }) => {
   return (
     <ChartCard>
-      <ChartTitle>Hora de entrenamiento</ChartTitle>
+      <ChartTitle>A qué hora corrés</ChartTitle>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />

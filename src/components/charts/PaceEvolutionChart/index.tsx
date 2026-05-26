@@ -26,7 +26,7 @@ const PaceEvolutionChart: React.FC<PaceEvolutionChartProps> = ({ data }) => {
 
   return (
     <ChartCard>
-      <ChartTitle>Evolución del ritmo (running)</ChartTitle>
+      <ChartTitle>Cómo evolucionó tu ritmo</ChartTitle>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={recent} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />

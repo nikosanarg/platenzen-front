@@ -3,19 +3,19 @@
 import React from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
-import { kmToString, secondsToHMS } from '@/utils/units';
-import { secPerKmToString } from '@/utils/pace';
-import StatsCard from '@/components/StatsCard';
-import TopActivities from '@/components/TopActivities';
+import HeroSection from '@/components/HeroSection';
+import ActiveMission from '@/components/ActiveMission';
+import GamificationPanel from '@/components/GamificationPanel';
+import PersonalRecords from '@/components/PersonalRecords';
 import InsightsSection from '@/components/InsightsSection';
 import WeeklyDistanceChart from '@/components/charts/WeeklyDistanceChart';
 import MonthlyComparisonChart from '@/components/charts/MonthlyComparisonChart';
 import PaceEvolutionChart from '@/components/charts/PaceEvolutionChart';
 import CumulativeDistanceChart from '@/components/charts/CumulativeDistanceChart';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
-import SportDistributionChart from '@/components/charts/SportDistributionChart';
 import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
+import { IconRun } from '@/components/Icon';
 import {
   DashboardRoot,
   DashboardHeader,
@@ -27,7 +27,6 @@ import {
   HeaderButton,
   DashboardContent,
   SectionTitle,
-  StatsGrid,
   ChartsGrid,
   FullWidthChart,
   LoadingOverlay,
@@ -70,7 +69,9 @@ const Dashboard: React.FC<DashboardProps> = ({
     <DashboardRoot>
       <DashboardHeader>
         <HeaderLeft>
-          <HeaderLogo>🏃</HeaderLogo>
+          <HeaderLogo>
+            <IconRun size={18} color="#fff" />
+          </HeaderLogo>
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>
         <HeaderRight>
@@ -94,29 +95,13 @@ const Dashboard: React.FC<DashboardProps> = ({
         </LoadingOverlay>
       ) : (
         <DashboardContent>
-          <section>
-            <SectionTitle>Resumen general</SectionTitle>
-            <StatsGrid>
-              <StatsCard label="Distancia total" value={kmToString(stats.totalDistance)} icon="📏" />
-              <StatsCard label="Tiempo total" value={secondsToHMS(stats.totalTime)} icon="⏱️" />
-              <StatsCard label="Actividades" value={stats.totalActivities.toString()} icon="🎯" />
-              <StatsCard label="Promedio semanal" value={kmToString(stats.weeklyAvgDistance)} icon="📅" sub="km/semana" />
-              <StatsCard label="Ritmo promedio" value={secPerKmToString(stats.avgPace)} icon="🏃" sub="running" />
-              <StatsCard label="Mejor ritmo" value={secPerKmToString(stats.bestPace)} icon="⚡" sub="running" />
-              <StatsCard label="Actividad más larga" value={kmToString(stats.longestActivity)} icon="🗺️" />
-              <StatsCard label="Racha actual" value={`${stats.currentStreak} días`} icon="🔥" sub={`récord: ${stats.longestStreak} días`} />
-            </StatsGrid>
-          </section>
+          <HeroSection stats={stats} />
 
-          <section>
-            <SectionTitle>Evolución y tendencias</SectionTitle>
-            <ChartsGrid>
-              <WeeklyDistanceChart data={stats.monthly} />
-              <MonthlyComparisonChart data={stats.monthly} />
-              {stats.paceEvolution.length > 0 && <PaceEvolutionChart data={stats.paceEvolution} />}
-              <CumulativeDistanceChart data={stats.cumulativeDistance} />
-            </ChartsGrid>
-          </section>
+          <ActiveMission stats={stats} />
+
+          <GamificationPanel stats={stats} />
+
+          <PersonalRecords activities={activities} stats={stats} />
 
           <section>
             <FullWidthChart>
@@ -125,15 +110,22 @@ const Dashboard: React.FC<DashboardProps> = ({
           </section>
 
           <section>
-            <SectionTitle>Distribución</SectionTitle>
+            <SectionTitle>Tus patrones</SectionTitle>
             <ChartsGrid>
-              <SportDistributionChart data={stats.sportDistribution} />
               <HourlyDistributionChart data={stats.hourlyDistribution} />
               <WeekdayDistributionChart data={stats.weekdayDistribution} />
             </ChartsGrid>
           </section>
 
-          <TopActivities activities={activities} />
+          <section>
+            <SectionTitle>Cómo venís</SectionTitle>
+            <ChartsGrid>
+              <WeeklyDistanceChart data={stats.monthly} />
+              <MonthlyComparisonChart data={stats.monthly} />
+              {stats.paceEvolution.length > 0 && <PaceEvolutionChart data={stats.paceEvolution} />}
+              <CumulativeDistanceChart data={stats.cumulativeDistance} />
+            </ChartsGrid>
+          </section>
 
           <InsightsSection stats={stats} />
         </DashboardContent>
