@@ -13,26 +13,6 @@ interface RefreshResponse {
   expires_at: number;
 }
 
-async function bootstrapFromRefreshToken(refreshToken: string): Promise<StoredToken | null> {
-  try {
-    const res = await fetch('/api/strava/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as RefreshResponse;
-    return {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresAt: data.expires_at,
-      createdAt: Date.now(),
-    };
-  } catch {
-    return null;
-  }
-}
-
 function readAndClearOAuthCookie(): StoredToken | null {
   try {
     const match = document.cookie.match(/(?:^|;\s*)strava_oauth=([^;]+)/);
@@ -74,13 +54,6 @@ const AppClient: React.FC = () => {
     }
   }, [hasToken, status, fetch, getValidToken]);
 
-  const handleRefreshTokenSubmit = async (refreshToken: string) => {
-    const stored = await bootstrapFromRefreshToken(refreshToken);
-    if (!stored) return;
-    saveToken(stored);
-    fetch(() => Promise.resolve(stored.accessToken));
-  };
-
   const handleRefresh = () => {
     refresh(getValidToken);
   };
@@ -110,14 +83,9 @@ const AppClient: React.FC = () => {
     const errorMsg = oauthError
       ? 'La autorización con Strava fue rechazada o falló. Intentá de nuevo.'
       : error === 'scope_missing'
-        ? 'El token no tiene permiso para leer actividades. Usá el botón "Conectar con Strava" para autorizar correctamente.'
+        ? 'El token no tiene permiso para leer actividades. Usá el botón para conectar con Strava nuevamente.'
         : status === 'error' ? error : null;
-    return (
-      <TokenInput
-        onSubmit={handleRefreshTokenSubmit}
-        error={errorMsg}
-      />
-    );
+    return <TokenInput error={errorMsg} />;
   }
 
   const stats = status === 'success' ? computeStats(activities) : null;

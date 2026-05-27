@@ -1,30 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import Image from 'next/image';
 import {
   TokenContainer,
   TokenCard,
   LogoRow,
-  LogoIcon,
   LogoText,
   TokenTitle,
   TokenSubtitle,
-  TokenLabel,
-  TokenInput as StyledInput,
-  TokenButton,
   TokenError,
   OAuthButton,
   RevokeHint,
-  Divider,
-  DividerText,
-  StepsBox,
-  Step,
-  StepNum,
-  StepText,
 } from './styled';
 
 interface TokenInputProps {
-  onSubmit: (refreshToken: string) => Promise<void>;
   error?: string | null;
 }
 
@@ -41,19 +31,7 @@ function buildStravaAuthUrl(): string {
   return `https://www.strava.com/oauth/authorize?${params.toString()}`;
 }
 
-const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
-  const [value, setValue] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    setLoading(true);
-    await onSubmit(trimmed);
-    setLoading(false);
-  };
-
+const TokenInput: React.FC<TokenInputProps> = ({ error }) => {
   const handleOAuth = () => {
     window.location.href = buildStravaAuthUrl();
   };
@@ -62,7 +40,13 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
     <TokenContainer>
       <TokenCard>
         <LogoRow>
-          <LogoIcon>P</LogoIcon>
+          <Image
+            src="/assets/platenzen_logo.png"
+            alt="Platenzen"
+            width={40}
+            height={40}
+            style={{ borderRadius: '10px' }}
+          />
           <LogoText>Platenzen</LogoText>
         </LogoRow>
 
@@ -74,8 +58,18 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
         </TokenSubtitle>
 
         <OAuthButton onClick={handleOAuth} as="button" type="button">
-          Permitir en Strava
+          Conectar con
+          <Image
+            src="/assets/strava_logo.png"
+            alt="Strava"
+            width={80}
+            height={24}
+            style={{ height: '1.2em', width: 'auto', verticalAlign: 'middle' }}
+          />
         </OAuthButton>
+
+        {error && <TokenError>{error}</TokenError>}
+
         <RevokeHint>
           Si querés revocar el acceso en cualquier momento, podés hacerlo desde{' '}
           <a href="https://www.strava.com/settings/apps" target="_blank" rel="noopener noreferrer">
@@ -83,60 +77,6 @@ const TokenInput: React.FC<TokenInputProps> = ({ onSubmit, error }) => {
           </a>
           .
         </RevokeHint>
-
-        <Divider>
-          <DividerText>Si el botón no funciona, seguí estos pasos</DividerText>
-        </Divider>
-
-        <StepsBox>
-          <Step>
-            <StepNum>1</StepNum>
-            <StepText>
-              Entrá a{' '}
-              <a href="https://www.strava.com/settings/api" target="_blank" rel="noopener noreferrer">
-                strava.com/settings/api
-              </a>
-              {' '}(necesitás tener cuenta en Strava y una app creada).
-            </StepText>
-          </Step>
-          <Step>
-            <StepNum>2</StepNum>
-            <StepText>
-              Bajá hasta <strong>"My API Application"</strong> y buscá <strong>"Your Refresh Token"</strong>.{' '}
-              <strong>Importante:</strong> ese token solo funciona si autorizaste tu app con el permiso <code>activity:read_all</code>.
-              Si lo copiás sin haber hecho eso, va a dar error de permisos.
-            </StepText>
-          </Step>
-          <Step>
-            <StepNum>3</StepNum>
-            <StepText>
-              Copiá el valor — es una cadena larga del estilo <code>f957a4a562...</code>
-            </StepText>
-          </Step>
-          <Step>
-            <StepNum>4</StepNum>
-            <StepText>
-              Pegalo en el campo de abajo y hacé click en <strong>Continuar</strong>.
-            </StepText>
-          </Step>
-        </StepsBox>
-
-        <form onSubmit={handleSubmit}>
-          <TokenLabel htmlFor="token-input">Refresh Token</TokenLabel>
-          <StyledInput
-            id="token-input"
-            type="text"
-            placeholder="f957a4a5626625f8def2222b6a0df4aa0b48b03f"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-          {error && <TokenError>{error}</TokenError>}
-          <TokenButton type="submit" $loading={loading} disabled={loading || !value.trim()}>
-            {loading ? 'Verificando...' : 'Continuar'}
-          </TokenButton>
-        </form>
       </TokenCard>
     </TokenContainer>
   );
