@@ -1,8 +1,18 @@
 # Platenzen
 
-Dashboard personal de estadísticas de Strava. Conectás tu cuenta, y el sistema procesa tu historial completo de actividades para mostrarte métricas, récords, patrones y un sistema de progresión gamificado.
+Dashboard personal de estadísticas de Strava. Conectás tu cuenta, y el sistema procesa tu historial completo de actividades para mostrarte métricas, récords, patrones y un sistema de progresión gamificado. PlatenZen es un club de running en **Strava**. Para unirte: https://www.strava.com/clubs/2050055.
 
-Disponible en **[platenzen-front.vercel.app](https://platenzen-front.vercel.app)**
+Disponible en **[platenzen.com](https://platenzen.com)**
+
+---
+
+## Técnico
+
+### Stack
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **styled-components 6** con SSR registry
+- **Recharts** para visualizaciones
+- Deploy en **Vercel**
 
 ---
 
@@ -50,25 +60,6 @@ Distribución horaria y por día de la semana. Gráficos de distancia mensual, r
 En ambos casos el token se guarda en `localStorage` de tu navegador. No se sube a ningún servidor. Cada dispositivo tiene su propia sesión independiente.
 
 ---
-
-## Club PlatenZen en Strava
-
-PlatenZen es un club de running en Strava. Para unirte:
-
-1. Buscá **"PlatenZen"** en la sección Clubs de Strava
-2. O entrá directamente desde la app de Strava → Explorar → Clubs
-
-Las actividades del club son públicas entre sus miembros en Strava, pero Platenzen solo accede a **tus propias actividades** — no a las de otros integrantes.
-
----
-
-## Técnico
-
-### Stack
-- **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **styled-components 6** con SSR registry
-- **Recharts** para visualizaciones
-- Deploy en **Vercel**
 
 ### Autenticación
 Flujo OAuth estándar de Strava. El servidor intercambia el código por tokens (`/api/strava/callback`). El access token se renueva automáticamente antes de expirar usando el refresh token vía `/api/strava/refresh`. Ningún token se persiste en servidor — solo en `localStorage` del cliente.
