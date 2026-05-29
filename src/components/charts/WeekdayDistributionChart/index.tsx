@@ -21,6 +21,8 @@ const WeekdayDistributionChart: React.FC<WeekdayDistributionChartProps> = ({ dat
             <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
             <Tooltip
               contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 13 }}
+              labelStyle={{ color: 'var(--chart-3)' }}
+              itemStyle={{ color: 'var(--chart-3)' }}
               formatter={(value: TooltipValueType | undefined) => [value ?? 0, 'Actividades'] as [TooltipValueType, string]}
               cursor={{ fill: 'var(--accent-muted)' }}
             />

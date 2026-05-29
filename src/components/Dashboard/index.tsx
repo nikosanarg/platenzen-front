@@ -1,23 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState, useState as useStateReact } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import HeroSection from '@/components/HeroSection';
 import ActiveMission from '@/components/ActiveMission';
 import EstadoActual from '@/components/EstadoActual';
 import GamificationPanel from '@/components/GamificationPanel';
-import PersonalRecords from '@/components/PersonalRecords';
-import PredictionsSection from '@/components/PredictionsSection';
-import { computePermissions } from '@/lib/gamification';
-import { computeXP, getLevelInfo } from '@/lib/levels';
+import NumbersSection from '@/components/NumbersSection';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
-import RawDataSection from '@/components/RawDataSection';
 import CollapsibleSection from '@/components/CollapsibleSection';
-import { IconRun } from '@/components/Icon';
+import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
 import {
   DashboardRoot,
   DashboardHeader,
@@ -72,6 +68,16 @@ const Dashboard: React.FC<DashboardProps> = ({
   onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<HomeTab>('progreso');
+  const [isMounted, setIsMounted] = useStateReact(false);
+  const isMobile = useIsMobile(isMounted);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <DashboardRoot>
@@ -83,14 +89,30 @@ const Dashboard: React.FC<DashboardProps> = ({
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>
         <HeaderRight>
+          {stats.currentStreak > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              <span>🔥</span>
+              <span>{Math.ceil(stats.currentStreak / 7)} sem</span>
+            </div>
+          )}
           {isFromCache && cacheAge !== null && (
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
           )}
           <HeaderButton $variant="ghost" onClick={onRefresh} disabled={loading}>
-            {loading ? 'Actualizando...' : 'Actualizar datos'}
+            <span className="only-icon-mobile">
+              {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="var(--text-secondary)" />}
+            </span>
+            <span className="only-text-desktop">
+              {loading ? 'Actualizando...' : 'Actualizar datos'}
+            </span>
           </HeaderButton>
           <HeaderButton $variant="ghost" onClick={onLogout}>
-            Cambiar token
+            <span className="only-icon-mobile">
+              <IconLogout size={20} color="var(--text-secondary)" />
+            </span>
+            <span className="only-text-desktop">
+              Cambiar token
+            </span>
           </HeaderButton>
         </HeaderRight>
       </DashboardHeader>
@@ -120,16 +142,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             <>
               <HeroSection stats={stats} />
 
-              {(() => {
-                const perms = computePermissions(stats);
-                const totalTiers = perms.reduce((s, p) => s + p.unlockedTiers, 0);
-                const level = getLevelInfo(computeXP(stats, totalTiers));
-                return <PredictionsSection stats={stats} permissions={perms} levelInfo={level} />;
-              })()}
-
               <EstadoActual stats={stats} />
 
-              <PersonalRecords activities={activities} stats={stats} />
+              <NumbersSection activities={activities} stats={stats} />
 
               <section>
                 <FullWidthChart>
@@ -156,8 +171,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                   />
                 </PatternsGrid>
               </CollapsibleSection>
-
-              <RawDataSection stats={stats} />
             </>
           )}
 
@@ -174,3 +187,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 };
 
 export default Dashboard;
+
+function useIsMobile(isMounted: boolean) {
+  const [isMobile, setIsMobile] = useStateReact(false);
+  useEffect(() => {
+    if (!isMounted) return;
+    const check = () => setIsMobile(window.innerWidth <= 900);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [isMounted]);
+  return isMobile;
+}

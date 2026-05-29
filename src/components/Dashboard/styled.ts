@@ -159,20 +159,8 @@ export const PatternsGrid = styled.div`
   gap: 1rem;
   grid-template-columns: 1fr;
 
-  @media (min-width: 700px) {
-    grid-template-columns: 1fr 1fr;
-
-    > :nth-child(3) {
-      grid-column: 1 / -1;
-    }
-  }
-
   @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr 2fr;
-
-    > :nth-child(3) {
-      grid-column: auto;
-    }
+    grid-template-columns: 1fr 1fr 1fr;
   }
 `;
 

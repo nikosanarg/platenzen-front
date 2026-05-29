@@ -1,20 +1,48 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { DayStats } from '@/types/stats';
 import {
   HeatmapCard,
   HeatmapTitle,
-  HeatmapGrid,
-  HeatmapCol,
-  HeatmapCell,
+  HeatmapViewport,
+  HeatmapLoading,
   HeatmapLegend,
+  LegendItems,
+  LegendItem,
   LegendLabel,
+  LegendSwatch,
+  LegendHint,
   ConsistencyRow,
   ConsistencyStat,
   ConsistencyValue,
   ConsistencyLabel,
 } from './styled';
+import type { Heatmap3DCell, Heatmap3DSceneProps } from './scene';
+
+const DAYS_IN_WEEK = 7;
+const CELL_SIZE = 0.9;
+const CELL_GAP = 0.18;
+const GRID_STEP = CELL_SIZE + CELL_GAP;
+const HEIGHT_PER_KM = 0.24;
+function get3DMonthLabels(weeks: string[][]): Array<{ monthNum: number; weekIdx: number }> {
+  const result: Array<{ monthNum: number; weekIdx: number }> = [];
+  let lastMonth = '';
+  weeks.forEach((week, wi) => {
+    const month = week[0].split('-')[1];
+    if (month !== lastMonth) {
+      result.push({ monthNum: parseInt(month, 10), weekIdx: wi });
+      lastMonth = month;
+    }
+  });
+  return result;
+}
+
+const ActivityHeatmapScene3D = dynamic<Heatmap3DSceneProps>(() => import('./scene'), {
+  ssr: false,
+  loading: () => <HeatmapLoading>Cargando vista 3D</HeatmapLoading>,
+});
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -22,18 +50,10 @@ interface ActivityHeatmapProps {
   longestStreak: number;
 }
 
-function buildGrid(data: DayStats[]): Map<string, number> {
-  const countMap = new Map<string, number>();
-  for (const d of data) countMap.set(d.date, d.count);
-  return countMap;
-}
-
-function getLevel(count: number): number {
-  if (count === 0) return 0;
-  if (count === 1) return 1;
-  if (count === 2) return 2;
-  if (count === 3) return 3;
-  return 4;
+function buildDistanceGrid(data: DayStats[]): Map<string, number> {
+  const distanceMap = new Map<string, number>();
+  for (const d of data) distanceMap.set(d.date, d.distance);
+  return distanceMap;
 }
 
 function getWeeksInLastYear(): string[][] {
@@ -56,37 +76,77 @@ function getWeeksInLastYear(): string[][] {
 }
 
 const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, currentStreak, longestStreak }) => {
-  const countMap = buildGrid(data);
-  const weeks = getWeeksInLastYear();
+  const weeks = React.useMemo(() => getWeeksInLastYear(), []);
 
-  const activeWeeks = weeks.filter((week) => week.some((date) => (countMap.get(date) ?? 0) > 0)).length;
+  const { cells, activeWeeks, maxBarHeight } = React.useMemo(() => {
+    const distanceMap = buildDistanceGrid(data);
+    const xOffset = ((weeks.length - 1) * GRID_STEP) / 2;
+    const zOffset = ((DAYS_IN_WEEK - 1) * GRID_STEP) / 2;
+
+    const mappedCells: Heatmap3DCell[] = [];
+    let weeksWithDistance = 0;
+    let tallest = 0;
+
+    weeks.forEach((week, wi) => {
+      let hasDistanceInWeek = false;
+
+      week.forEach((date, di) => {
+        const rawKm = distanceMap.get(date) ?? 0;
+        const distanceKm = rawKm > 0 ? rawKm : 0;
+        const height = distanceKm * HEIGHT_PER_KM;
+
+        if (distanceKm > 0) {
+          hasDistanceInWeek = true;
+          if (height > tallest) tallest = height;
+        }
+
+        mappedCells.push({
+          date,
+          height,
+          x: wi * GRID_STEP - xOffset,
+          z: di * GRID_STEP - zOffset,
+        });
+      });
+
+      if (hasDistanceInWeek) weeksWithDistance++;
+    });
+
+    return {
+      cells: mappedCells,
+      activeWeeks: weeksWithDistance,
+      maxBarHeight: tallest,
+    };
+  }, [data, weeks]);
+
+  const gridWidth = Math.max(1, weeks.length) * GRID_STEP;
+  const gridDepth = DAYS_IN_WEEK * GRID_STEP;
   const consistencyPct = weeks.length > 0 ? Math.round((activeWeeks / weeks.length) * 100) : 0;
+
 
   return (
     <HeatmapCard>
       <HeatmapTitle>Tu año en actividad</HeatmapTitle>
-      <HeatmapGrid>
-        {weeks.map((week, wi) => (
-          <HeatmapCol key={wi}>
-            {week.map((date) => {
-              const count = countMap.get(date) ?? 0;
-              return (
-                <HeatmapCell
-                  key={date}
-                  $level={getLevel(count)}
-                  title={count > 0 ? `${date}: ${count} actividad${count > 1 ? 'es' : ''}` : date}
-                />
-              );
-            })}
-          </HeatmapCol>
-        ))}
-      </HeatmapGrid>
+      <HeatmapViewport style={{ marginLeft: '-16vw', width: 'calc(100% + 16vw)' }}>
+        <ActivityHeatmapScene3D
+          cells={cells}
+          gridWidth={gridWidth}
+          gridDepth={gridDepth}
+          maxBarHeight={maxBarHeight}
+          monthLabels={get3DMonthLabels(weeks)}
+        />
+      </HeatmapViewport>
       <HeatmapLegend>
-        <LegendLabel>Menos</LegendLabel>
-        {[0, 1, 2, 3, 4].map((l) => (
-          <HeatmapCell key={l} $level={l} />
-        ))}
-        <LegendLabel>Más</LegendLabel>
+        <LegendItems>
+          <LegendItem>
+            <LegendSwatch />
+            <LegendLabel>Dia en 0 km</LegendLabel>
+          </LegendItem>
+          <LegendItem>
+            <LegendSwatch $active />
+            <LegendLabel>Prisma naranja con altura proporcional a km</LegendLabel>
+          </LegendItem>
+        </LegendItems>
+        <LegendHint>Altura lineal por kilometro</LegendHint>
       </HeatmapLegend>
       <ConsistencyRow>
         <ConsistencyStat>

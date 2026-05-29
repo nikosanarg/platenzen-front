@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 
 export const HeatmapCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 1.25rem 0 0 0;
   overflow-x: auto;
 `;
 
@@ -17,47 +17,97 @@ export const HeatmapTitle = styled.h3`
   margin-bottom: 1rem;
 `;
 
-export const HeatmapGrid = styled.div`
-  display: flex;
-  gap: 3px;
-`;
+export const HeatmapViewport = styled.div`
+  width: 100%;
+  height: 240px;
+  min-width: 720px;
+  border-radius: 0;
+  border: none;
+  background: none;
+  overflow: visible;
 
-export const HeatmapCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-`;
-
-export const HeatmapCell = styled.div<{ $level: number }>`
-  width: 11px;
-  height: 11px;
-  border-radius: 2px;
-  background: ${({ $level }) => {
-    if ($level === 0) return 'var(--bg-secondary)';
-    if ($level === 1) return 'rgba(252, 76, 2, 0.25)';
-    if ($level === 2) return 'rgba(252, 76, 2, 0.5)';
-    if ($level === 3) return 'rgba(252, 76, 2, 0.75)';
-    return 'var(--accent)';
-  }};
-  cursor: default;
-  transition: opacity 0.15s;
-
-  &:hover {
-    opacity: 0.8;
+  @media (max-width: 900px) {
+    min-width: 620px;
+    height: 215px;
   }
+
+  @media (max-width: 600px) {
+    min-width: 520px;
+    height: 185px;
+  }
+`;
+export const MonthLabels = styled.div`
+  position: relative;
+  width: 100%;
+  height: 0;
+  z-index: 2;
+  pointer-events: none;
+`;
+
+export const MonthLabel = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: rgba(10, 16, 24, 0.85);
+  padding: 1px 6px 1px 2px;
+  border-radius: 4px;
+  user-select: none;
+  transform: translateY(-18px);
+`;
+
+export const HeatmapLoading = styled.div`
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 `;
 
 export const HeatmapLegend = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 0.8rem;
   margin-top: 0.75rem;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+`;
+
+export const LegendItems = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+`;
+
+export const LegendItem = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 `;
 
 export const LegendLabel = styled.span`
   font-size: 0.7rem;
   color: var(--text-muted);
+`;
+
+export const LegendSwatch = styled.span<{ $active?: boolean }>`
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: ${({ $active }) => ($active ? 'var(--accent)' : '#556072')};
+`;
+
+export const LegendHint = styled.span`
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 `;
 
 export const ConsistencyRow = styled.div`

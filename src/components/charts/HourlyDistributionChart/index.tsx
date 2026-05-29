@@ -10,19 +10,27 @@ interface HourlyDistributionChartProps {
 }
 
 const HourlyDistributionChart: React.FC<HourlyDistributionChartProps> = ({ data }) => {
+  const trimmedData = React.useMemo(() => {
+    const firstIdx = data.findIndex(d => d.count > 0);
+    const lastIdx = data.reduce((acc, d, i) => d.count > 0 ? i : acc, -1);
+    if (firstIdx === -1) return data;
+    return data.slice(firstIdx, lastIdx + 1);
+  }, [data]);
+
   return (
     <ChartCard>
       <ChartTitle>Actividades por hora</ChartTitle>
       <ChartArea>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+          <BarChart data={trimmedData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="hour"
               tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => v % 4 === 0 ? `${v}h` : ''}
+              tickFormatter={(v: number) => `${v}h`}
+              interval={1}
             />
             <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
             <Tooltip

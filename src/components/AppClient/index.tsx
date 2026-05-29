@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useToken, StoredToken } from '@/hooks/useToken';
 import { useActivities } from '@/hooks/useActivities';
 import { computeStats } from '@/lib/stats';
@@ -32,12 +32,14 @@ function readAndClearOAuthCookie(): StoredToken | null {
 }
 
 const AppClient: React.FC = () => {
+  const [mounted, setMounted] = useState(false);
   const { hasToken, saveToken, clearToken, getValidToken } = useToken();
   const { activities, status, error, loadingCount, isFromCache, cacheAge, fetch, refresh } = useActivities();
   const didInitLoad = useRef(false);
 
   // Handle OAuth callback: read short-lived cookie set by /api/strava/callback
   useEffect(() => {
+    setMounted(true);
     const fromOAuth = readAndClearOAuthCookie();
     if (fromOAuth) {
       saveToken(fromOAuth);
@@ -78,6 +80,8 @@ const AppClient: React.FC = () => {
   }, [status, error, clearToken]);
 
   const showTokenInput = !hasToken || status === 'error';
+
+  if (!mounted) return null;
 
   if (showTokenInput) {
     const errorMsg = oauthError
