@@ -8,28 +8,27 @@ const CELL_SIZE = 0.9;
 const CELL_GAP = 0.18;
 const GRID_STEP = CELL_SIZE + CELL_GAP;
 const TILE_HEIGHT = 0.05;
-const BASE_TILE_COLOR = '#4f5968';
-const ACTIVE_TILE_COLOR = '#434c5a';
 const FLOOR_COLOR = '#151d29';
 
 // Colores por mes: consecutivos son complementarios/opuestos para máximo contraste
-const MONTH_CONFIG: Record<number, { label: string; color: string }> = {
-  1:  { label: 'ENE', color: '#29B6F6' },
-  2:  { label: 'FEB', color: '#EF5350' },
-  3:  { label: 'MAR', color: '#66BB6A' },
-  4:  { label: 'ABR', color: '#CE93D8' },
-  5:  { label: 'MAY', color: '#FFA726' },
-  6:  { label: 'JUN', color: '#4DD0E1' },
-  7:  { label: 'JUL', color: '#F06292' },
-  8:  { label: 'AGO', color: '#DCE775' },
-  9:  { label: 'SEP', color: '#9575CD' },
-  10: { label: 'OCT', color: '#FF8A65' },
-  11: { label: 'NOV', color: '#80CBC4' },
-  12: { label: 'DIC', color: '#FFD54F' },
+const MONTH_CONFIG: Record<number, { label: string; color: string; tileColor: string }> = {
+  1:  { label: 'ENE', color: '#29B6F6', tileColor: '#17465f' },
+  2:  { label: 'FEB', color: '#EF5350', tileColor: '#5f2024' },
+  3:  { label: 'MAR', color: '#66BB6A', tileColor: '#20452a' },
+  4:  { label: 'ABR', color: '#CE93D8', tileColor: '#4a3350' },
+  5:  { label: 'MAY', color: '#FFA726', tileColor: '#5f3d18' },
+  6:  { label: 'JUN', color: '#4DD0E1', tileColor: '#1b4650' },
+  7:  { label: 'JUL', color: '#F06292', tileColor: '#5b2240' },
+  8:  { label: 'AGO', color: '#DCE775', tileColor: '#515727' },
+  9:  { label: 'SEP', color: '#9575CD', tileColor: '#35265d' },
+  10: { label: 'OCT', color: '#FF8A65', tileColor: '#5f3326' },
+  11: { label: 'NOV', color: '#80CBC4', tileColor: '#25504a' },
+  12: { label: 'DIC', color: '#FFD54F', tileColor: '#5b4b1f' },
 };
 
 type Heatmap3DConfig = {
   cameraXFactor: number;
+  cameraTargetXFactor: number;
   cameraYMin: number;
   cameraYFromBarOffset: number;
   cameraZMin: number;
@@ -48,25 +47,27 @@ type Heatmap3DConfig = {
 
 // Ajustes visuales "a ojo": este bloque controla encuadre y look general.
 const HEATMAP_3D_CONFIG: Heatmap3DConfig = {
-  cameraXFactor: 1.6,
-  cameraYMin: 2.6,
-  cameraYFromBarOffset: 25,
-  cameraZMin: 30,
-  cameraZFromGridWidthFactor: 0.2,
-  cameraFov: 14,
+  cameraXFactor: 1,
+  cameraTargetXFactor: 0.16,
+  cameraYMin: 7,
+  cameraYFromBarOffset: 15.2,
+  cameraZMin: 40,
+  cameraZFromGridWidthFactor: 0.02,
+  cameraFov: 17,
   cameraNear: 0.1,
-  cameraFar: 150,
+  cameraFar: 220,
   dprMin: 1,
-  dprMax: 2,
+  dprMax: 1.5,
   floorPadding: 0,
-  barBaseScale: 0.6,
-  ambientLightIntensity: 0.75,
-  keyLightIntensity: 0.75,
+  barBaseScale: 0.34,
+  ambientLightIntensity: 0.5,
+  keyLightIntensity: 3,
   fillLightIntensity: 1,
 };
 
 export interface Heatmap3DCell {
   date: string;
+  distanceKm: number;
   height: number;
   x: number;
   z: number;
@@ -88,14 +89,15 @@ const ActivityHeatmapScene3D: React.FC<Heatmap3DSceneProps> = ({
   maxBarHeight,
   monthLabels = [],
 }) => {
-    // Posición de labels manuscritos
-    const labelYOffset = 2;
-    const labelFontSize = 1.1;
-    const labelRotation = Math.PI / 3; // 60° CCW
+  // Posición de labels manuscritos
+  const labelYOffset = Math.max(2.8, maxBarHeight * 0.72);
+  const labelFontSize = 0.82;
+  const labelRotation = Math.PI / 3; // 60° CCW
   const cfg = HEATMAP_3D_CONFIG;
   const cameraY = Math.max(cfg.cameraYMin, maxBarHeight + cfg.cameraYFromBarOffset);
   const cameraZ = Math.max(cfg.cameraZMin, gridWidth * cfg.cameraZFromGridWidthFactor);
   const cameraX = gridWidth * cfg.cameraXFactor;
+  const cameraTargetX = gridWidth * cfg.cameraTargetXFactor;
 
   // Tooltip state
   const [tooltip, setTooltip] = useState<{
@@ -111,10 +113,14 @@ const ActivityHeatmapScene3D: React.FC<Heatmap3DSceneProps> = ({
     return `${d}/${m}/${y.slice(2)}`;
   }
 
+  function formatKm(km: number): string {
+    return Number.isInteger(km) ? km.toFixed(0) : km.toFixed(1);
+  }
+
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: 240, minHeight: 180, minWidth: 320, position: 'relative' }}
+      style={{ width: '100%', height: '100%', minHeight: 180, minWidth: 320, position: 'relative' }}
     >
       <Canvas
         key={canvasKey}
@@ -138,6 +144,7 @@ const ActivityHeatmapScene3D: React.FC<Heatmap3DSceneProps> = ({
           <directionalLight position={[24, 36, 14]} intensity={cfg.keyLightIntensity} />
           <directionalLight position={[-18, 14, -14]} intensity={cfg.fillLightIntensity} />
           <OrbitControls
+            target={[cameraTargetX, 0, 0]}
             enableZoom={false}
             enablePan={false}
             minPolarAngle={Math.PI / 6}
@@ -153,41 +160,52 @@ const ActivityHeatmapScene3D: React.FC<Heatmap3DSceneProps> = ({
 
           {cells.map((cell) => (
             <group key={cell.date} position={[cell.x, 0, cell.z]}>
-              <mesh position={[0, TILE_HEIGHT / 2, 0]}>
-                <boxGeometry args={[CELL_SIZE, TILE_HEIGHT, CELL_SIZE]} />
-                <meshStandardMaterial
-                  color={cell.height > 0 ? ACTIVE_TILE_COLOR : BASE_TILE_COLOR}
-                  roughness={1}
-                  metalness={0}
-                />
-              </mesh>
+              {(() => {
+                const monthNum = parseInt(cell.date.split('-')[1], 10);
+                const monthCfg = MONTH_CONFIG[monthNum];
+                const tileColor = monthCfg?.tileColor ?? '#2d3442';
+                const barColor = monthCfg?.color ?? '#fc4c02';
 
-              {cell.height > 0 && (
-                <mesh
-                  position={[0, TILE_HEIGHT + cell.height / 2, 0]}
-                  onPointerOver={(e) => {
-                    // Calcula posición relativa al contenedor
-                    const rect = containerRef.current?.getBoundingClientRect();
-                    setTooltip({
-                      x: e.clientX - (rect?.left ?? 0),
-                      y: e.clientY - (rect?.top ?? 0),
-                      date: cell.date,
-                      km: +(cell.height / 0.24).toFixed(2),
-                    });
-                    e.stopPropagation();
-                  }}
-                  onPointerOut={() => setTooltip(null)}
-                >
-                  <boxGeometry
-                    args={[CELL_SIZE * cfg.barBaseScale, cell.height, CELL_SIZE * cfg.barBaseScale]}
-                  />
-                  <meshStandardMaterial
-                    color={MONTH_CONFIG[parseInt(cell.date.split('-')[1], 10)]?.color ?? '#fc4c02'}
-                    roughness={0.95}
-                    metalness={0}
-                  />
-                </mesh>
-              )}
+                return (
+                  <>
+                    <mesh position={[0, TILE_HEIGHT / 2, 0]}>
+                      <boxGeometry args={[CELL_SIZE, TILE_HEIGHT, CELL_SIZE]} />
+                      <meshStandardMaterial
+                        color={tileColor}
+                        roughness={1}
+                        metalness={0}
+                      />
+                    </mesh>
+
+                    {cell.height > 0 && (
+                      <mesh
+                        position={[0, TILE_HEIGHT + cell.height / 2, 0]}
+                        onPointerOver={(e) => {
+                          // Calcula posición relativa al contenedor
+                          const rect = containerRef.current?.getBoundingClientRect();
+                          setTooltip({
+                            x: e.clientX - (rect?.left ?? 0),
+                            y: e.clientY - (rect?.top ?? 0),
+                            date: cell.date,
+                            km: cell.distanceKm,
+                          });
+                          e.stopPropagation();
+                        }}
+                        onPointerOut={() => setTooltip(null)}
+                      >
+                        <boxGeometry
+                          args={[CELL_SIZE * cfg.barBaseScale, cell.height, CELL_SIZE * cfg.barBaseScale]}
+                        />
+                        <meshStandardMaterial
+                          color={barColor}
+                          roughness={0.95}
+                          metalness={0}
+                        />
+                      </mesh>
+                    )}
+                  </>
+                );
+              })()}
             </group>
           ))}
 
@@ -233,7 +251,7 @@ const ActivityHeatmapScene3D: React.FC<Heatmap3DSceneProps> = ({
           }}
         >
           <div><b>{formatDate(tooltip.date)}</b></div>
-          <div>{tooltip.km} km</div>
+          <div>{formatKm(tooltip.km)} km</div>
         </div>
       )}
     </div>

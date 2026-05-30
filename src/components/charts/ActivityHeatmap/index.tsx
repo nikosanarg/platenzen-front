@@ -8,16 +8,6 @@ import {
   HeatmapTitle,
   HeatmapViewport,
   HeatmapLoading,
-  HeatmapLegend,
-  LegendItems,
-  LegendItem,
-  LegendLabel,
-  LegendSwatch,
-  LegendHint,
-  ConsistencyRow,
-  ConsistencyStat,
-  ConsistencyValue,
-  ConsistencyLabel,
 } from './styled';
 import type { Heatmap3DCell, Heatmap3DSceneProps } from './scene';
 
@@ -25,7 +15,7 @@ const DAYS_IN_WEEK = 7;
 const CELL_SIZE = 0.9;
 const CELL_GAP = 0.18;
 const GRID_STEP = CELL_SIZE + CELL_GAP;
-const HEIGHT_PER_KM = 0.24;
+const HEIGHT_PER_KM = 0.2;
 function get3DMonthLabels(weeks: string[][]): Array<{ monthNum: number; weekIdx: number }> {
   const result: Array<{ monthNum: number; weekIdx: number }> = [];
   let lastMonth = '';
@@ -46,8 +36,6 @@ const ActivityHeatmapScene3D = dynamic<Heatmap3DSceneProps>(() => import('./scen
 
 interface ActivityHeatmapProps {
   data: DayStats[];
-  currentStreak: number;
-  longestStreak: number;
 }
 
 function buildDistanceGrid(data: DayStats[]): Map<string, number> {
@@ -75,58 +63,50 @@ function getWeeksInLastYear(): string[][] {
   return weeks;
 }
 
-const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, currentStreak, longestStreak }) => {
+const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const weeks = React.useMemo(() => getWeeksInLastYear(), []);
 
-  const { cells, activeWeeks, maxBarHeight } = React.useMemo(() => {
+  const { cells, maxBarHeight } = React.useMemo(() => {
     const distanceMap = buildDistanceGrid(data);
     const xOffset = ((weeks.length - 1) * GRID_STEP) / 2;
     const zOffset = ((DAYS_IN_WEEK - 1) * GRID_STEP) / 2;
 
     const mappedCells: Heatmap3DCell[] = [];
-    let weeksWithDistance = 0;
     let tallest = 0;
 
     weeks.forEach((week, wi) => {
-      let hasDistanceInWeek = false;
-
       week.forEach((date, di) => {
         const rawKm = distanceMap.get(date) ?? 0;
         const distanceKm = rawKm > 0 ? rawKm : 0;
         const height = distanceKm * HEIGHT_PER_KM;
 
         if (distanceKm > 0) {
-          hasDistanceInWeek = true;
           if (height > tallest) tallest = height;
         }
 
         mappedCells.push({
           date,
+          distanceKm,
           height,
           x: wi * GRID_STEP - xOffset,
           z: (DAYS_IN_WEEK - 1 - di) * GRID_STEP - zOffset,
         });
       });
-
-      if (hasDistanceInWeek) weeksWithDistance++;
     });
 
     return {
       cells: mappedCells,
-      activeWeeks: weeksWithDistance,
       maxBarHeight: tallest,
     };
   }, [data, weeks]);
 
   const gridWidth = Math.max(1, weeks.length) * GRID_STEP;
   const gridDepth = DAYS_IN_WEEK * GRID_STEP;
-  const consistencyPct = weeks.length > 0 ? Math.round((activeWeeks / weeks.length) * 100) : 0;
-
 
   return (
     <HeatmapCard>
       <HeatmapTitle>Tu año en actividad</HeatmapTitle>
-      <HeatmapViewport style={{ marginLeft: '-16vw', width: 'calc(100% + 16vw)' }}>
+      <HeatmapViewport style={{ marginLeft: '-10vw', width: 'calc(100% + 10vw)' }}>
         <ActivityHeatmapScene3D
           cells={cells}
           gridWidth={gridWidth}
@@ -135,37 +115,6 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, currentStreak, 
           monthLabels={get3DMonthLabels(weeks)}
         />
       </HeatmapViewport>
-      <HeatmapLegend>
-        <LegendItems>
-          <LegendItem>
-            <LegendSwatch />
-            <LegendLabel>Dia en 0 km</LegendLabel>
-          </LegendItem>
-          <LegendItem>
-            <LegendSwatch $active />
-            <LegendLabel>Prisma naranja con altura proporcional a km</LegendLabel>
-          </LegendItem>
-        </LegendItems>
-        <LegendHint>Altura lineal por kilometro</LegendHint>
-      </HeatmapLegend>
-      <ConsistencyRow>
-        <ConsistencyStat>
-          <ConsistencyValue>{currentStreak}</ConsistencyValue>
-          <ConsistencyLabel>Racha actual</ConsistencyLabel>
-        </ConsistencyStat>
-        <ConsistencyStat>
-          <ConsistencyValue>{longestStreak}</ConsistencyValue>
-          <ConsistencyLabel>Récord</ConsistencyLabel>
-        </ConsistencyStat>
-        <ConsistencyStat>
-          <ConsistencyValue>{activeWeeks}/{weeks.length}</ConsistencyValue>
-          <ConsistencyLabel>Semanas activas</ConsistencyLabel>
-        </ConsistencyStat>
-        <ConsistencyStat>
-          <ConsistencyValue>{consistencyPct}%</ConsistencyValue>
-          <ConsistencyLabel>Consistencia</ConsistencyLabel>
-        </ConsistencyStat>
-      </ConsistencyRow>
     </HeatmapCard>
   );
 };

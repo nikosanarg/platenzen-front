@@ -146,13 +146,11 @@ const Dashboard: React.FC<DashboardProps> = ({
               <EstadoActual stats={stats} />
 
               <NumbersSection activities={activities} stats={stats} />
-
+              
               <section>
                 <FullWidthChart>
                   <ActivityHeatmap
                     data={stats.daily}
-                    currentStreak={stats.currentStreak}
-                    longestStreak={stats.longestStreak}
                   />
                 </FullWidthChart>
               </section>
