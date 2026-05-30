@@ -60,7 +60,7 @@ function getWeeksInLastYear(): string[][] {
   const today = new Date();
   const start = new Date(today);
   start.setFullYear(start.getFullYear() - 1);
-  start.setDate(start.getDate() - start.getDay());
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // alinear a lunes
 
   const weeks: string[][] = [];
   const cur = new Date(start);
@@ -104,7 +104,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, currentStreak, 
           date,
           height,
           x: wi * GRID_STEP - xOffset,
-          z: di * GRID_STEP - zOffset,
+          z: (DAYS_IN_WEEK - 1 - di) * GRID_STEP - zOffset,
         });
       });
 

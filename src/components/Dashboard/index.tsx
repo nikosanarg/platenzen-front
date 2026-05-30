@@ -72,6 +72,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const isMobile = useIsMobile(isMounted);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 

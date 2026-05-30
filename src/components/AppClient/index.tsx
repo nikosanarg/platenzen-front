@@ -39,6 +39,7 @@ const AppClient: React.FC = () => {
 
   // Handle OAuth callback: read short-lived cookie set by /api/strava/callback
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const fromOAuth = readAndClearOAuthCookie();
     if (fromOAuth) {

@@ -38,6 +38,7 @@ const AccumulatedCarousel: React.FC<AccumulatedCarouselProps> = ({ activities, s
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsHydrated(true);
   }, []);
 
@@ -63,7 +64,7 @@ const AccumulatedCarousel: React.FC<AccumulatedCarouselProps> = ({ activities, s
     });
 
     const oldestDateStr = oldestDate
-      ? oldestDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+      ? (oldestDate as Date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
       : 'N/A';
 
     return [
