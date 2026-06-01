@@ -181,73 +181,72 @@ function computeConsistencyAchievements(allRuns: StravaActivity[], stats: Proces
     };
   });
 
-  // Triple week (3+ runs in a week)
-  const firstTripleWeek = weeks.find(w => w.count >= 3);
-  const tripleWeekCount = weeks.filter(w => w.count >= 3).length;
-  const tripleAchievement: Achievement = {
-    id: 'triple_week',
-    name: 'Primera semana triple',
-    category: 'consistency',
-    description: 'Completar 3 o más salidas en una misma semana',
-    xp: 100,
-    unlocked: !!firstTripleWeek,
-    unlockedAt: firstTripleWeek?.week ?? null,
-    unlockedReason: firstTripleWeek
-      ? `Desbloqueado la semana del ${formatDate(firstTripleWeek.week)} con ${firstTripleWeek.count} salidas.`
-      : 'Completá 3 salidas en una misma semana.',
-    progress: tripleWeekCount > 0 ? 1 : 0,
-    progressText: tripleWeekCount > 0 ? '✓' : '0 / 1 semanas',
-  };
+  const maxWeekCount = weeks.reduce((m, w) => Math.max(m, w.count), 0);
 
-  // Quíntuple week (5+ runs)
-  const firstQuinWeek = weeks.find(w => w.count >= 5);
-  const quinAchievement: Achievement = {
-    id: 'quintupl_week',
-    name: 'Semana de cinco salidas',
-    category: 'consistency',
-    description: 'Completar 5 o más salidas en una misma semana',
-    xp: 200,
-    unlocked: !!firstQuinWeek,
-    unlockedAt: firstQuinWeek?.week ?? null,
-    unlockedReason: firstQuinWeek
-      ? `Desbloqueado la semana del ${formatDate(firstQuinWeek.week)} con ${firstQuinWeek.count} salidas.`
-      : 'Completá 5 salidas en una misma semana.',
-    progress: firstQuinWeek ? 1 : Math.min(Math.max(...weeks.map(w => w.count), 0) / 5, 1),
-    progressText: firstQuinWeek ? '✓' : `${Math.max(...weeks.map(w => w.count), 0)} / 5 salidas`,
-  };
+  // ── Weekly frequency stepper ──────────────────────────────────
+  const weekTargets = [
+    { id: 'week3', name: 'Primera semana triple', n: 3, xp: 100 },
+    { id: 'week4', name: 'Semana de poker', n: 4, xp: 150 },
+    { id: 'week5', name: 'Semana de 5 salidas', n: 5, xp: 200 },
+    { id: 'week6', name: 'Sextusemanal', n: 6, xp: 300 },
+    { id: 'week7', name: 'Semana completa', n: 7, xp: 500 },
+  ];
 
-  // Complete month (all weeks with 3+ runs)
-  const byMonth = new Map<string, WeekGroup[]>();
-  for (const w of weeks) {
-    const mo = w.week.slice(0, 7);
-    const arr = byMonth.get(mo) ?? [];
-    arr.push(w);
-    byMonth.set(mo, arr);
+  const weekAchievements: Achievement[] = weekTargets.map(t => {
+    const firstWeek = weeks.find(w => w.count >= t.n);
+    const date = firstWeek?.week ?? null;
+    return {
+      id: t.id,
+      name: t.name,
+      category: 'consistency',
+      description: `${t.n} o más salidas en una misma semana`,
+      xp: t.xp,
+      unlocked: !!firstWeek,
+      unlockedAt: date,
+      unlockedReason: date
+        ? `Desbloqueado la semana del ${formatDate(date)} con ${firstWeek!.count} salidas.`
+        : `Completá ${t.n} salidas en una misma semana.`,
+      progress: Math.min(maxWeekCount / t.n, 1),
+      progressText: `${Math.min(maxWeekCount, t.n)} / ${t.n} salidas`,
+    };
+  });
+
+  // ── Monthly activity stepper ──────────────────────────────────
+  const monthlyCounts = new Map<string, number>();
+  for (const a of sorted) {
+    const mo = a.start_date_local.slice(0, 7);
+    monthlyCounts.set(mo, (monthlyCounts.get(mo) ?? 0) + 1);
   }
-  let firstCompleteMonth: string | null = null;
-  let completeMonthCount = 0;
-  for (const [mo, monthWeeks] of [...byMonth.entries()].sort()) {
-    if (monthWeeks.length >= 4 && monthWeeks.every(w => w.count >= 3)) {
-      completeMonthCount++;
-      if (!firstCompleteMonth) firstCompleteMonth = mo + '-01';
-    }
-  }
-  const completeMonthAchievement: Achievement = {
-    id: 'complete_month',
-    name: 'Mes completamente activo',
-    category: 'consistency',
-    description: 'Tener todas las semanas de un mes con 3 o más salidas',
-    xp: 250,
-    unlocked: !!firstCompleteMonth,
-    unlockedAt: firstCompleteMonth,
-    unlockedReason: firstCompleteMonth
-      ? `Desbloqueado en ${formatDate(firstCompleteMonth)} al completar un mes con todas las semanas activas.`
-      : 'Completá todas las semanas de un mes con 3 o más salidas.',
-    progress: completeMonthCount > 0 ? 1 : 0,
-    progressText: completeMonthCount > 0 ? `${completeMonthCount} mes${completeMonthCount > 1 ? 'es' : ''}` : '0 meses',
-  };
+  const bestMonthCount = [...monthlyCounts.values()].reduce((m, n) => Math.max(m, n), 0);
+  const sortedMonths = [...monthlyCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
-  return [...actAchievements, tripleAchievement, quinAchievement, completeMonthAchievement];
+  const monthTargets = [
+    { id: 'month8', name: 'Mes de 8 actividades', n: 8, xp: 200 },
+    { id: 'month12', name: 'Mes de 12 actividades', n: 12, xp: 300 },
+    { id: 'month16', name: 'Mes de 16 actividades', n: 16, xp: 500 },
+    { id: 'month20', name: 'Mes ultra activo', n: 20, xp: 750 },
+  ];
+
+  const monthAchievements: Achievement[] = monthTargets.map(t => {
+    const firstMonth = sortedMonths.find(([, count]) => count >= t.n);
+    const date = firstMonth ? firstMonth[0] + '-01' : null;
+    return {
+      id: t.id,
+      name: t.name,
+      category: 'consistency',
+      description: `${t.n} o más actividades en un mismo mes`,
+      xp: t.xp,
+      unlocked: !!firstMonth,
+      unlockedAt: date,
+      unlockedReason: date
+        ? `Desbloqueado en ${formatDate(date)} al completar ${t.n} actividades en un mes.`
+        : `Completá ${t.n} actividades en un mismo mes.`,
+      progress: Math.min(bestMonthCount / t.n, 1),
+      progressText: `${Math.min(bestMonthCount, t.n)} / ${t.n} actividades`,
+    };
+  });
+
+  return [...actAchievements, ...weekAchievements, ...monthAchievements];
 }
 
 // ── Speed achievements ─────────────────────────────────────────────────────

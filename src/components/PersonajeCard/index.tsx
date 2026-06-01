@@ -82,7 +82,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
     if (stored) setObjective(stored as RoleObjective);
   }, []);
 
-  const levelInfo = getLevelInfo(activities);
+  const levelInfo = getLevelInfo(activities, stats);
   const roles = computeRoles(activities, stats);
 
   // Sort branches: primary first, then by afinidad desc

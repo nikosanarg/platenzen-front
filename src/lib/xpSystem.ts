@@ -1,4 +1,6 @@
 import { StravaActivity } from '@/types/strava';
+import { ProcessedStats } from '@/types/stats';
+import { computeAchievements } from '@/lib/achievements';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -11,7 +13,6 @@ export const LEVEL_THRESHOLDS: number[] = [0];
 for (let i = 0; i < FIB_STEPS.length; i++) {
   LEVEL_THRESHOLDS.push(LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] + FIB_STEPS[i] * XP_SCALE);
 }
-// [0, 200, 400, 800, 1400, 2400, 4000, 6600, 10800, 17600, 28400, 46200, ...]
 
 export const LEVEL_NAMES = [
   'Corredor iniciado',
@@ -40,12 +41,14 @@ export interface XPBreakdown {
   fromWeeklyRecords: number;
   fromCompleteWeeks: number;
   fromCompleteMonths: number;
+  fromAchievements: number;
   totalKm12mo: number;
   milestonesReached: number;
   prCount: number;
   weeklyRecordCount: number;
   completeWeeks: number;
   completeMonths: number;
+  unlockedAchievements: number;
   total: number;
   xpSourceSummary: string;
 }
@@ -106,7 +109,7 @@ function countPRs(activities: StravaActivity[]): number {
 }
 
 interface WeekGroup {
-  week: string; // YYYY-MM-DD of Monday
+  week: string;
   distance: number;
   count: number;
 }
@@ -115,7 +118,7 @@ function groupByWeek(activities: StravaActivity[]): WeekGroup[] {
   const map = new Map<string, WeekGroup>();
   for (const a of activities) {
     const d = new Date(a.start_date_local);
-    const diff = (d.getDay() + 6) % 7; // days since Monday
+    const diff = (d.getDay() + 6) % 7;
     const mon = new Date(d);
     mon.setDate(d.getDate() - diff);
     const key = mon.toISOString().slice(0, 10);
@@ -131,10 +134,7 @@ function countWeeklyRecords(weeks: WeekGroup[]): number {
   let records = 0;
   let best = 0;
   for (const w of weeks) {
-    if (w.distance > best) {
-      best = w.distance;
-      records++;
-    }
+    if (w.distance > best) { best = w.distance; records++; }
   }
   return records;
 }
@@ -144,10 +144,9 @@ function countCompleteWeeks(weeks: WeekGroup[]): number {
 }
 
 function countCompleteMonths(weeks: WeekGroup[]): number {
-  // Group weeks by their Monday's month; month is complete if all weeks had 3+ runs
   const byMonth = new Map<string, WeekGroup[]>();
   for (const w of weeks) {
-    const mo = w.week.slice(0, 7); // YYYY-MM of Monday
+    const mo = w.week.slice(0, 7);
     const arr = byMonth.get(mo) ?? [];
     arr.push(w);
     byMonth.set(mo, arr);
@@ -166,11 +165,12 @@ function b(n: number | string): string {
 function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total'>): string {
   const sources = [
     { label: `${b(Math.round(breakdown.totalKm12mo))} km recorridos`, value: breakdown.fromKm },
-    { label: `${b(breakdown.milestonesReached)} hitos de distancia desbloqueados`, value: breakdown.fromMilestones },
+    { label: `${b(breakdown.milestonesReached)} hitos de distancia`, value: breakdown.fromMilestones },
     { label: `${b(breakdown.prCount)} récords personales`, value: breakdown.fromPRs },
-    { label: `${b(breakdown.weeklyRecordCount)} semanas récord de distancia`, value: breakdown.fromWeeklyRecords },
-    { label: `${b(breakdown.completeWeeks)} semanas con 3 o más salidas`, value: breakdown.fromCompleteWeeks },
+    { label: `${b(breakdown.weeklyRecordCount)} semanas récord`, value: breakdown.fromWeeklyRecords },
+    { label: `${b(breakdown.completeWeeks)} semanas con 3+ salidas`, value: breakdown.fromCompleteWeeks },
     { label: `${b(breakdown.completeMonths)} meses completamente activos`, value: breakdown.fromCompleteMonths },
+    { label: `${b(breakdown.unlockedAchievements)} logros desbloqueados`, value: breakdown.fromAchievements },
   ]
     .filter(s => s.value > 0)
     .sort((a, b2) => b2.value - a.value);
@@ -182,7 +182,7 @@ function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total'>)
   return `Tu mayor fuente de XP: ${top.label} (${b(top.value)} XP). También sumaron ${second.label} (${b(second.value)} XP).`;
 }
 
-export function computeXPBreakdown(activities: StravaActivity[]): XPBreakdown {
+export function computeXPBreakdown(activities: StravaActivity[], stats: ProcessedStats): XPBreakdown {
   const recent = get12MonthRuns(activities);
   const totalKm12mo = recent.reduce((s, a) => s + a.distance / 1000, 0);
   const fromKm = Math.round(totalKm12mo * 5);
@@ -197,18 +197,29 @@ export function computeXPBreakdown(activities: StravaActivity[]): XPBreakdown {
   const fromCompleteWeeks = completeWeeks * 30;
   const completeMonths = countCompleteMonths(weeks);
   const fromCompleteMonths = completeMonths * 50;
-  const total = fromKm + fromMilestones + fromPRs + fromWeeklyRecords + fromCompleteWeeks + fromCompleteMonths;
+
+  // Sum XP from all unlocked achievements across all categories
+  const achievementMap = computeAchievements(activities, stats);
+  const allAchievements = Object.values(achievementMap).flat();
+  const unlockedAchievements = allAchievements.filter(a => a.unlocked).length;
+  const fromAchievements = allAchievements
+    .filter(a => a.unlocked)
+    .reduce((sum, a) => sum + a.xp, 0);
+
+  const total = fromKm + fromMilestones + fromPRs + fromWeeklyRecords +
+    fromCompleteWeeks + fromCompleteMonths + fromAchievements;
 
   const partial = {
     fromKm, fromMilestones, fromPRs, fromWeeklyRecords, fromCompleteWeeks, fromCompleteMonths,
-    totalKm12mo, milestonesReached, prCount, weeklyRecordCount, completeWeeks, completeMonths,
+    fromAchievements, totalKm12mo, milestonesReached, prCount, weeklyRecordCount, completeWeeks,
+    completeMonths, unlockedAchievements,
   };
 
   return { ...partial, total, xpSourceSummary: buildSummary(partial) };
 }
 
-export function getLevelInfo(activities: StravaActivity[]): LevelInfo {
-  const breakdown = computeXPBreakdown(activities);
+export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats): LevelInfo {
+  const breakdown = computeXPBreakdown(activities, stats);
   const xp = breakdown.total;
 
   let idx = 0;

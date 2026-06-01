@@ -11,7 +11,7 @@ export const ShowcaseRoot = styled.section`
 export const CategoryBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 1rem;
 `;
 
 export const CategoryTitle = styled.h3`
@@ -22,91 +22,106 @@ export const CategoryTitle = styled.h3`
   color: var(--text-muted);
 `;
 
-export const AchievementsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 0.625rem;
+/* ── Stepper row ──────────────────────────────────────────────── */
 
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
+export const StepperRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 999px;
   }
 `;
 
-/* ── Achievement card ─────────────────────────────────────────── */
+/*
+ * Horizontal line segment between two cards.
+ * margin-top aligns the line center with the center of the StepDot:
+ *   card padding-top (0.875rem) + dot radius (5px) − line half-height (1px)
+ */
+export const StepLine = styled.div<{ $active: boolean }>`
+  height: 2px;
+  min-width: 20px;
+  flex: 0 0 20px;
+  margin-top: calc(0.875rem + 4px);
+  background: ${({ $active }) => ($active ? '#4ade80' : 'var(--border)')};
+  flex-shrink: 0;
+  transition: background 0.3s;
+`;
 
-export const AchCard = styled.div<{ $unlocked: boolean }>`
-  position: relative;
+/* ── Step card ────────────────────────────────────────────────── */
+
+export const StepCard = styled.div<{ $unlocked: boolean; $isCurrent: boolean }>`
+  min-width: 148px;
+  max-width: 180px;
+  flex: 1;
   background: var(--bg-card);
-  border: 1px solid ${({ $unlocked }) => ($unlocked ? 'var(--border-light)' : 'var(--border)')};
+  border: 1px solid
+    ${({ $unlocked, $isCurrent }) =>
+      $unlocked
+        ? 'rgba(74, 222, 128, 0.3)'
+        : $isCurrent
+        ? 'var(--border-light)'
+        : 'var(--border)'};
   border-radius: var(--radius-sm);
-  padding: 1rem;
+  padding: 0.875rem 0.875rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.45)};
+  gap: 0.35rem;
+  opacity: ${({ $unlocked, $isCurrent }) => ($unlocked || $isCurrent ? 1 : 0.35)};
+  position: relative;
   transition: opacity 0.2s;
-  cursor: ${({ $unlocked }) => ($unlocked ? 'default' : 'default')};
-
-  ${({ $unlocked }) =>
-    $unlocked &&
-    `&::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: rgba(252, 76, 2, 0.04);
-      pointer-events: none;
-    }`}
 `;
 
-export const AchXP = styled.div<{ $unlocked: boolean }>`
+/* Circle marker — always the first child so its Y is predictable */
+export const StepDot = styled.div<{ $unlocked: boolean }>`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--border)')};
+  margin-bottom: 0.5rem;
+`;
+
+export const StepXP = styled.div<{ $unlocked: boolean }>`
   position: absolute;
-  top: 0.625rem;
-  right: 0.75rem;
-  font-size: 0.65rem;
+  top: 0.55rem;
+  right: 0.625rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: ${({ $unlocked }) => ($unlocked ? 'var(--accent)' : 'var(--text-muted)')};
+  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--text-muted)')};
 `;
 
-export const AchName = styled.div`
-  font-size: 0.85rem;
+export const StepName = styled.div`
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
-  padding-right: 2rem;
+  padding-right: 2.5rem;
 `;
 
-export const AchDesc = styled.div`
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  line-height: 1.45;
-`;
-
-export const AchDate = styled.div`
+export const StepDate = styled.div`
   font-size: 0.68rem;
-  color: var(--accent);
+  color: #4ade80;
   font-weight: 500;
+  margin-top: 0.25rem;
 `;
 
-/* ── Progress bar (for unlocked ones' sub-items or locked) ──── */
-
-export const AchProgressRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.125rem;
-`;
-
-export const AchProgressTrack = styled.div`
-  flex: 1;
+export const StepProgressTrack = styled.div`
   height: 3px;
   background: var(--border);
   border-radius: 999px;
   overflow: hidden;
+  margin-top: 0.375rem;
 `;
 
-export const AchProgressFill = styled.div<{ $pct: number }>`
+export const StepProgressFill = styled.div<{ $pct: number }>`
   height: 100%;
   width: ${({ $pct }) => ($pct * 100).toFixed(1)}%;
   background: var(--accent);
@@ -114,76 +129,8 @@ export const AchProgressFill = styled.div<{ $pct: number }>`
   transition: width 0.5s ease;
 `;
 
-export const AchProgressText = styled.div`
+export const StepProgressText = styled.div`
   font-size: 0.65rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-`;
-
-/* ── Upcoming achievements ─────────────────────────────────────── */
-
-export const UpcomingBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-`;
-
-export const UpcomingList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-export const UpcomingRow = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.875rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-`;
-
-export const UpcomingInfo = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-export const UpcomingName = styled.div`
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-primary);
-`;
-
-export const UpcomingProgressTrack = styled.div`
-  height: 4px;
-  background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-`;
-
-export const UpcomingProgressFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => ($pct * 100).toFixed(1)}%;
-  background: var(--accent);
-  border-radius: 999px;
-  transition: width 0.5s ease;
-`;
-
-export const UpcomingProgressText = styled.div`
-  font-size: 0.7rem;
   color: var(--text-secondary);
-`;
-
-export const UpcomingPct = styled.div`
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent);
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 40px;
-  text-align: right;
+  margin-top: 0.125rem;
 `;
