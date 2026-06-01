@@ -109,3 +109,18 @@ export const NextMilestone = styled.div`
     font-weight: 500;
   }
 `;
+
+export const ProfileBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--accent-muted);
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  width: fit-content;
+`;

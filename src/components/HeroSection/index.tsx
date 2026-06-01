@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
+import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeXP, getLevelInfo } from '@/lib/levels';
 import { computeMomentum, momentumLabel } from '@/lib/momentum';
 import { computePermissions, getNextMilestoneText } from '@/lib/gamification';
+import { computeRunnerProfile } from '@/lib/runnerProfile';
 import { IconTrendUp, IconTrendFlat, IconTrendDown } from '@/components/Icon';
 import {
   HeroCard,
@@ -19,9 +21,11 @@ import {
   MomentumBadge,
   StreakText,
   NextMilestone,
+  ProfileBadge,
 } from './styled';
 
 interface HeroSectionProps {
+  activities: StravaActivity[];
   stats: ProcessedStats;
 }
 
@@ -35,13 +39,14 @@ function formatXP(n: number): string {
   return n.toLocaleString('es-AR');
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
+const HeroSection: React.FC<HeroSectionProps> = ({ activities, stats }) => {
   const permissions = computePermissions(stats);
   const totalUnlockedTiers = permissions.reduce((s, p) => s + p.unlockedTiers, 0);
   const xp = computeXP(stats, totalUnlockedTiers);
   const level = getLevelInfo(xp);
   const momentum = computeMomentum(stats.weekly);
   const nextText = getNextMilestoneText(permissions, 0);
+  const profile = computeRunnerProfile(activities, stats);
 
   const streakNarrative = (() => {
     if (stats.currentStreak >= 3) {
@@ -78,6 +83,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
       <LevelRow>
         <LevelLabel>Nivel {level.level}</LevelLabel>
         <LevelName>{level.name}</LevelName>
+        {profile && <ProfileBadge>{profile.label}</ProfileBadge>}
         <XpRow>
           <XpTrack>
             <XpFill $pct={level.progress} />

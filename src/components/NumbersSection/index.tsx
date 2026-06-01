@@ -21,7 +21,22 @@ import styled from 'styled-components';
 const NumbersRoot = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+`;
+
+const NumbersRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 interface NumbersSectionProps {
@@ -34,46 +49,47 @@ const NumbersSection: React.FC<NumbersSectionProps> = ({ activities, stats }) =>
     <NumbersRoot>
       <SectionTitle>Tus números</SectionTitle>
 
-      <RecordsCarousel activities={activities} stats={stats} />
+      <NumbersRow>
+        <RecordsCarousel activities={activities} stats={stats} />
 
-      <AccumulatedCarousel activities={activities} stats={stats} />
+        <AccumulatedCarousel activities={activities} stats={stats} />
 
-      <StatsPanel>
-        <StatsGroup>
-          <GroupTitle>Hito Personal</GroupTitle>
-          <StatsRow>
-            <StatItem>
-              <StatValue>{stats.longestActivity.toFixed(1)} km</StatValue>
-              <StatLabel>Carrera más larga</StatLabel>
-            </StatItem>
-          </StatsRow>
-        </StatsGroup>
+        <StatsPanel>
+          <StatsGroup>
+            <GroupTitle>Hito Personal</GroupTitle>
+            <StatsRow>
+              <StatItem>
+                <StatValue>{stats.longestActivity.toFixed(1)} km</StatValue>
+                <StatLabel>Carrera más larga</StatLabel>
+              </StatItem>
+            </StatsRow>
+          </StatsGroup>
 
-        <StatsGroup>
-          <GroupTitle>Consistencia</GroupTitle>
-          <StatsRow>
-            <StatItem>
-              <StatValue>{stats.avgPace ? secPerKmToString(stats.avgPace) : '—'}</StatValue>
-              <StatLabel>Ritmo promedio</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatValue>{stats.weeklyAvgDistance.toFixed(1)} km</StatValue>
-              <StatLabel>Promedio semanal</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatValue>{stats.currentStreak} días</StatValue>
-              <StatLabel>Racha actual</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatValue>{stats.longestStreak} días</StatValue>
-              <StatLabel>Racha récord</StatLabel>
-            </StatItem>
-          </StatsRow>
-        </StatsGroup>
-      </StatsPanel>
+          <StatsGroup>
+            <GroupTitle>Consistencia</GroupTitle>
+            <StatsRow>
+              <StatItem>
+                <StatValue>{stats.avgPace ? secPerKmToString(stats.avgPace) : '—'}</StatValue>
+                <StatLabel>Ritmo promedio</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{stats.weeklyAvgDistance.toFixed(1)} km</StatValue>
+                <StatLabel>Promedio semanal</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{stats.currentStreak} días</StatValue>
+                <StatLabel>Racha actual</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{stats.longestStreak} días</StatValue>
+                <StatLabel>Racha récord</StatLabel>
+              </StatItem>
+            </StatsRow>
+          </StatsGroup>
+        </StatsPanel>
+      </NumbersRow>
     </NumbersRoot>
   );
 };
 
 export default NumbersSection;
-

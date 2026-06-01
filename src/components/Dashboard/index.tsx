@@ -3,11 +3,13 @@
 import React, { useEffect, useState, useState as useStateReact } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
-import HeroSection from '@/components/HeroSection';
-import ActiveMission from '@/components/ActiveMission';
-import EstadoActual from '@/components/EstadoActual';
-import GamificationPanel from '@/components/GamificationPanel';
-import NumbersSection from '@/components/NumbersSection';
+import PersonajeCard from '@/components/PersonajeCard';
+import CoachPersonalizado from '@/components/CoachPersonalizado';
+import RecordHistorySection from '@/components/RecordHistorySection';
+import RacePredictorTable from '@/components/RacePredictorTable';
+import InsightsSection from '@/components/InsightsSection';
+import PeriodComparator from '@/components/PeriodComparator';
+import AchievementShowcase from '@/components/AchievementShowcase';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
@@ -35,7 +37,7 @@ import {
   Spinner,
 } from './styled';
 
-type HomeTab = 'progreso' | 'objetivos';
+type HomeTab = 'progreso' | 'objetivos' | 'comparar';
 
 interface DashboardProps {
   activities: StravaActivity[];
@@ -79,6 +81,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   if (!isMounted) {
     return null;
   }
+
+  void isMobile;
 
   return (
     <DashboardRoot>
@@ -127,6 +131,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             <HomeTabBtn $active={activeTab === 'objetivos'} onClick={() => setActiveTab('objetivos')}>
               Objetivos
             </HomeTabBtn>
+            <HomeTabBtn $active={activeTab === 'comparar'} onClick={() => setActiveTab('comparar')}>
+              Comparar
+            </HomeTabBtn>
           </HomeTabsInner>
         </HomeTabsBar>
       )}
@@ -141,17 +148,15 @@ const Dashboard: React.FC<DashboardProps> = ({
         <DashboardContent>
           {activeTab === 'progreso' && (
             <>
-              <HeroSection stats={stats} />
+              <PersonajeCard activities={activities} stats={stats} />
 
-              <EstadoActual stats={stats} />
+              <CoachPersonalizado activities={activities} stats={stats} />
 
-              <NumbersSection activities={activities} stats={stats} />
-              
+              <RecordHistorySection activities={activities} />
+
               <section>
                 <FullWidthChart>
-                  <ActivityHeatmap
-                    data={stats.daily}
-                  />
+                  <ActivityHeatmap data={stats.daily} />
                 </FullWidthChart>
               </section>
 
@@ -170,13 +175,19 @@ const Dashboard: React.FC<DashboardProps> = ({
                   />
                 </PatternsGrid>
               </CollapsibleSection>
+
+              <InsightsSection activities={activities} stats={stats} />
             </>
           )}
 
           {activeTab === 'objetivos' && (
+            <AchievementShowcase activities={activities} stats={stats} />
+          )}
+
+          {activeTab === 'comparar' && (
             <>
-              <ActiveMission stats={stats} />
-              <GamificationPanel stats={stats} />
+              <PeriodComparator activities={activities} />
+              <RacePredictorTable activities={activities} />
             </>
           )}
         </DashboardContent>

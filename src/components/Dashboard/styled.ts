@@ -58,7 +58,7 @@ export const CacheInfo = styled.span`
 `;
 
 export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary' }>`
-  background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent)' : 'transparent')};
+  background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent)' : 'var(--bg-card)')};
   color: ${({ $variant }) => ($variant === 'primary' ? '#fff' : 'var(--text-secondary)')};
   border: 1px solid ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border)')};
   border-radius: var(--radius-sm);
