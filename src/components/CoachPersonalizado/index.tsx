@@ -208,37 +208,37 @@ const CoachPersonalizado: React.FC<CoachPersonalizadoProps> = ({ activities, sta
               </FormaAvg>
             </FormaHeader>
 
-            <StatsRow>
-              <StatPill>
-                <PillValue $positive={forma.volumeChangePct > 0} $negative={forma.volumeChangePct < 0}>
-                  {forma.volumeChangePct > 0 ? '+' : ''}{forma.volumeChangePct}% volumen
-                </PillValue>
-                <PillLabel>vs. 4 sem. anteriores</PillLabel>
-              </StatPill>
-
-              {forma.consistencyChangePct !== 0 && (
-                <StatPill>
-                  <PillValue $positive={forma.consistencyChangePct > 0} $negative={forma.consistencyChangePct < 0}>
-                    {forma.consistencyChangePct > 0 ? '+' : ''}{forma.consistencyChangePct}% consistencia
-                  </PillValue>
-                  <PillLabel>semanas activas</PillLabel>
-                </StatPill>
-              )}
-
-              {forma.paceChangeSec !== 0 && (
-                <StatPill>
-                  <PillValue $positive={forma.paceChangeSec > 0} $negative={forma.paceChangeSec < 0}>
-                    {forma.paceChangeSec > 0
-                      ? `Ritmo ${forma.paceChangeSec}" más rápido`
-                      : `Ritmo ${Math.abs(forma.paceChangeSec)}" más lento`}
-                  </PillValue>
-                  <PillLabel>últimas 5 vs. anteriores</PillLabel>
-                </StatPill>
-              )}
-            </StatsRow>
-
             {forma.weeklyChart.length >= 4 && (
               <>
+                <StatsRow>
+                  <StatPill>
+                    <PillValue $positive={forma.volumeChangePct > 0} $negative={forma.volumeChangePct < 0}>
+                      {forma.volumeChangePct > 0 ? '+' : ''}{forma.volumeChangePct}% volumen
+                    </PillValue>
+                    <PillLabel>vs. 4 sem. anteriores</PillLabel>
+                  </StatPill>
+
+                  {forma.consistencyChangePct !== 0 && (
+                    <StatPill>
+                      <PillValue $positive={forma.consistencyChangePct > 0} $negative={forma.consistencyChangePct < 0}>
+                        {forma.consistencyChangePct > 0 ? '+' : ''}{forma.consistencyChangePct}% consistencia
+                      </PillValue>
+                      <PillLabel>semanas activas</PillLabel>
+                    </StatPill>
+                  )}
+
+                  {forma.paceChangeSec !== 0 && (
+                    <StatPill>
+                      <PillValue $positive={forma.paceChangeSec > 0} $negative={forma.paceChangeSec < 0}>
+                        {forma.paceChangeSec > 0
+                          ? `Ritmo ${forma.paceChangeSec}" más rápido`
+                          : `Ritmo ${Math.abs(forma.paceChangeSec)}" más lento`}
+                      </PillValue>
+                      <PillLabel>últimas 5 vs. anteriores</PillLabel>
+                    </StatPill>
+                  )}
+                </StatsRow>
+
                 <ChartLabel>Carga semanal — últimos 6 meses</ChartLabel>
                 <ChartWrap>
                   <ResponsiveContainer width="100%" height="100%">

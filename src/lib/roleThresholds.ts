@@ -22,10 +22,10 @@ export const DISTANCE_THRESHOLDS = {
 export const DISTANCE_AFINIDAD = {
   /** Max pts from weekly km (divided by reference_weekly_km to scale 0–maxPts) */
   maxPts_weekly: 40,
-  reference_weekly_km: 50,
+  reference_weekly_km: 35,
   /** Max pts from longest run (divided by reference_long_km) */
   maxPts_longest: 35,
-  reference_long_km: 42.2,
+  reference_long_km: 21.1,
   /** Max pts from long-run ratio (≥ 15 km) */
   maxPts_longRatio: 25,
 } as const;
