@@ -8,6 +8,9 @@ import {
   computeRoles, computeObjectiveAfinidad, computeObjectiveChecklist,
   RoleObjective, BranchResult,
 } from '@/lib/roles';
+import { computeRunnerDNA, getRunnerDNATooltips } from '@/lib/runnerDNA';
+import RunnerDNAChart from './RunnerDNA';
+import GuildTree from './GuildTree';
 import {
   Card,
   LevelSection,
@@ -84,6 +87,8 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
 
   const levelInfo = getLevelInfo(activities, stats);
   const roles = computeRoles(activities, stats);
+  const dna = computeRunnerDNA(activities, stats);
+  const dnaTooltips = getRunnerDNATooltips(dna);
 
   // Sort branches: primary first, then by afinidad desc
   const sortedBranches = [...roles.branches].sort((a, b) => {
@@ -125,6 +130,13 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
         <XpSummary dangerouslySetInnerHTML={{ __html: levelInfo.breakdown.xpSourceSummary }} />
       </LevelSection>
 
+      {/* ── ADN del Corredor ── */}
+      <RunnerDNAChart
+        dna={dna}
+        tooltips={dnaTooltips}
+        dominantRoleName={primary.currentRole.name}
+      />
+
       {/* ── Roles ── */}
       <RolesSection>
         <RolesSectionTitle>Perfil de corredor</RolesSectionTitle>
@@ -154,6 +166,9 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           </SecondaryRolesList>
         )}
       </RolesSection>
+
+      {/* ── Guild Tree (role progression) ── */}
+      <GuildTree branches={roles.branches} activities={activities} stats={stats} />
 
       {/* ── Objective selector ── */}
       <ObjectiveSection>
