@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const DashboardRoot = styled.div`
   min-height: 100vh;
@@ -80,7 +80,7 @@ export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary'; $mob
 
   @media (max-width: 640px) {
     padding: 0.45rem 0.5rem;
-    ${({ $mobileRed }) => $mobileRed && `
+    ${({ $mobileRed }) => $mobileRed && css`
       color: var(--error);
       border-color: var(--error);
     `}
