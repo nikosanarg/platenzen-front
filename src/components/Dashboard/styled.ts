@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const DashboardRoot = styled.div`
   min-height: 100vh;
@@ -57,7 +57,7 @@ export const CacheInfo = styled.span`
   }
 `;
 
-export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary' }>`
+export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary'; $mobileRed?: boolean }>`
   background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent)' : 'var(--bg-card)')};
   color: ${({ $variant }) => ($variant === 'primary' ? '#fff' : 'var(--text-secondary)')};
   border: 1px solid ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border)')};
@@ -68,11 +68,28 @@ export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary' }>`
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 
   &:hover {
     background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent-hover)' : 'var(--bg-card-hover)')};
     border-color: ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border-light)')};
     color: ${({ $variant }) => ($variant === 'primary' ? '#fff' : 'var(--text-primary)')};
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.45rem 0.5rem;
+    ${({ $mobileRed }) => $mobileRed && css`
+      color: var(--error);
+      border-color: var(--error);
+    `}
+  }
+`;
+
+export const ButtonText = styled.span`
+  @media (max-width: 640px) {
+    display: none;
   }
 `;
 

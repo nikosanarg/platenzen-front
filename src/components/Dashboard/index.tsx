@@ -25,6 +25,7 @@ import {
   HeaderRight,
   CacheInfo,
   HeaderButton,
+  ButtonText,
   HomeTabsBar,
   HomeTabsInner,
   HomeTabBtn,
@@ -104,20 +105,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
           )}
           <HeaderButton $variant="ghost" onClick={onRefresh} disabled={loading}>
-            <span className="only-icon-mobile">
-              {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="var(--text-secondary)" />}
-            </span>
-            <span className="only-text-desktop">
-              {loading ? 'Actualizando...' : 'Actualizar datos'}
-            </span>
+            {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}
+            <ButtonText>{loading ? 'Actualizando...' : 'Actualizar datos'}</ButtonText>
           </HeaderButton>
-          <HeaderButton $variant="ghost" onClick={onLogout}>
-            <span className="only-icon-mobile">
-              <IconLogout size={20} color="var(--text-secondary)" />
-            </span>
-            <span className="only-text-desktop">
-              Cambiar token
-            </span>
+          <HeaderButton $variant="ghost" $mobileRed onClick={onLogout}>
+            <IconLogout size={20} color="currentColor" />
+            <ButtonText>Cambiar token</ButtonText>
           </HeaderButton>
         </HeaderRight>
       </DashboardHeader>
