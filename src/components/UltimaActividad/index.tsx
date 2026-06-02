@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
+import { decodePolyline } from '@/lib/polylineDecoder';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
@@ -34,23 +35,6 @@ import {
   StravaLink,
   SectionSubtitle,
 } from './styled';
-
-// ── Polyline decoder (same as worldMap.ts) ─────────────────────────────────
-
-function decodePolyline(encoded: string): [number, number][] {
-  const coords: [number, number][] = [];
-  let idx = 0, lat = 0, lon = 0;
-  while (idx < encoded.length) {
-    let b: number, shift = 0, result = 0;
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-    lat += result & 1 ? ~(result >> 1) : result >> 1;
-    shift = 0; result = 0;
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-    lon += result & 1 ? ~(result >> 1) : result >> 1;
-    coords.push([lat / 1e5, lon / 1e5]);
-  }
-  return coords;
-}
 
 // ── Mini map SVG ───────────────────────────────────────────────────────────
 

@@ -1,18 +1,19 @@
 import { StravaActivity } from '@/types/strava';
+import { decodePolyline } from '@/lib/polylineDecoder';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
 export interface ZoneActivity {
   activityId: number;
   name: string;
-  date: string;
+  date: string;       // formatted display date
+  dateIso: string;    // ISO string for sorting
   distanceKm: number;
   paceSecPerKm: number;
 }
 
 export interface MapZone {
   id: string;
-  // Representative lat/lon center of this zone
   lat: number;
   lon: number;
   visitCount: number;
@@ -20,40 +21,18 @@ export interface MapZone {
   lastVisit: string;
   bestPaceSecPerKm: number;
   activities: ZoneActivity[];
-  // Grid cell coordinates (for relative positioning)
   gridLat: number;
   gridLon: number;
 }
 
 export interface WorldMapData {
   zones: MapZone[];
-  // Bounding box for SVG rendering
   minLat: number;
   maxLat: number;
   minLon: number;
   maxLon: number;
-  // Heatmap points: [lat, lon, intensity]
   heatPoints: [number, number, number][];
 }
-
-// ── Polyline decoder ───────────────────────────────────────────────────────
-
-export function decodePolyline(encoded: string): [number, number][] {
-  const coords: [number, number][] = [];
-  let idx = 0, lat = 0, lon = 0;
-  while (idx < encoded.length) {
-    let b: number, shift = 0, result = 0;
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-    lat += result & 1 ? ~(result >> 1) : result >> 1;
-    shift = 0; result = 0;
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-    lon += result & 1 ? ~(result >> 1) : result >> 1;
-    coords.push([lat / 1e5, lon / 1e5]);
-  }
-  return coords;
-}
-
-// ── Grid-based clustering ──────────────────────────────────────────────────
 
 // ~1 km per cell
 const ZONE_GRID = 0.01;
@@ -132,6 +111,7 @@ export function computeWorldMap(activities: StravaActivity[]): WorldMapData | nu
             activityId: run.id,
             name: run.name,
             date: formatDate(run.start_date_local),
+            dateIso: run.start_date_local,
             distanceKm: km,
             paceSecPerKm,
           });
@@ -150,7 +130,7 @@ export function computeWorldMap(activities: StravaActivity[]): WorldMapData | nu
     const centerLon = data.lons.reduce((s, v) => s + v, 0) / data.lons.length;
 
     const sortedActs = [...data.activities].sort((a, b) =>
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+      b.dateIso.localeCompare(a.dateIso)
     );
 
     const totalKm = data.activities.reduce((s, a) => s + a.distanceKm, 0);

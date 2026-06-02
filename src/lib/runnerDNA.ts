@@ -1,6 +1,7 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
+import { decodePolyline } from '@/lib/polylineDecoder';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -44,40 +45,6 @@ function getRuns30d(activities: StravaActivity[]): StravaActivity[] {
     RUNNING_SPORTS.has(a.sport_type || a.type) &&
     new Date(a.start_date_local).getTime() >= ms
   );
-}
-
-// Decode a Google-encoded polyline into [lat, lon] pairs
-function decodePolyline(encoded: string): [number, number][] {
-  const coords: [number, number][] = [];
-  let idx = 0;
-  let lat = 0;
-  let lon = 0;
-
-  while (idx < encoded.length) {
-    let b: number;
-    let shift = 0;
-    let result = 0;
-    do {
-      b = encoded.charCodeAt(idx++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dLat = result & 1 ? ~(result >> 1) : result >> 1;
-    lat += dLat;
-
-    shift = 0;
-    result = 0;
-    do {
-      b = encoded.charCodeAt(idx++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dLon = result & 1 ? ~(result >> 1) : result >> 1;
-    lon += dLon;
-
-    coords.push([lat / 1e5, lon / 1e5]);
-  }
-  return coords;
 }
 
 // Count distinct geographic zones using a grid (cell ≈ 0.5 km)

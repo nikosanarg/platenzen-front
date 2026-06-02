@@ -6,6 +6,9 @@ import { computeAchievements } from '@/lib/achievements';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
+const SIMILAR_ACTIVITY_THRESHOLD_KM = 5;
+const MIN_PACE_DIFF_SECONDS = 1;
+
 export interface XPDetail {
   label: string;
   value: number;
@@ -149,7 +152,7 @@ function computeSimilarComparison(
       isRun(a) &&
       a.distance >= 1000 &&
       a.moving_time > 0 &&
-      Math.abs(a.distance / 1000 - kmThis) <= 5
+      Math.abs(a.distance / 1000 - kmThis) <= SIMILAR_ACTIVITY_THRESHOLD_KM
     )
     .sort((a, b) => new Date(b.start_date_local).getTime() - new Date(a.start_date_local).getTime());
 
@@ -159,7 +162,7 @@ function computeSimilarComparison(
   const pacePrev = prev.moving_time / (prev.distance / 1000);
   const paceDiff = paceThis - pacePrev; // negative = faster
 
-  if (Math.abs(paceDiff) < 1) return null; // too small to mention
+  if (Math.abs(paceDiff) < MIN_PACE_DIFF_SECONDS) return null; // too small to mention
 
   const absDiff = Math.abs(paceDiff);
   const minutes = Math.floor(absDiff / 60);

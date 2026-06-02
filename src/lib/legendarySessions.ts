@@ -1,7 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
-import { computeXPBreakdown } from '@/lib/xpSystem';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -65,9 +64,6 @@ export function computeLegendarySessions(
   const sortedByDate = [...runs].sort(
     (a, b) => new Date(a.start_date_local).getTime() - new Date(b.start_date_local).getTime()
   );
-
-  // Compute per-activity XP contributions
-  const xpWithAll = computeXPBreakdown(activities, stats);
 
   // Build per-activity scores
   const maxDistance = Math.max(...runs.map(a => a.distance));
@@ -173,7 +169,6 @@ export function computeLegendarySessions(
   if (topXP && !topXP.reasons.includes('Mayor XP obtenida')) {
     topXP.reasons.push('Mayor XP obtenida');
   }
-  void xpWithAll; // suppress unused warning
 
   // Ensure each top activity has at least one reason
   for (const item of top5) {

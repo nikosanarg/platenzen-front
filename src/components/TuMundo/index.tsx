@@ -53,12 +53,12 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     (lat: number, lon: number): [number, number] => {
       if (!data) return [0, 0];
       const { minLat, maxLat, minLon, maxLon } = data;
-      const rangeLatFn = maxLat - minLat || 0.01;
+      const rangeLat = maxLat - minLat || 0.01;
       const rangeLon = maxLon - minLon || 0.01;
 
       const x = PADDING + ((lon - minLon) / rangeLon) * (SVG_W - PADDING * 2);
       // Invert lat so north is up
-      const y = PADDING + ((maxLat - lat) / rangeLatFn) * (SVG_H - PADDING * 2);
+      const y = PADDING + ((maxLat - lat) / rangeLat) * (SVG_H - PADDING * 2);
       return [x, y];
     },
     [data]
