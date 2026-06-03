@@ -3,10 +3,11 @@ import { ProcessedStats } from '@/types/stats';
 import {
   DISTANCE_THRESHOLDS, DISTANCE_AFINIDAD,
   SPEED_THRESHOLDS, SPEED_AFINIDAD,
-  EXPLORATION_THRESHOLDS, EXPLORATION_AFINIDAD,
+  EXPLORATION_THRESHOLDS, EXPLORATION_AFINIDAD, EXPLORATION_DISTINCT_PLACES,
   ACHIEVEMENT_THRESHOLDS, ACHIEVEMENT_AFINIDAD,
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
+import { decodePolyline } from '@/lib/polylineDecoder';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -103,6 +104,36 @@ function formatKm(km: number): string {
 
 function clamp(v: number): number {
   return Math.min(Math.round(v), 100);
+}
+
+// ── Distinct starting places (exploration) ─────────────────────────────────
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function countDistinctStartingPlaces(runs: StravaActivity[]): number {
+  const places: [number, number][] = [];
+  for (const run of runs) {
+    const polyline = run.map?.summary_polyline;
+    if (!polyline) continue;
+    try {
+      const coords = decodePolyline(polyline);
+      if (coords.length === 0) continue;
+      const [lat, lon] = coords[0];
+      const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= 0.5);
+      if (!isNear) places.push([lat, lon]);
+    } catch {
+      continue;
+    }
+  }
+  return places.length;
 }
 
 // ── Distance branch ────────────────────────────────────────────────────────
@@ -221,17 +252,26 @@ function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): Bran
 
 function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
   const { trotamundos_trail_ratio, trotamundos_total_km, conquistador_trail_ratio, conquistador_total_km } = EXPLORATION_THRESHOLDS;
+  const { explorador_min_places, trotamundos_min_places, conquistador_min_places } = EXPLORATION_DISTINCT_PLACES;
   const { maxPts_trailRatio, maxPts_totalKm, reference_total_km, maxPts_elevation, reference_elevation } = EXPLORATION_AFINIDAD;
 
   const totalKm = stats.totalDistance;
   const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalElevation = runs.reduce((s, a) => s + a.total_elevation_gain, 0);
+  const distinctPlaces = countDistinctStartingPlaces(runs);
 
   let levelIdx = 0;
-  if (trailRatio >= conquistador_trail_ratio && totalKm >= conquistador_total_km) {
+  if (
+    distinctPlaces >= conquistador_min_places ||
+    (trailRatio >= conquistador_trail_ratio && totalKm >= conquistador_total_km)
+  ) {
     levelIdx = 2;
-  } else if (trailRatio >= trotamundos_trail_ratio || totalKm >= trotamundos_total_km) {
+  } else if (
+    distinctPlaces >= trotamundos_min_places ||
+    trailRatio >= trotamundos_trail_ratio ||
+    totalKm >= trotamundos_total_km
+  ) {
     levelIdx = 1;
   }
 
@@ -247,14 +287,14 @@ function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats)
   const pctTrail = Math.round(trailRatio * 100);
 
   const whyMap: Record<string, string> = {
-    explorador: `Corrés principalmente en ciudad con ${formatKm(totalKm)} acumulados. Empezás a explorar tu entorno.`,
-    trotamundos: `${pctTrail > 0 ? `El ${pctTrail}% de tus salidas son de trail y t` : 'T'}enés ${formatKm(totalKm)} acumulados. Tu historial muestra variedad de terrenos.`,
-    conquistador: `El ${pctTrail}% de tus salidas son de trail y acumulaste ${formatKm(totalKm)}. Sos un corredor versátil con experiencia en terrenos variados.`,
+    explorador: `Saliste desde ${distinctPlaces} lugar${distinctPlaces !== 1 ? 'es' : ''} distinto${distinctPlaces !== 1 ? 's' : ''} con ${formatKm(totalKm)} acumulados. Empezás a explorar tu entorno.`,
+    trotamundos: `${pctTrail > 0 ? `El ${pctTrail}% de tus salidas son de trail y t` : 'T'}enés ${formatKm(totalKm)} acumulados y ${distinctPlaces} lugares distintos explorados.`,
+    conquistador: `El ${pctTrail}% de tus salidas son de trail, acumulaste ${formatKm(totalKm)} y exploraste ${distinctPlaces} lugares distintos. Sos un corredor versátil.`,
   };
 
   const howMap: Record<string, string | null> = {
-    explorador: `Para Trotamundos: acumulá ${trotamundos_total_km} km o sumá trail en al menos el ${Math.round(trotamundos_trail_ratio * 100)}% de tus salidas.`,
-    trotamundos: `Para Conquistador: llegá a ${conquistador_total_km} km acumulados con trail en al menos el ${Math.round(conquistador_trail_ratio * 100)}% de tus salidas.`,
+    explorador: `Para Trotamundos: alcanzá ${trotamundos_min_places} lugares distintos de salida, o acumulá ${trotamundos_total_km} km, o hacé trail en al menos el ${Math.round(trotamundos_trail_ratio * 100)}% de tus salidas.`,
+    trotamundos: `Para Conquistador: alcanzá ${conquistador_min_places} lugares distintos, o llegá a ${conquistador_total_km} km acumulados con trail en al menos el ${Math.round(conquistador_trail_ratio * 100)}%.`,
     conquistador: null,
   };
 
@@ -394,6 +434,8 @@ export function computeObjectiveChecklist(
   } = DISTANCE_THRESHOLDS;
   const { pasadista_pace_sec, velocista_pace_sec } = SPEED_THRESHOLDS;
   const { trotamundos_trail_ratio, trotamundos_total_km, conquistador_trail_ratio, conquistador_total_km } = EXPLORATION_THRESHOLDS;
+  const { trotamundos_min_places, conquistador_min_places } = EXPLORATION_DISTINCT_PLACES;
+  const distinctPlaces = countDistinctStartingPlaces(runs);
   const {
     competidor_min_activities, coleccionador_min_activities, coleccionador_min_milestones,
     coleccionador_min_total_km, medallista_min_activities, medallista_min_milestones, medallista_min_total_km,
@@ -411,9 +453,11 @@ export function computeObjectiveChecklist(
       { label: fmtPace(velocista_pace_sec), passed: bestPaceSec > 0 && bestPaceSec < velocista_pace_sec },
     ],
     conquistador: [
-      { label: `${trotamundos_total_km} km`, passed: totalKm >= trotamundos_total_km },
+      { label: `${trotamundos_min_places} lugares distintos`, passed: distinctPlaces >= trotamundos_min_places },
+      { label: `O ${trotamundos_total_km} km`, passed: totalKm >= trotamundos_total_km },
       { label: `Trail ${Math.round(trotamundos_trail_ratio * 100)}%`, passed: trailRatio >= trotamundos_trail_ratio },
-      { label: `${conquistador_total_km} km`, passed: totalKm >= conquistador_total_km },
+      { label: `${conquistador_min_places} lugares distintos`, passed: distinctPlaces >= conquistador_min_places },
+      { label: `O ${conquistador_total_km} km`, passed: totalKm >= conquistador_total_km },
       { label: `Trail ${Math.round(conquistador_trail_ratio * 100)}%`, passed: trailRatio >= conquistador_trail_ratio },
     ],
     medallista: [

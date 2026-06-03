@@ -69,7 +69,7 @@ export const StatLabel = styled.div`
 
 export const MapContainer = styled.div`
   width: 100%;
-  height: 100px;
+  aspect-ratio: 1 / 1;
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

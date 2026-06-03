@@ -63,6 +63,20 @@ export const EXPLORATION_THRESHOLDS = {
   conquistador_total_km: 500,
 } as const;
 
+/**
+ * Distinct starting-place thresholds for the exploration branch.
+ * Two activity start points are considered the "same place" when
+ * their great-circle distance is ≤ 500 m.
+ */
+export const EXPLORATION_DISTINCT_PLACES = {
+  /** Min distinct starting places to confirm Explorador */
+  explorador_min_places: 5,
+  /** Min distinct starting places for Trotamundos (alternative to trail/km criteria) */
+  trotamundos_min_places: 15,
+  /** Min distinct starting places for Conquistador (alternative to trail/km criteria) */
+  conquistador_min_places: 25,
+} as const;
+
 /** Afinidad scoring weights for the exploration branch */
 export const EXPLORATION_AFINIDAD = {
   maxPts_trailRatio: 50,

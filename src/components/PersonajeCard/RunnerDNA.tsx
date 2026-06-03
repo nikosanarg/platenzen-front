@@ -168,6 +168,7 @@ const RunnerDNAChart: React.FC<RunnerDNAChartProps> = ({ dna, tooltips, dominant
               fill="var(--accent)"
               fillOpacity={0.2}
               strokeWidth={2}
+              isAnimationActive={false}
             />
             <Tooltip content={<CustomRadarTooltip />} />
           </RadarChart>
