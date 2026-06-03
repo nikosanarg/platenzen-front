@@ -81,7 +81,6 @@ export const MapContainer = styled.div`
 
   @media (max-width: 600px) {
     width: 100%;
-    aspect-ratio: 1 / 1;
   }
 `;
 
