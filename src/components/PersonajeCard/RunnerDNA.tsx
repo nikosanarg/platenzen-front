@@ -57,6 +57,7 @@ const HorizontalLayout = styled.div`
 
   @media (max-width: 600px) {
     flex-direction: column-reverse;
+    align-items: stretch;
   }
 `;
 
@@ -70,6 +71,10 @@ const ValuesCol = styled.div`
 const ChartCol = styled.div`
   flex: 1;
   min-width: 0;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
 `;
 
 const AttributeGrid = styled.div`
