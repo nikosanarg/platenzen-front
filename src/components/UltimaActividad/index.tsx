@@ -35,6 +35,8 @@ import {
   AchievementChip,
   StravaLink,
   SectionSubtitle,
+  TopRow,
+  TopRowData,
 } from './styled';
 
 // ── Mini map SVG ───────────────────────────────────────────────────────────
@@ -159,47 +161,52 @@ const UltimaActividad: React.FC<UltimaActividadProps> = ({ activities, stats }) 
           <ActivityDate>{dateLabel}</ActivityDate>
         </ActivityHeader>
 
-        {/* Sport stats */}
-        <StatsRow>
-          <StatItem>
-            <StatValue>{distanceKm} km</StatValue>
-            <StatLabel>Distancia</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{pace}</StatValue>
-            <StatLabel>Ritmo</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{durationLabel}</StatValue>
-            <StatLabel>Tiempo</StatLabel>
-          </StatItem>
-        </StatsRow>
+        {/* Stats + map side by side */}
+        <TopRow>
+          <TopRowData>
+            {/* Sport stats */}
+            <StatsRow>
+              <StatItem>
+                <StatValue>{distanceKm} km</StatValue>
+                <StatLabel>Distancia</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{pace}</StatValue>
+                <StatLabel>Ritmo</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{durationLabel}</StatValue>
+                <StatLabel>Tiempo</StatLabel>
+              </StatItem>
+            </StatsRow>
 
-        {/* Mini map */}
-        <MapContainer>
-          {polyline ? (
-            <MiniMap polyline={polyline} />
-          ) : (
-            <MapNoData>Sin ruta disponible</MapNoData>
-          )}
-        </MapContainer>
+            {/* XP earned */}
+            <XPSection>
+              <SectionSubtitle>Platenzen</SectionSubtitle>
+              <XPHeadRow>
+                <XPBig>+{xpEarned} XP</XPBig>
+              </XPHeadRow>
+              {xpDetails.length > 0 && (
+                <XPDetails>
+                  {xpDetails.map((d, i) => (
+                    <XPChip key={i}>+{d.value} {d.label}</XPChip>
+                  ))}
+                </XPDetails>
+              )}
+            </XPSection>
+          </TopRowData>
+
+          {/* Mini map */}
+          <MapContainer>
+            {polyline ? (
+              <MiniMap polyline={polyline} />
+            ) : (
+              <MapNoData>Sin ruta disponible</MapNoData>
+            )}
+          </MapContainer>
+        </TopRow>
 
         <Divider />
-
-        {/* XP earned */}
-        <XPSection>
-          <SectionSubtitle>Platenzen</SectionSubtitle>
-          <XPHeadRow>
-            <XPBig>+{xpEarned} XP</XPBig>
-          </XPHeadRow>
-          {xpDetails.length > 0 && (
-            <XPDetails>
-              {xpDetails.map((d, i) => (
-                <XPChip key={i}>+{d.value} {d.label}</XPChip>
-              ))}
-            </XPDetails>
-          )}
-        </XPSection>
 
         {/* DNA impact */}
         {hasDNAImpact && (

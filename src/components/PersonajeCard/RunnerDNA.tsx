@@ -50,14 +50,32 @@ const DominantProfile = styled.div`
   }
 `;
 
+const HorizontalLayout = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  @media (max-width: 600px) {
+    flex-direction: column-reverse;
+  }
+`;
+
+const ValuesCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+`;
+
+const ChartCol = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
 const AttributeGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.375rem;
-
-  @media (max-width: 500px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
 `;
 
 const AttributeChip = styled.button<{ $active: boolean }>`
@@ -150,48 +168,54 @@ const RunnerDNAChart: React.FC<RunnerDNAChartProps> = ({ dna, tooltips, dominant
     <DNASection>
       <DNASectionTitle>ADN del Corredor</DNASectionTitle>
 
-      <ChartWrapper>
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-            <PolarGrid
-              stroke="var(--border)"
-              strokeOpacity={0.6}
-            />
-            <PolarAngleAxis
-              dataKey="subject"
-              tick={{ fill: 'var(--text-muted)', fontSize: 11, fontWeight: 600 }}
-            />
-            <Radar
-              name="ADN"
-              dataKey="value"
-              stroke="var(--accent)"
-              fill="var(--accent)"
-              fillOpacity={0.2}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-            <Tooltip content={<CustomRadarTooltip />} />
-          </RadarChart>
-        </ResponsiveContainer>
-      </ChartWrapper>
+      <HorizontalLayout>
+        <ValuesCol>
+          <AttributeGrid>
+            {(Object.keys(ATTR_LABELS) as (keyof RunnerDNA)[]).map(key => (
+              <AttributeChip
+                key={key}
+                $active={activeAttr === key}
+                onClick={() => setActiveAttr(activeAttr === key ? null : key)}
+                title={tooltips[key]}
+              >
+                <AttributeName>{ATTR_LABELS[key]}</AttributeName>
+                <AttributeValue $value={dna[key]}>{dna[key]}</AttributeValue>
+              </AttributeChip>
+            ))}
+          </AttributeGrid>
 
-      <DominantProfile>
-        Perfil dominante: <span>{dominantRoleName}</span>
-      </DominantProfile>
+          <DominantProfile>
+            Perfil dominante: <span>{dominantRoleName}</span>
+          </DominantProfile>
+        </ValuesCol>
 
-      <AttributeGrid>
-        {(Object.keys(ATTR_LABELS) as (keyof RunnerDNA)[]).map(key => (
-          <AttributeChip
-            key={key}
-            $active={activeAttr === key}
-            onClick={() => setActiveAttr(activeAttr === key ? null : key)}
-            title={tooltips[key]}
-          >
-            <AttributeName>{ATTR_LABELS[key]}</AttributeName>
-            <AttributeValue $value={dna[key]}>{dna[key]}</AttributeValue>
-          </AttributeChip>
-        ))}
-      </AttributeGrid>
+        <ChartCol>
+          <ChartWrapper>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+                <PolarGrid
+                  stroke="var(--border)"
+                  strokeOpacity={0.6}
+                />
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11, fontWeight: 600 }}
+                />
+                <Radar
+                  name="ADN"
+                  dataKey="value"
+                  stroke="var(--accent)"
+                  fill="var(--accent)"
+                  fillOpacity={0.2}
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+                <Tooltip content={<CustomRadarTooltip />} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </ChartWrapper>
+        </ChartCol>
+      </HorizontalLayout>
 
       {activeAttr && (
         <TooltipBox>{tooltips[activeAttr]}</TooltipBox>
