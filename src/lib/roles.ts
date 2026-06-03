@@ -7,7 +7,7 @@ import {
   ACHIEVEMENT_THRESHOLDS, ACHIEVEMENT_AFINIDAD,
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
-import { decodePolyline } from '@/lib/polylineDecoder';
+import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -104,36 +104,6 @@ function formatKm(km: number): string {
 
 function clamp(v: number): number {
   return Math.min(Math.round(v), 100);
-}
-
-// ── Distinct starting places (exploration) ─────────────────────────────────
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function countDistinctStartingPlaces(runs: StravaActivity[]): number {
-  const places: [number, number][] = [];
-  for (const run of runs) {
-    const polyline = run.map?.summary_polyline;
-    if (!polyline) continue;
-    try {
-      const coords = decodePolyline(polyline);
-      if (coords.length === 0) continue;
-      const [lat, lon] = coords[0];
-      const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= 0.5);
-      if (!isNear) places.push([lat, lon]);
-    } catch {
-      continue;
-    }
-  }
-  return places.length;
 }
 
 // ── Distance branch ────────────────────────────────────────────────────────

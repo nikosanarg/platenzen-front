@@ -49,6 +49,8 @@ export function chooseBestZoom(
       return zoom;
     }
   }
+  // Zoom 10 provides ~city-scale detail (≈150 km viewable width) and is a
+  // reasonable default when the bounding box is too large for finer levels.
   return 10;
 }
 

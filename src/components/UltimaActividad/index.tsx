@@ -57,11 +57,12 @@ const MiniMap: React.FC<MiniMapProps> = ({ polyline }) => {
       const minLat = Math.min(...lats), maxLat = Math.max(...lats);
       const minLon = Math.min(...lons), maxLon = Math.max(...lons);
 
-      // Expand bounding box to be square in lat/lon space so circles don't distort the route
+      // Compute projected coordinates (equirectangular).
+      // Using the same scale for both axes prevents the route from being
+      // distorted when the bounding box is not square.
       const dLat = maxLat - minLat || 0.001;
       const dLon = maxLon - minLon || 0.001;
 
-      // Compute projected coordinates (equirectangular, centered square)
       const project = (lat: number, lon: number): [number, number] => {
         const x = MAP_PAD + ((lon - minLon) / dLon) * (MAP_SIZE - 2 * MAP_PAD);
         const y = MAP_SIZE - MAP_PAD - ((lat - minLat) / dLat) * (MAP_SIZE - 2 * MAP_PAD);
