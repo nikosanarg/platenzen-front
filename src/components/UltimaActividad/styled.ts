@@ -68,8 +68,9 @@ export const StatLabel = styled.div`
 `;
 
 export const MapContainer = styled.div`
-  width: 100%;
-  height: 100px;
+  flex: 0 0 auto;
+  width: 180px;
+  aspect-ratio: 1 / 1;
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -77,11 +78,33 @@ export const MapContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
 `;
 
 export const MapSvg = styled.svg`
   width: 100%;
   height: 100%;
+`;
+
+export const TopRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+`;
+
+export const TopRowData = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 `;
 
 export const MapNoData = styled.div`

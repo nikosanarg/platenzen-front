@@ -17,7 +17,6 @@ import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import UltimaActividad from '@/components/UltimaActividad';
 import SesionesLegendarias from '@/components/SesionesLegendarias';
-import TuMundo from '@/components/TuMundo';
 import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
 import {
   DashboardRoot,
@@ -175,8 +174,6 @@ const Dashboard: React.FC<DashboardProps> = ({
               </CollapsibleSection>
 
               <InsightsSection activities={activities} stats={stats} />
-
-              <TuMundo activities={activities} />
 
               <SesionesLegendarias activities={activities} stats={stats} />
             </>

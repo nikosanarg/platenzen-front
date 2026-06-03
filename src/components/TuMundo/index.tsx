@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { computeWorldMap, MapZone, formatPaceStr } from '@/lib/worldMap';
+import { getTilesForBounds } from '@/lib/osmTiles';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
@@ -64,6 +65,21 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     [data]
   );
 
+  const tiles = useMemo(() => {
+    if (!data) return [];
+    const { minLat, maxLat, minLon, maxLon } = data;
+    // Add a small padding to the bounding box so tiles extend to the SVG edges
+    const padLat = (maxLat - minLat) * 0.1 || 0.005;
+    const padLon = (maxLon - minLon) * 0.1 || 0.005;
+    return getTilesForBounds(
+      minLat - padLat,
+      maxLat + padLat,
+      minLon - padLon,
+      maxLon + padLon,
+      4,
+    );
+  }, [data]);
+
   if (!data || data.zones.length === 0) {
     return (
       <Root>
@@ -109,27 +125,23 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
             {/* Background */}
             <rect width={SVG_W} height={SVG_H} fill="var(--bg-primary)" rx="8" />
 
-            {/* Grid lines */}
-            {[0.2, 0.4, 0.6, 0.8].map(t => (
-              <React.Fragment key={t}>
-                <line
-                  x1={PADDING + t * (SVG_W - PADDING * 2)}
-                  y1={PADDING}
-                  x2={PADDING + t * (SVG_W - PADDING * 2)}
-                  y2={SVG_H - PADDING}
-                  stroke="var(--border)"
-                  strokeWidth={0.5}
+            {/* OSM tile map */}
+            {tiles.map(tile => {
+              const [x1, y1] = project(tile.nwLat, tile.nwLon);
+              const [x2, y2] = project(tile.seLat, tile.seLon);
+              return (
+                <image
+                  key={`${tile.tx}-${tile.ty}`}
+                  href={tile.url}
+                  x={x1}
+                  y={y1}
+                  width={x2 - x1}
+                  height={y2 - y1}
+                  preserveAspectRatio="none"
+                  style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
                 />
-                <line
-                  x1={PADDING}
-                  y1={PADDING + t * (SVG_H - PADDING * 2)}
-                  x2={SVG_W - PADDING}
-                  y2={PADDING + t * (SVG_H - PADDING * 2)}
-                  stroke="var(--border)"
-                  strokeWidth={0.5}
-                />
-              </React.Fragment>
-            ))}
+              );
+            })}
 
             {/* Heatmap points */}
             {data.zones.map(zone => {

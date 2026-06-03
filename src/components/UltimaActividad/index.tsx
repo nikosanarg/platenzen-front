@@ -5,6 +5,7 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { decodePolyline } from '@/lib/polylineDecoder';
+import { getTilesForBounds } from '@/lib/osmTiles';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
@@ -34,16 +35,21 @@ import {
   AchievementChip,
   StravaLink,
   SectionSubtitle,
+  TopRow,
+  TopRowData,
 } from './styled';
 
 // ── Mini map SVG ───────────────────────────────────────────────────────────
+
+const MAP_SIZE = 400;
+const MAP_PAD = 20;
 
 interface MiniMapProps {
   polyline: string;
 }
 
 const MiniMap: React.FC<MiniMapProps> = ({ polyline }) => {
-  const path = useMemo(() => {
+  const result = useMemo(() => {
     try {
       const coords = decodePolyline(polyline);
       if (coords.length < 2) return null;
@@ -52,33 +58,72 @@ const MiniMap: React.FC<MiniMapProps> = ({ polyline }) => {
       const lons = coords.map(c => c[1]);
       const minLat = Math.min(...lats), maxLat = Math.max(...lats);
       const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-      const ranLat = maxLat - minLat || 1;
-      const ranLon = maxLon - minLon || 1;
 
-      const W = 400, H = 100, PAD = 8;
+      // Compute projected coordinates (equirectangular).
+      // Using the same scale for both axes prevents the route from being
+      // distorted when the bounding box is not square.
+      const dLat = maxLat - minLat || 0.001;
+      const dLon = maxLon - minLon || 0.001;
+
+      const project = (lat: number, lon: number): [number, number] => {
+        const x = MAP_PAD + ((lon - minLon) / dLon) * (MAP_SIZE - 2 * MAP_PAD);
+        const y = MAP_SIZE - MAP_PAD - ((lat - minLat) / dLat) * (MAP_SIZE - 2 * MAP_PAD);
+        return [x, y];
+      };
+
       const points = coords.map(([lat, lon]) => {
-        const x = PAD + ((lon - minLon) / ranLon) * (W - 2 * PAD);
-        const y = (H - PAD) - ((lat - minLat) / ranLat) * (H - 2 * PAD);
+        const [x, y] = project(lat, lon);
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       });
-      return points.join(' ');
+
+      // Get OSM tiles for this bounding box
+      const padLat = dLat * 0.15;
+      const padLon = dLon * 0.15;
+      const tiles = getTilesForBounds(
+        minLat - padLat, maxLat + padLat,
+        minLon - padLon, maxLon + padLon,
+        4,
+      );
+
+      // Project tile corners into the same SVG space
+      const projectedTiles = tiles.map(tile => {
+        const [x1, y1] = project(tile.nwLat, tile.nwLon);
+        const [x2, y2] = project(tile.seLat, tile.seLon);
+        return { ...tile, svgX: x1, svgY: y1, svgW: x2 - x1, svgH: y2 - y1 };
+      });
+
+      return { path: points.join(' '), projectedTiles };
     } catch {
       return null;
     }
   }, [polyline]);
 
-  if (!path) return <MapNoData>Sin mapa disponible</MapNoData>;
+  if (!result) return <MapNoData>Sin mapa disponible</MapNoData>;
 
   return (
-    <MapSvg viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet">
+    <MapSvg viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} preserveAspectRatio="xMidYMid meet">
+      {/* OSM tile background */}
+      {result.projectedTiles.map(tile => (
+        <image
+          key={`${tile.tx}-${tile.ty}`}
+          href={tile.url}
+          x={tile.svgX}
+          y={tile.svgY}
+          width={tile.svgW}
+          height={tile.svgH}
+          preserveAspectRatio="none"
+          style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
+        />
+      ))}
+      {/* Route polyline */}
       <polyline
-        points={path}
+        points={result.path}
         fill="none"
         stroke="var(--accent)"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.85}
+        opacity={0.95}
       />
     </MapSvg>
   );
@@ -116,47 +161,52 @@ const UltimaActividad: React.FC<UltimaActividadProps> = ({ activities, stats }) 
           <ActivityDate>{dateLabel}</ActivityDate>
         </ActivityHeader>
 
-        {/* Sport stats */}
-        <StatsRow>
-          <StatItem>
-            <StatValue>{distanceKm} km</StatValue>
-            <StatLabel>Distancia</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{pace}</StatValue>
-            <StatLabel>Ritmo</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{durationLabel}</StatValue>
-            <StatLabel>Tiempo</StatLabel>
-          </StatItem>
-        </StatsRow>
+        {/* Stats + map side by side */}
+        <TopRow>
+          <TopRowData>
+            {/* Sport stats */}
+            <StatsRow>
+              <StatItem>
+                <StatValue>{distanceKm} km</StatValue>
+                <StatLabel>Distancia</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{pace}</StatValue>
+                <StatLabel>Ritmo</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatValue>{durationLabel}</StatValue>
+                <StatLabel>Tiempo</StatLabel>
+              </StatItem>
+            </StatsRow>
 
-        {/* Mini map */}
-        <MapContainer>
-          {polyline ? (
-            <MiniMap polyline={polyline} />
-          ) : (
-            <MapNoData>Sin ruta disponible</MapNoData>
-          )}
-        </MapContainer>
+            {/* XP earned */}
+            <XPSection>
+              <SectionSubtitle>Platenzen</SectionSubtitle>
+              <XPHeadRow>
+                <XPBig>+{xpEarned} XP</XPBig>
+              </XPHeadRow>
+              {xpDetails.length > 0 && (
+                <XPDetails>
+                  {xpDetails.map((d, i) => (
+                    <XPChip key={i}>+{d.value} {d.label}</XPChip>
+                  ))}
+                </XPDetails>
+              )}
+            </XPSection>
+          </TopRowData>
+
+          {/* Mini map */}
+          <MapContainer>
+            {polyline ? (
+              <MiniMap polyline={polyline} />
+            ) : (
+              <MapNoData>Sin ruta disponible</MapNoData>
+            )}
+          </MapContainer>
+        </TopRow>
 
         <Divider />
-
-        {/* XP earned */}
-        <XPSection>
-          <SectionSubtitle>Platenzen</SectionSubtitle>
-          <XPHeadRow>
-            <XPBig>+{xpEarned} XP</XPBig>
-          </XPHeadRow>
-          {xpDetails.length > 0 && (
-            <XPDetails>
-              {xpDetails.map((d, i) => (
-                <XPChip key={i}>+{d.value} {d.label}</XPChip>
-              ))}
-            </XPDetails>
-          )}
-        </XPSection>
 
         {/* DNA impact */}
         {hasDNAImpact && (
