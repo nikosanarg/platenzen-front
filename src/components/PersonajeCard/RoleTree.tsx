@@ -147,14 +147,15 @@ interface RoleCardProps {
   checklist: ChecklistItem[];
   openId: string | null;
   onToggle: (id: string) => void;
+  isAmateur?: boolean;
 }
 
-function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle }: RoleCardProps) {
+function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle, isAmateur }: RoleCardProps) {
   const isOpen = openId === cardId;
   const border = edgeColor(status);
   const text = status === 'achieved' ? '#22c55e' : status === 'current' ? '#f5c518' : '#606078';
   const bg = status === 'achieved' ? 'rgba(34,197,94,0.07)' : status === 'current' ? 'rgba(245,197,24,0.07)' : '#141417';
-  const hasTooltip = checklist.length > 0 || status === 'achieved';
+  const hasTooltip = isAmateur || checklist.length > 0 || status === 'achieved';
 
   return (
     <div style={{ position: 'relative', flex: 1, minWidth: 0, maxWidth: '8rem' }}>
@@ -202,13 +203,15 @@ function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle
           }}
         >
           <div style={{ fontSize: 10, fontWeight: 700, color: '#f0f0f5', marginBottom: 3 }}>{label}</div>
-          {status === 'achieved'
-            ? <div style={{ fontSize: 10, color: '#22c55e' }}>✓ Desbloqueado</div>
-            : checklist.map((it, i) => (
-              <div key={i} style={{ fontSize: 10, color: it.passed ? '#22c55e' : '#9090a8', marginTop: 2 }}>
-                {it.passed ? '✓' : '·'} {it.label}
-              </div>
-            ))
+          {isAmateur
+            ? <div style={{ fontSize: 10, color: '#9090a8' }}>Estado inicial</div>
+            : status === 'achieved'
+              ? <div style={{ fontSize: 10, color: '#22c55e' }}>✓ Desbloqueado</div>
+              : checklist.map((it, i) => (
+                <div key={i} style={{ fontSize: 10, color: it.passed ? '#22c55e' : '#9090a8', marginTop: 2 }}>
+                  {it.passed ? '✓' : '·'} {it.label}
+                </div>
+              ))
           }
         </div>
       )}
@@ -262,30 +265,24 @@ export default function RoleTree({ branches, activities, stats }: RoleTreeProps)
 
   const distCurrentLevel = branchMap.distance?.currentRole.level ?? 0;
   const amateurStatus: NodeStatus = distCurrentLevel > 0 ? 'achieved' : 'current';
-  const amateurChecklist = amateurStatus === 'current'
-    ? buildChecklist('distance', 1, activities, stats) : [];
 
   return (
-    // Outer: centers the inner block; inner: natural width, left-aligned content
     <div style={{ display: 'flex', justifyContent: 'center' }}>
     <div ref={treeRef} onClick={() => setOpenId(null)} style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%', maxWidth: 480 }}>
-      {/* Amateur — left-aligned with branch rows */}
-      <div style={{ display: 'flex', justifyContent: 'flex-start', paddingBottom: 8 }}>
-        <div style={{ flex: '0 0 auto', maxWidth: 128 }}>
-          <RoleCard
-            cardId="amateur"
-            label="Amateur"
-            status={amateurStatus}
-            afinidad={amateurStatus === 'current' ? branchMap.distance?.afinidad : undefined}
-            checklist={amateurChecklist}
-            openId={openId}
-            onToggle={toggleCard}
-          />
-        </div>
+      {/* Amateur — own row, same structure as branch rows but single cell */}
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+        <RoleCard
+          cardId="amateur"
+          label="Amateur"
+          status={amateurStatus}
+          afinidad={amateurStatus === 'current' ? branchMap.distance?.afinidad : undefined}
+          checklist={[]}
+          isAmateur
+          openId={openId}
+          onToggle={toggleCard}
+        />
       </div>
-
-      {/* Connector — aligned under Amateur's center (≈ half of first cell width) */}
-      <div style={{ width: 1, height: 10, background: edgeColor(amateurStatus), marginLeft: 'calc(4rem)', marginBottom: 6 }} />
+      <div style={{ height: 8 }} />
 
       {/* Branch rows */}
       {BRANCHES.map((branch, bi) => {

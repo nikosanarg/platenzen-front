@@ -7,6 +7,7 @@ import { generateSmartInsights } from '@/utils/insights';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import { SectionRoot, InsightList, InsightItem } from './styled';
 
+
 interface InsightsSectionProps {
   activities: StravaActivity[];
   stats: ProcessedStats;

@@ -15,11 +15,11 @@ export const CollapseToggle = styled.button`
   text-align: left;
 
   .col-title {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.09em;
   }
 
   .col-subtitle {

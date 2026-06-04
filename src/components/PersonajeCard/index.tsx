@@ -5,6 +5,7 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { getLevelInfo } from '@/lib/xpSystem';
 import { computeRoles, computeAdnScores } from '@/lib/roles';
+import { computeWeeklyStreak } from '@/utils/streaks';
 import SpiderChart from './SpiderChart';
 import RoleTree from './RoleTree';
 import {
@@ -13,6 +14,7 @@ import {
   RoleHeading,
   RoleNamePrimary,
   LevelBadge,
+  StreakBadge,
   XpRow,
   XpTrack,
   XpFill,
@@ -47,6 +49,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const levelInfo = getLevelInfo(activities, stats);
   const roles = computeRoles(activities, stats);
   const adn = computeAdnScores(activities, stats);
+  const weeklyStreak = computeWeeklyStreak(stats.weekly);
 
   const sortedBranches = [...roles.branches].sort((a, b) => {
     const ld = b.currentRole.level - a.currentRole.level;
@@ -66,6 +69,9 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
         <RoleHeading>
           <RoleNamePrimary>{primary.currentRole.name}</RoleNamePrimary>
           <LevelBadge>(Nivel {levelInfo.level})</LevelBadge>
+          {weeklyStreak >= 2 && (
+            <StreakBadge>🔥 {weeklyStreak} sem</StreakBadge>
+          )}
         </RoleHeading>
 
         <XpRow>

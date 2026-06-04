@@ -49,6 +49,19 @@ export const LevelBadge = styled.span`
   letter-spacing: 0.03em;
 `;
 
+export const StreakBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-muted);
+  border: 1px solid rgba(252, 76, 2, 0.25);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+`;
+
 export const XpRow = styled.div`
   display: flex;
   align-items: center;
@@ -165,7 +178,7 @@ export const AdnChartWrapper = styled.div`
   margin: 0 auto;
 
   @media (max-width: 768px) {
-    max-width: none;
+    max-width: 380px;
   }
 `;
 
