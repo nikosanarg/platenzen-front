@@ -14,6 +14,7 @@ import {
   CoachRoot,
   UnifiedCard,
   CardSection,
+  CoachBannerSection,
   CoachBodyRow,
   CoachBodyLeft,
   CoachImage,
@@ -142,7 +143,7 @@ const CoachPersonalizado: React.FC<CoachPersonalizadoProps> = ({ activities, sta
 
       <UnifiedCard>
         {/* ── Coach recommendation ── */}
-        <CardSection>
+        <CoachBannerSection>
           <CoachBodyRow>
             <CoachBodyLeft>
               <CoachHeader>
@@ -192,9 +193,8 @@ const CoachPersonalizado: React.FC<CoachPersonalizadoProps> = ({ activities, sta
               </TooltipWrapper>
             </CoachBodyLeft>
 
-            <CoachImage src="/assets/coach_platenzen.png" alt="Coach Platenzen" />
           </CoachBodyRow>
-        </CardSection>
+        </CoachBannerSection>
 
         {/* ── Estado de forma ── */}
         {forma && (

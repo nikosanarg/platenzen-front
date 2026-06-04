@@ -355,6 +355,56 @@ export function computeRoles(activities: StravaActivity[], stats: ProcessedStats
   };
 }
 
+// ── ADN scores ─────────────────────────────────────────────────────────────
+
+export interface AdnScores {
+  resistencia: number;
+  velocidad: number;
+  consistencia: number;
+  exploracion: number;
+  logros: number;
+}
+
+export function computeAdnScores(
+  activities: StravaActivity[],
+  stats: ProcessedStats
+): AdnScores {
+  const runs = getRuns(activities);
+
+  // RESISTENCIA: weekly avg distance (50 km/week = 100)
+  const resistencia = Math.min(100, Math.round(stats.weeklyAvgDistance / 50 * 100));
+
+  // VELOCIDAD: best pace (4:00/km best, 7:00/km worst)
+  const WORST = 420;
+  const BEST = 240;
+  const velocidad = stats.bestPace > 0 && stats.bestPace < WORST
+    ? Math.min(100, Math.round(Math.max(0, (WORST - stats.bestPace) / (WORST - BEST) * 100)))
+    : 0;
+
+  // CONSISTENCIA: active-week ratio over last 12 weeks
+  const recent12 = stats.weekly.slice(-12);
+  const activeW = recent12.filter(w => w.distance > 0).length;
+  const consistencia = recent12.length > 0 ? Math.round(activeW / recent12.length * 100) : 0;
+
+  // EXPLORACIÓN: trail ratio + cumulative km
+  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
+  const exploracion = Math.min(100, Math.round(
+    Math.min(trailRatio * 150, 75) +
+    Math.min(stats.totalDistance / 2000 * 25, 25)
+  ));
+
+  // LOGROS: milestones + activities + total km
+  const milestones = milestonesReached(runs).size;
+  const logros = Math.min(100, Math.round(
+    Math.min(milestones / 6 * 50, 50) +
+    Math.min(stats.totalActivities / 100 * 25, 25) +
+    Math.min(stats.totalDistance / 1000 * 25, 25)
+  ));
+
+  return { resistencia, velocidad, consistencia, exploracion, logros };
+}
+
 export function computeObjectiveAfinidad(
   objective: RoleObjective,
   roles: RolesResult

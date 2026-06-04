@@ -34,6 +34,12 @@ export const LEVEL_NAMES = [
 
 const MILESTONE_DISTANCES_KM = [5, 10, 15, 21.1, 31.5, 42.2];
 
+export interface XpEventItem {
+  label: string;
+  xp: number;
+  type: 'level' | 'role';
+}
+
 export interface XPBreakdown {
   fromKm: number;
   fromMilestones: number;
@@ -51,6 +57,7 @@ export interface XPBreakdown {
   unlockedAchievements: number;
   total: number;
   xpSourceSummary: string;
+  xpEvents: XpEventItem[];
 }
 
 export interface LevelInfo {
@@ -158,11 +165,28 @@ function countCompleteMonths(weeks: WeekGroup[]): number {
   return complete;
 }
 
+function buildXpEvents(
+  partial: Omit<XPBreakdown, 'xpSourceSummary' | 'total' | 'xpEvents'>
+): XpEventItem[] {
+  return ([
+    { label: `${Math.round(partial.totalKm12mo)} km recorridos (12 meses)`, xp: partial.fromKm, type: 'level' as const },
+    { label: `${partial.unlockedAchievements} logros desbloqueados`, xp: partial.fromAchievements, type: 'role' as const },
+    { label: `${partial.milestonesReached} hitos de distancia`, xp: partial.fromMilestones, type: 'level' as const },
+    { label: `${partial.prCount} récords personales`, xp: partial.fromPRs, type: 'level' as const },
+    { label: `${partial.weeklyRecordCount} semanas récord`, xp: partial.fromWeeklyRecords, type: 'level' as const },
+    { label: `${partial.completeWeeks} semanas con 3+ salidas`, xp: partial.fromCompleteWeeks, type: 'level' as const },
+    { label: `${partial.completeMonths} meses completamente activos`, xp: partial.fromCompleteMonths, type: 'level' as const },
+  ] as XpEventItem[])
+    .filter(e => e.xp > 0)
+    .sort((a, e) => e.xp - a.xp)
+    .slice(0, 5);
+}
+
 function b(n: number | string): string {
   return `<strong>${n}</strong>`;
 }
 
-function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total'>): string {
+function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total' | 'xpEvents'>): string {
   const sources = [
     { label: `${b(Math.round(breakdown.totalKm12mo))} km recorridos`, value: breakdown.fromKm },
     { label: `${b(breakdown.milestonesReached)} hitos de distancia`, value: breakdown.fromMilestones },
@@ -215,7 +239,12 @@ export function computeXPBreakdown(activities: StravaActivity[], stats: Processe
     completeMonths, unlockedAchievements,
   };
 
-  return { ...partial, total, xpSourceSummary: buildSummary(partial) };
+  return {
+    ...partial,
+    total,
+    xpSourceSummary: buildSummary(partial),
+    xpEvents: buildXpEvents(partial),
+  };
 }
 
 export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats): LevelInfo {
