@@ -15,6 +15,8 @@ import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import CollapsibleSection from '@/components/CollapsibleSection';
+import UltimaActividad from '@/components/UltimaActividad';
+import SesionesLegendarias from '@/components/SesionesLegendarias';
 import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
 import {
   DashboardRoot,
@@ -25,6 +27,7 @@ import {
   HeaderRight,
   CacheInfo,
   HeaderButton,
+  ButtonText,
   HomeTabsBar,
   HomeTabsInner,
   HomeTabBtn,
@@ -104,20 +107,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
           )}
           <HeaderButton $variant="ghost" onClick={onRefresh} disabled={loading}>
-            <span className="only-icon-mobile">
-              {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="var(--text-secondary)" />}
-            </span>
-            <span className="only-text-desktop">
-              {loading ? 'Actualizando...' : 'Actualizar datos'}
-            </span>
+            {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}
+            <ButtonText>{loading ? 'Actualizando...' : 'Actualizar datos'}</ButtonText>
           </HeaderButton>
-          <HeaderButton $variant="ghost" onClick={onLogout}>
-            <span className="only-icon-mobile">
-              <IconLogout size={20} color="var(--text-secondary)" />
-            </span>
-            <span className="only-text-desktop">
-              Cambiar token
-            </span>
+          <HeaderButton $variant="ghost" $mobileRed onClick={onLogout}>
+            <IconLogout size={20} color="currentColor" />
+            <ButtonText>Cambiar token</ButtonText>
           </HeaderButton>
         </HeaderRight>
       </DashboardHeader>
@@ -152,6 +147,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <CoachPersonalizado activities={activities} stats={stats} />
 
+              <UltimaActividad activities={activities} stats={stats} />
+
               <RecordHistorySection activities={activities} />
 
               <section>
@@ -177,6 +174,8 @@ const Dashboard: React.FC<DashboardProps> = ({
               </CollapsibleSection>
 
               <InsightsSection activities={activities} stats={stats} />
+
+              <SesionesLegendarias activities={activities} stats={stats} />
             </>
           )}
 
