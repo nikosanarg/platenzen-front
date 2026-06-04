@@ -31,6 +31,7 @@ import {
   HomeTabsBar,
   HomeTabsInner,
   HomeTabBtn,
+  SectionTitle,
   DashboardContent,
   PatternsGrid,
   FullWidthChart,
@@ -97,12 +98,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>
         <HeaderRight>
-          {stats.currentStreak > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <span>🔥</span>
-              <span>{Math.ceil(stats.currentStreak / 7)} sem</span>
-            </div>
-          )}
           {isFromCache && cacheAge !== null && (
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
           )}
@@ -151,7 +146,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <RecordHistorySection activities={activities} />
 
+              <SesionesLegendarias activities={activities} stats={stats} />
+
               <section>
+                <SectionTitle>Tu año en actividad</SectionTitle>
                 <FullWidthChart>
                   <ActivityHeatmap data={stats.daily} />
                 </FullWidthChart>
@@ -171,11 +169,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                     cumulativeDistance={stats.cumulativeDistance}
                   />
                 </PatternsGrid>
+                <InsightsSection activities={activities} stats={stats} />
               </CollapsibleSection>
-
-              <InsightsSection activities={activities} stats={stats} />
-
-              <SesionesLegendarias activities={activities} stats={stats} />
             </>
           )}
 

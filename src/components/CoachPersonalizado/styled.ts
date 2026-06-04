@@ -23,6 +23,40 @@ export const CardSection = styled.div`
   }
 `;
 
+export const CoachBannerSection = styled(CardSection)`
+  position: relative;
+  isolation: isolate;
+
+  /* Background image — reduced blur and opacity */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: url('/assets/coach_banner_background.png') center / cover no-repeat;
+    opacity: 0.35;
+    filter: blur(2px);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* Dark gradient overlay for legibility */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.55) 55%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+    border-radius: inherit;
+    pointer-events: none;
+  }
+`;
+
 /* ── Coach block ─────────────────────────────────────────────── */
 
 export const CoachBodyRow = styled.div`
@@ -62,15 +96,15 @@ export const CoachHeader = styled.div`
 `;
 
 export const CoachIcon = styled.div`
-  width: 36px;
-  height: 36px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--accent-muted);
   border: 1px solid rgba(252, 76, 2, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 2.2rem;
   flex-shrink: 0;
 `;
 
@@ -86,12 +120,14 @@ export const LoadStateLabel = styled.div`
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-muted);
+  text-shadow: 0 1px 6px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.9);
 `;
 
 export const RecommendationLabel = styled.div`
   font-size: 1rem;
   font-weight: 700;
   color: var(--accent);
+  text-shadow: 0 1px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
 `;
 
 export const MotivoBlock = styled.div`
@@ -104,6 +140,7 @@ export const MotivoLine = styled.div`
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  text-shadow: 0 1px 6px rgba(0,0,0,1), 0 0 14px rgba(0,0,0,0.9);
 `;
 
 /* ── Tooltip ─────────────────────────────────────────────────── */
@@ -133,7 +170,7 @@ export const TooltipPopup = styled.div<{ $visible: boolean }>`
   position: absolute;
   bottom: calc(100% + 8px);
   left: 0;
-  z-index: 20;
+  z-index: 200;
   min-width: 280px;
   max-width: 340px;
   background: var(--bg-secondary);

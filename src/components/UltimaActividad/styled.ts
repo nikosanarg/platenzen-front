@@ -81,6 +81,8 @@ export const MapContainer = styled.div`
 
   @media (max-width: 600px) {
     width: 100%;
+    max-width: 420px;
+    align-self: center;
   }
 `;
 
