@@ -19,8 +19,7 @@ export const ViewModeSwitch = styled.div`
   background: var(--bg-secondary);
 
   @media (max-width: 600px) {
-    align-self: stretch;
-    width: fit-content;
+    align-self: flex-start;
   }
 `;
 

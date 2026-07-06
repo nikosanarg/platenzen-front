@@ -64,6 +64,10 @@ function getStoredViewMode(): ViewMode {
   }
 }
 
+/**
+ * Convención de assets: cada logro puede tener su imagen en
+ * `/public/assets/achievements/<achievementId>.png`.
+ */
 function achievementImagePath(achievementId: string): string {
   return `/assets/achievements/${achievementId}.png`;
 }
@@ -101,10 +105,10 @@ function AchievementCardItem({
       </AchievementArtwork>
       <AchievementBody>
         <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
-        <AchievementTitle title={achievement.name} $viewMode={viewMode}>
+        <AchievementTitle $viewMode={viewMode}>
           {achievement.name}
         </AchievementTitle>
-        <AchievementDescription title={description} $viewMode={viewMode}>
+        <AchievementDescription $viewMode={viewMode}>
           {description}
         </AchievementDescription>
         {achievement.unlocked && achievement.unlockedAt && (
