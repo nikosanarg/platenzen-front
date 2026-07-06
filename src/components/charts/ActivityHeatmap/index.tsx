@@ -92,7 +92,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const { distanceMap, maxDistanceKm } = React.useMemo(() => {
     const distanceMap = buildDistanceGrid(data);
     return { distanceMap, maxDistanceKm: Math.max(...Array.from(distanceMap.values()), 0) };
-  }, [data, weeks]);
+  }, [data]);
 
   const monthLabelsByWeek = React.useMemo(
     () => getMonthLabelsByWeek(weeks.map((week) => week[0])),
