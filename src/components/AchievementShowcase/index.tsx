@@ -45,7 +45,7 @@ const CONSISTENCY_GROUPS = [
   { key: 'mensual', idsPrefix: 'month', title: 'Mensual' },
 ] as const;
 
-const VIEW_MODE_STORAGE_KEY = 'platenzen.achievements.viewMode';
+const VIEW_MODE_STORAGE_KEY = 'achievement-showcase.view-mode';
 
 interface AchievementShowcaseProps {
   activities: StravaActivity[];
@@ -72,6 +72,11 @@ function achievementImagePath(achievementId: string): string {
   return `/assets/achievements/${achievementId}.png`;
 }
 
+/**
+ * Texto descriptivo extendido para tooltip/cuerpo:
+ * - desbloqueado: descripción + motivo de desbloqueo
+ * - bloqueado: descripción + progreso hacia el objetivo
+ */
 function achievementLongDescription(achievement: Achievement): string {
   if (achievement.unlocked) {
     return `${achievement.description}. ${achievement.unlockedReason}`;
@@ -101,7 +106,7 @@ function AchievementCardItem({
             onError={() => setImageError(true)}
           />
         )}
-        {imageError && <AchievementImageFallback>🏆</AchievementImageFallback>}
+        {imageError && <AchievementImageFallback aria-label="Imagen de logro no disponible">🏆</AchievementImageFallback>}
       </AchievementArtwork>
       <AchievementBody>
         <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
