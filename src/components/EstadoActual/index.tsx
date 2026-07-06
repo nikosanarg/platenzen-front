@@ -68,7 +68,7 @@ function buildObservations(stats: ProcessedStats): Observation[] {
   }
 
   const recentWeeks = stats.weekly.slice(-12);
-  const activeWeeks = recentWeeks.filter((w) => w.distance > 0).length;
+  const activeWeeks = recentWeeks.filter((w) => w.count > 0).length;
   if (recentWeeks.length >= 4 && activeWeeks > 0) {
     obs.push({
       id: 'consistency',
