@@ -41,7 +41,7 @@ import {
   Spinner,
 } from './styled';
 
-type HomeTab = 'progreso' | 'objetivos' | 'comparar';
+type HomeTab = 'progreso' | 'logros' | 'comparar';
 
 interface DashboardProps {
   activities: StravaActivity[];
@@ -118,8 +118,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             <HomeTabBtn $active={activeTab === 'progreso'} onClick={() => setActiveTab('progreso')}>
               Progreso
             </HomeTabBtn>
-            <HomeTabBtn $active={activeTab === 'objetivos'} onClick={() => setActiveTab('objetivos')}>
-              Objetivos
+            <HomeTabBtn $active={activeTab === 'logros'} onClick={() => setActiveTab('logros')}>
+              Logros
             </HomeTabBtn>
             <HomeTabBtn $active={activeTab === 'comparar'} onClick={() => setActiveTab('comparar')}>
               Comparar
@@ -174,7 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </>
           )}
 
-          {activeTab === 'objetivos' && (
+          {activeTab === 'logros' && (
             <AchievementShowcase activities={activities} stats={stats} />
           )}
 

@@ -3,15 +3,65 @@ import styled from 'styled-components';
 export const ShowcaseRoot = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
 `;
 
-/* ── Category ─────────────────────────────────────────────────── */
+export const ViewModeSwitch = styled.div`
+  display: inline-flex;
+  align-self: flex-end;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+
+  @media (max-width: 600px) {
+    align-self: stretch;
+    width: fit-content;
+  }
+`;
+
+export const ViewModeButton = styled.button<{ $active: boolean }>`
+  background: ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
+  color: ${({ $active }) => ($active ? '#fff' : 'var(--text-secondary)')};
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: ${({ $active }) => ($active ? '#fff' : 'var(--text-primary)')};
+    background: ${({ $active }) => ($active ? 'var(--accent)' : 'var(--bg-card-hover)')};
+  }
+`;
 
 export const CategoryBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.9rem;
+`;
+
+export const CategoryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const ConceptBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+`;
+
+export const ConceptTitle = styled.h4`
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
 `;
 
 export const CategoryTitle = styled.h3`
@@ -22,115 +72,109 @@ export const CategoryTitle = styled.h3`
   color: var(--text-muted);
 `;
 
-/* ── Stepper row ──────────────────────────────────────────────── */
-
-export const StepperRow = styled.div`
-  display: flex;
-  align-items: flex-start;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-
-  &::-webkit-scrollbar {
-    height: 3px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 999px;
-  }
-`;
-
-/*
- * Horizontal line segment between two cards.
- * margin-top aligns the line center with the center of the StepDot:
- *   card padding-top (0.875rem) + dot radius (5px) − line half-height (1px)
- */
-export const StepLine = styled.div<{ $active: boolean }>`
-  height: 2px;
-  min-width: 20px;
-  flex: 0 0 20px;
-  margin-top: calc(0.875rem + 4px);
-  background: ${({ $active }) => ($active ? '#4ade80' : 'var(--border)')};
-  flex-shrink: 0;
-  transition: background 0.3s;
-`;
-
-/* ── Step card ────────────────────────────────────────────────── */
-
-export const StepCard = styled.div<{ $unlocked: boolean; $isCurrent: boolean }>`
-  min-width: 148px;
-  max-width: 180px;
-  flex: 1;
-  background: var(--bg-card);
-  border: 1px solid
-    ${({ $unlocked, $isCurrent }) =>
-      $unlocked
-        ? 'rgba(74, 222, 128, 0.3)'
-        : $isCurrent
-        ? 'var(--border-light)'
-        : 'var(--border)'};
-  border-radius: var(--radius-sm);
-  padding: 0.875rem 0.875rem 1rem;
+export const AchievementsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  opacity: ${({ $unlocked, $isCurrent }) => ($unlocked || $isCurrent ? 1 : 0.35)};
+  gap: 0.8rem;
+`;
+
+export const AchievementsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
+`;
+
+export const AchievementCard = styled.article<{ $viewMode: 'list' | 'grid'; $unlocked: boolean }>`
+  background: var(--bg-card);
+  border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(74, 222, 128, 0.35)' : 'var(--border)')};
+  border-radius: var(--radius-sm);
+  padding: 0.72rem;
+  display: flex;
+  flex-direction: ${({ $viewMode }) => ($viewMode === 'list' ? 'row' : 'column')};
+  align-items: ${({ $viewMode }) => ($viewMode === 'list' ? 'stretch' : 'flex-start')};
+  gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.8rem' : '0.6rem')};
+  min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '112px' : '252px')};
+  opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+
+  &:hover {
+    border-color: var(--border-light);
+    opacity: 1;
+  }
+`;
+
+export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid' }>`
   position: relative;
-  transition: opacity 0.2s;
-`;
-
-/* Circle marker — always the first child so its Y is predictable */
-export const StepDot = styled.div<{ $unlocked: boolean }>`
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
   flex-shrink: 0;
-  background: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--border)')};
-  margin-bottom: 0.5rem;
+  width: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '100%')};
+  height: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '146px')};
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  background: linear-gradient(135deg, #1d2a40, #0f121a);
 `;
 
-export const StepXP = styled.div<{ $unlocked: boolean }>`
-  position: absolute;
-  top: 0.55rem;
-  right: 0.625rem;
-  font-size: 0.6rem;
+export const AchievementImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+export const AchievementImageFallback = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+`;
+
+export const AchievementBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.28rem;
+  width: 100%;
+  min-width: 0;
+`;
+
+export const AchievementXP = styled.div<{ $unlocked: boolean }>`
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--text-muted)')};
+  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--text-secondary)')};
+  margin-bottom: 0.1rem;
 `;
 
-export const StepName = styled.div`
-  font-size: 0.82rem;
+export const AchievementTitle = styled.h4<{ $viewMode: 'list' | 'grid' }>`
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
-  padding-right: 2.5rem;
+  overflow: hidden;
+  ${({ $viewMode }) =>
+    $viewMode === 'grid' &&
+    `
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    `}
 `;
 
-export const StepDate = styled.div`
-  font-size: 0.68rem;
+export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: ${({ $viewMode }) => ($viewMode === 'grid' ? 2 : 3)};
+  text-overflow: ellipsis;
+`;
+
+export const AchievementDate = styled.div`
+  margin-top: auto;
+  font-size: 0.64rem;
   color: #4ade80;
   font-weight: 500;
-  margin-top: 0.25rem;
-`;
-
-export const StepProgressTrack = styled.div`
-  height: 3px;
-  background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 0.375rem;
-`;
-
-export const StepProgressFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => ($pct * 100).toFixed(1)}%;
-  background: var(--accent);
-  border-radius: 999px;
-  transition: width 0.5s ease;
-`;
-
-export const StepProgressText = styled.div`
-  font-size: 0.65rem;
-  color: var(--text-secondary);
-  margin-top: 0.125rem;
 `;
