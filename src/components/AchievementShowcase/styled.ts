@@ -1,5 +1,8 @@
 import styled from 'styled-components';
 
+const LIST_CARD_MIN_HEIGHT = '112px';
+const GRID_CARD_MIN_HEIGHT = '252px';
+
 export const ShowcaseRoot = styled.section`
   display: flex;
   flex-direction: column;
@@ -93,7 +96,7 @@ export const AchievementCard = styled.article<{ $viewMode: 'list' | 'grid'; $unl
   flex-direction: ${({ $viewMode }) => ($viewMode === 'list' ? 'row' : 'column')};
   align-items: ${({ $viewMode }) => ($viewMode === 'list' ? 'stretch' : 'flex-start')};
   gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.8rem' : '0.6rem')};
-  min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '112px' : '252px')};
+  min-height: ${({ $viewMode }) => ($viewMode === 'list' ? LIST_CARD_MIN_HEIGHT : GRID_CARD_MIN_HEIGHT)};
   opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
   transition: border-color 0.2s ease, opacity 0.2s ease;
 

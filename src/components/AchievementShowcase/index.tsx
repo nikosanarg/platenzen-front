@@ -54,6 +54,16 @@ interface AchievementShowcaseProps {
 
 type ViewMode = 'list' | 'grid';
 
+function getStoredViewMode(): ViewMode {
+  if (typeof window === 'undefined') return 'list';
+  try {
+    const storedMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return storedMode === 'grid' ? 'grid' : 'list';
+  } catch {
+    return 'list';
+  }
+}
+
 function achievementImagePath(achievementId: string): string {
   return `/assets/achievements/${achievementId}.png`;
 }
@@ -74,7 +84,7 @@ function AchievementCardItem({
 }) {
   const [imageError, setImageError] = useState(false);
   const description = achievementLongDescription(achievement);
-  const tooltip = `${achievement.name}\n${description}`;
+  const tooltip = `${achievement.name} — ${description}`;
 
   return (
     <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} title={tooltip}>
@@ -109,15 +119,15 @@ function AchievementCardItem({
 
 const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({ activities, stats }) => {
   const achievementMap = computeAchievements(activities, stats);
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === 'undefined') return 'list';
-    const storedMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    return storedMode === 'grid' ? 'grid' : 'list';
-  });
+  const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
 
   const onChangeViewMode = (nextMode: ViewMode) => {
     setViewMode(nextMode);
-    window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextMode);
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextMode);
+    } catch {
+      // noop: view preference persistence is optional
+    }
   };
 
   return (
