@@ -20,6 +20,7 @@ import {
 const DAYS_IN_WEEK = 7;
 const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const DAY_LABELS = ['', 'LUN', '', 'MIÉ', '', 'VIE', ''];
+const DAY_ARIA_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -99,9 +100,16 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   );
   const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
+    const tooltipWidth = 118;
+    const tooltipHeight = 52;
+    const margin = 6;
+    const x = clientX - (rect?.left ?? 0);
+    const y = clientY - (rect?.top ?? 0);
+    const maxX = Math.max(margin, (rect?.width ?? 0) - tooltipWidth - margin);
+    const maxY = Math.max(margin, (rect?.height ?? 0) - tooltipHeight - margin);
     return {
-      x: clientX - (rect?.left ?? 0),
-      y: clientY - (rect?.top ?? 0),
+      x: Math.min(Math.max(x + 12, margin), maxX),
+      y: Math.min(Math.max(y - 18, margin), maxY),
     };
   }, []);
 
@@ -111,7 +119,13 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
         <HeatmapContent>
           <HeatmapDayLabels>
             {Array.from({ length: DAYS_IN_WEEK }).map((_, dayIdx) => (
-              <HeatmapDayLabel key={dayIdx}>{DAY_LABELS[dayIdx]}</HeatmapDayLabel>
+              <HeatmapDayLabel
+                key={dayIdx}
+                aria-label={DAY_ARIA_LABELS[dayIdx]}
+                aria-hidden={DAY_LABELS[dayIdx] === ''}
+              >
+                {DAY_LABELS[dayIdx]}
+              </HeatmapDayLabel>
             ))}
           </HeatmapDayLabels>
 
@@ -148,8 +162,8 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                             current
                               ? {
                                   ...current,
-                                  x: coords.x,
-                                  y: coords.y,
+                                  x: Math.abs(current.x - coords.x) > 1 ? coords.x : current.x,
+                                  y: Math.abs(current.y - coords.y) > 1 ? coords.y : current.y,
                                 }
                               : current
                           );
@@ -165,7 +179,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
         </HeatmapContent>
 
         {tooltip && (
-          <HeatmapTooltip style={{ left: tooltip.x + 12, top: tooltip.y - 18 }}>
+          <HeatmapTooltip style={{ left: tooltip.x, top: tooltip.y }}>
             <div><b>{formatDate(tooltip.date)}</b></div>
             <div>{formatKm(tooltip.km)} km</div>
           </HeatmapTooltip>
