@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import {
@@ -109,15 +109,11 @@ function AchievementCardItem({
 
 const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({ activities, stats }) => {
   const achievementMap = computeAchievements(activities, stats);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-
-  useEffect(() => {
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === 'undefined') return 'list';
     const storedMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    if (storedMode === 'list' || storedMode === 'grid') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setViewMode(storedMode);
-    }
-  }, []);
+    return storedMode === 'grid' ? 'grid' : 'list';
+  });
 
   const onChangeViewMode = (nextMode: ViewMode) => {
     setViewMode(nextMode);
