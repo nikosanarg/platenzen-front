@@ -20,7 +20,6 @@ import {
 const DAYS_IN_WEEK = 7;
 const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const DAY_LABELS = ['', 'LUN', '', 'MIÉ', '', 'VIE', ''];
-const ORANGE_SCALE = ['#1a1f28', '#3a2413', '#6c3c14', '#9c560f', '#fc7f1c'];
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -98,6 +97,13 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
     () => getMonthLabelsByWeek(weeks.map((week) => week[0])),
     [weeks]
   );
+  const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    return {
+      x: clientX - (rect?.left ?? 0),
+      y: clientY - (rect?.top ?? 0),
+    };
+  }, []);
 
   return (
     <HeatmapCard>
@@ -122,31 +128,32 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                   {week.map((date) => {
                     const distanceKm = distanceMap.get(date) ?? 0;
                     const level = getCellLevel(distanceKm, maxDistanceKm);
-                    const rect = containerRef.current?.getBoundingClientRect();
                     return (
                       <HeatmapCell
                         key={date}
-                        style={{ ['--cell-color' as string]: ORANGE_SCALE[level] }}
+                        $level={level}
                         aria-label={`${formatDate(date)}: ${formatKm(distanceKm)} km`}
-                        onMouseEnter={(e) =>
+                        onMouseEnter={(e) => {
+                          const coords = getTooltipPosition(e.clientX, e.clientY);
                           setTooltip({
-                            x: e.clientX - (rect?.left ?? 0),
-                            y: e.clientY - (rect?.top ?? 0),
+                            x: coords.x,
+                            y: coords.y,
                             date,
                             km: distanceKm,
-                          })
-                        }
-                        onMouseMove={(e) =>
+                          });
+                        }}
+                        onMouseMove={(e) => {
+                          const coords = getTooltipPosition(e.clientX, e.clientY);
                           setTooltip((current) =>
                             current
                               ? {
                                   ...current,
-                                  x: e.clientX - (rect?.left ?? 0),
-                                  y: e.clientY - (rect?.top ?? 0),
+                                  x: coords.x,
+                                  y: coords.y,
                                 }
                               : current
-                          )
-                        }
+                          );
+                        }}
                         onMouseLeave={() => setTooltip(null)}
                       />
                     );

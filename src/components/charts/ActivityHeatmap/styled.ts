@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+const ORANGE_SCALE = ['#1a1f28', '#3a2413', '#6c3c14', '#9c560f', '#fc7f1c'];
+
 export const HeatmapCard = styled.div`
   background: none;
   border: none;
@@ -74,12 +76,16 @@ export const HeatmapWeekColumn = styled.div`
   gap: var(--cell-gap);
 `;
 
-export const HeatmapCell = styled.button`
+interface HeatmapCellProps {
+  $level: number;
+}
+
+export const HeatmapCell = styled.button<HeatmapCellProps>`
   width: var(--cell-size);
   height: var(--cell-size);
   border: 0;
   border-radius: 2px;
-  background: var(--cell-color, #1a1f28);
+  background: ${({ $level }) => ORANGE_SCALE[$level] ?? ORANGE_SCALE[0]};
   padding: 0;
   cursor: pointer;
   transition: filter 0.14s ease, transform 0.14s ease;
