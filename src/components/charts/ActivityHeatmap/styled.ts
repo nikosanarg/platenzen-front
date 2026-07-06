@@ -85,7 +85,7 @@ export const HeatmapCell = styled.button<HeatmapCellProps>`
   height: var(--cell-size);
   border: 0;
   border-radius: 2px;
-  background: ${({ $level }) => ORANGE_SCALE[$level] ?? ORANGE_SCALE[0]};
+  background: ${({ $level }) => ORANGE_SCALE[Math.max(0, Math.min($level, ORANGE_SCALE.length - 1))]};
   padding: 0;
   cursor: pointer;
   transition: filter 0.14s ease, transform 0.14s ease;

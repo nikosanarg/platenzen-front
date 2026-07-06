@@ -21,6 +21,12 @@ const DAYS_IN_WEEK = 7;
 const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const DAY_LABELS = ['', 'LUN', '', 'MIÉ', '', 'VIE', ''];
 const DAY_ARIA_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const TOOLTIP_WIDTH = 118;
+const TOOLTIP_HEIGHT = 52;
+const TOOLTIP_MARGIN = 6;
+const TOOLTIP_OFFSET_X = 12;
+const TOOLTIP_OFFSET_Y = 18;
+const TOOLTIP_POSITION_THRESHOLD = 1;
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -100,16 +106,13 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   );
   const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
-    const tooltipWidth = 118;
-    const tooltipHeight = 52;
-    const margin = 6;
     const x = clientX - (rect?.left ?? 0);
     const y = clientY - (rect?.top ?? 0);
-    const maxX = Math.max(margin, (rect?.width ?? 0) - tooltipWidth - margin);
-    const maxY = Math.max(margin, (rect?.height ?? 0) - tooltipHeight - margin);
+    const maxX = Math.max(TOOLTIP_MARGIN, (rect?.width ?? 0) - TOOLTIP_WIDTH - TOOLTIP_MARGIN);
+    const maxY = Math.max(TOOLTIP_MARGIN, (rect?.height ?? 0) - TOOLTIP_HEIGHT - TOOLTIP_MARGIN);
     return {
-      x: Math.min(Math.max(x + 12, margin), maxX),
-      y: Math.min(Math.max(y - 18, margin), maxY),
+      x: Math.min(Math.max(x + TOOLTIP_OFFSET_X, TOOLTIP_MARGIN), maxX),
+      y: Math.min(Math.max(y - TOOLTIP_OFFSET_Y, TOOLTIP_MARGIN), maxY),
     };
   }, []);
 
@@ -162,9 +165,15 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                             current
                               ? {
                                   ...current,
-                                  x: Math.abs(current.x - coords.x) > 1 ? coords.x : current.x,
-                                  y: Math.abs(current.y - coords.y) > 1 ? coords.y : current.y,
-                                }
+                              x:
+                                Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD
+                                  ? coords.x
+                                  : current.x,
+                              y:
+                                Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD
+                                  ? coords.y
+                                  : current.y,
+                            }
                               : current
                           );
                         }}
