@@ -7,8 +7,6 @@ import {
   HeatmapBody,
   HeatmapCell,
   HeatmapContent,
-  HeatmapDayLabel,
-  HeatmapDayLabels,
   HeatmapGrid,
   HeatmapMonthCell,
   HeatmapMonthsRow,
@@ -17,10 +15,7 @@ import {
   HeatmapWeekColumn,
 } from './styled';
 
-const DAYS_IN_WEEK = 7;
 const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
-const DAY_LABELS = ['', 'LUN', '', 'MIÉ', '', 'VIE', ''];
-const DAY_ARIA_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const TOOLTIP_WIDTH = 118;
 const TOOLTIP_HEIGHT = 52;
 const TOOLTIP_MARGIN = 6;
@@ -96,6 +91,16 @@ function formatKm(km: number): string {
   return Number.isInteger(km) ? km.toFixed(0) : km.toFixed(1);
 }
 
+function formatWeekday(date: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(new Date(year, month - 1, day));
+}
+
+function isFutureDate(date: string): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  return date > today;
+}
+
 function updateTooltipPosition(
   current: HeatmapTooltipState,
   coords: { x: number; y: number }
@@ -139,20 +144,11 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
 
   return (
     <HeatmapCard>
-      <HeatmapViewport ref={containerRef}>
+      <HeatmapViewport
+        ref={containerRef}
+        style={{ '--weeks': weeks.length } as React.CSSProperties}
+      >
         <HeatmapContent>
-          <HeatmapDayLabels>
-            {Array.from({ length: DAYS_IN_WEEK }).map((_, dayIdx) => (
-              <HeatmapDayLabel
-                key={dayIdx}
-                aria-label={DAY_LABELS[dayIdx] ? DAY_ARIA_LABELS[dayIdx] : undefined}
-                aria-hidden={DAY_LABELS[dayIdx] === ''}
-              >
-                {DAY_LABELS[dayIdx]}
-              </HeatmapDayLabel>
-            ))}
-          </HeatmapDayLabels>
-
           <HeatmapBody>
             <HeatmapMonthsRow>
               {monthLabelsByWeek.map((monthLabel, weekIdx) => (
@@ -166,18 +162,25 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                   {week.map((date) => {
                     const distanceKm = distanceMap.get(date) ?? 0;
                     const level = getCellLevel(distanceKm, maxDistanceKm);
+                    const future = isFutureDate(date);
                     return (
                       <HeatmapCell
                         key={date}
                         $level={level}
+                        $future={future}
                         type="button"
                         role="gridcell"
+                        disabled={future}
+                        tabIndex={future ? -1 : 0}
                         aria-label={
-                          distanceKm > 0
+                          future
+                            ? undefined
+                            : distanceKm > 0
                             ? `${formatDate(date)}: ${formatKm(distanceKm)} km`
                             : `${formatDate(date)}: Sin actividad`
                         }
                         onMouseEnter={(e) => {
+                          if (future) return;
                           const coords = calculateTooltipPosition(e.clientX, e.clientY);
                           setTooltip({
                             x: coords.x,
@@ -187,10 +190,13 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                           });
                         }}
                         onMouseMove={(e) => {
+                          if (future) return;
                           const coords = calculateTooltipPosition(e.clientX, e.clientY);
                           setTooltip((current) => updateTooltipPosition(current, coords));
                         }}
-                        onMouseLeave={() => setTooltip(null)}
+                        onMouseLeave={() => {
+                          if (!future) setTooltip(null);
+                        }}
                       />
                     );
                   })}
@@ -203,6 +209,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
         {tooltip && (
           <HeatmapTooltip style={{ left: tooltip.x, top: tooltip.y }}>
             <div><b>{formatDate(tooltip.date)}</b></div>
+            <div>{formatWeekday(tooltip.date)}</div>
             <div>{formatKm(tooltip.km)} km</div>
           </HeatmapTooltip>
         )}

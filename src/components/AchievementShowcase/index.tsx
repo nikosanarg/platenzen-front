@@ -23,12 +23,11 @@ import {
   AchievementCard,
   AchievementArtwork,
   AchievementImage,
-  AchievementImageFallback,
   AchievementBody,
   AchievementTitle,
   AchievementDescription,
   AchievementXP,
-  AchievementDate,
+  AchievementMeta,
 } from './styled';
 
 const CATEGORY_ORDER: AchievementCategory[] = [
@@ -46,6 +45,51 @@ const CONSISTENCY_GROUPS = [
 ] as const;
 
 const VIEW_MODE_STORAGE_KEY = 'achievement-showcase.view-mode';
+const FALLBACK_ACHIEVEMENT_IMAGE = '/assets/achievements/fallback.png';
+
+const ACHIEVEMENT_IMAGE_KEY_BY_ID: Record<string, string> = {
+  first5k: 'first-5km',
+  first10k: 'first-10km',
+  first15k: 'first-15km',
+  first21k: 'first-21k',
+  first31k: 'first-31k',
+  first42k: 'first-42k',
+
+  vol100: 'vol-100',
+  vol250: 'vol-250',
+  vol500: 'vol-500',
+  vol1000: 'vol-1000',
+  vol2500: 'vol-2500',
+  vol5000: 'vol-5000',
+
+  act10: 'act-10',
+  act25: 'act-25',
+  act50: 'act-50',
+  act100: 'act-100',
+  act200: 'act-200',
+
+  week3: 'week-3',
+  week4: 'week-4',
+  week5: 'week-5',
+  week6: 'week-6',
+  week7: 'week-7',
+
+  month8: 'month-8',
+  month12: 'month-12',
+  month16: 'month-16',
+  month20: 'month-20',
+
+  pace600: 'pace-600',
+  pace530: 'pace-530',
+  pace500: 'pace-500',
+  pace430: 'pace-430',
+  pace400: 'pace-400',
+
+  first_trail: 'first-trail',
+  five_trail: 'five-trail',
+  elev200: 'elev-200',
+  elev5000: 'elev-5000',
+};
 
 interface AchievementShowcaseProps {
   activities: StravaActivity[];
@@ -64,24 +108,14 @@ function getStoredViewMode(): ViewMode {
   }
 }
 
-/**
- * Convención de assets: cada logro puede tener su imagen en
- * `/public/assets/achievements/<achievementId>.png`.
- */
-function achievementImagePath(achievementId: string): string {
-  return `/assets/achievements/${achievementId}.png`;
-}
-
-/**
- * Texto descriptivo extendido para tooltip/cuerpo:
- * - desbloqueado: descripción + motivo de desbloqueo
- * - bloqueado: descripción + progreso hacia el objetivo
- */
-function achievementLongDescription(achievement: Achievement): string {
-  if (achievement.unlocked) {
-    return `${achievement.description}. ${achievement.unlockedReason}`;
-  }
-  return `${achievement.description}. Progreso: ${achievement.progressText}`;
+function achievementImageCandidates(achievementId: string): string[] {
+  const imageKey = ACHIEVEMENT_IMAGE_KEY_BY_ID[achievementId];
+  if (!imageKey) return [FALLBACK_ACHIEVEMENT_IMAGE];
+  return [
+    `/assets/achievements/${imageKey}.png`,
+    `/assets/achievements/${imageKey}.jpg`,
+    FALLBACK_ACHIEVEMENT_IMAGE,
+  ];
 }
 
 function AchievementCardItem({
@@ -91,22 +125,26 @@ function AchievementCardItem({
   achievement: Achievement;
   viewMode: ViewMode;
 }) {
-  const [imageError, setImageError] = useState(false);
-  const description = achievementLongDescription(achievement);
+  const imageCandidates = React.useMemo(() => achievementImageCandidates(achievement.id), [achievement.id]);
+  const [imageCandidateIndex, setImageCandidateIndex] = useState(0);
+  const imageSrc = imageCandidates[imageCandidateIndex] ?? FALLBACK_ACHIEVEMENT_IMAGE;
+  const description = achievement.description;
   const tooltip = `${achievement.name} — ${description}`;
 
   return (
     <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} title={tooltip}>
-      <AchievementArtwork $viewMode={viewMode}>
-        {!imageError && (
-          <AchievementImage
-            src={achievementImagePath(achievement.id)}
-            alt={achievement.name}
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
-        )}
-        {imageError && <AchievementImageFallback aria-label="Imagen de logro no disponible">🏆</AchievementImageFallback>}
+      <AchievementArtwork $viewMode={viewMode} $unlocked={achievement.unlocked}>
+        <AchievementImage
+          src={imageSrc}
+          alt={achievement.name}
+          $unlocked={achievement.unlocked}
+          loading="lazy"
+          onError={() => {
+            if (imageCandidateIndex < imageCandidates.length - 1) {
+              setImageCandidateIndex((idx) => idx + 1);
+            }
+          }}
+        />
       </AchievementArtwork>
       <AchievementBody>
         <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
@@ -116,8 +154,14 @@ function AchievementCardItem({
         <AchievementDescription $viewMode={viewMode}>
           {description}
         </AchievementDescription>
-        {achievement.unlocked && achievement.unlockedAt && (
-          <AchievementDate>Desbloqueado: {formatDate(achievement.unlockedAt)}</AchievementDate>
+        {achievement.unlocked && achievement.unlockedAt ? (
+          <AchievementMeta $unlocked>
+            Desbloqueado: {formatDate(achievement.unlockedAt)}
+          </AchievementMeta>
+        ) : (
+          <AchievementMeta $unlocked={false}>
+            Progreso: {achievement.progressText}
+          </AchievementMeta>
         )}
       </AchievementBody>
     </AchievementCard>

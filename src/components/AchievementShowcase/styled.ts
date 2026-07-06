@@ -94,39 +94,34 @@ export const AchievementCard = styled.article<{ $viewMode: 'list' | 'grid'; $unl
   gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.8rem' : '0.6rem')};
   min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '112px' : '252px')};
   opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
-  transition: border-color 0.2s ease, opacity 0.2s ease;
+  box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(34, 197, 94, 0.22), 0 0 18px rgba(34, 197, 94, 0.16)' : 'none')};
+  transition: border-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     border-color: var(--border-light);
     opacity: 1;
+    box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.32), 0 0 22px rgba(74, 222, 128, 0.22)' : 'none')};
   }
 `;
 
-export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid' }>`
+export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid'; $unlocked: boolean }>`
   position: relative;
   flex-shrink: 0;
   width: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '100%')};
   height: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '146px')};
   border-radius: 6px;
-  border: 1px solid var(--border-light);
   overflow: hidden;
-  background: linear-gradient(135deg, #1d2a40, #0f121a);
+  box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.35), 0 0 14px rgba(74, 222, 128, 0.22)' : 'none')};
 `;
 
-export const AchievementImage = styled.img`
+export const AchievementImage = styled.img<{ $unlocked: boolean }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
-`;
-
-export const AchievementImageFallback = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
+  filter: ${({ $unlocked }) => ($unlocked ? 'none' : 'grayscale(1) brightness(0.52) contrast(1.05)')};
+  transform: scale(1.01);
 `;
 
 export const AchievementBody = styled.div`
@@ -171,9 +166,9 @@ export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
   text-overflow: ellipsis;
 `;
 
-export const AchievementDate = styled.div`
+export const AchievementMeta = styled.div<{ $unlocked: boolean }>`
   margin-top: auto;
   font-size: 0.64rem;
-  color: #4ade80;
+  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : '#f59e0b')};
   font-weight: 500;
 `;

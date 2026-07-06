@@ -10,7 +10,6 @@ import RacePredictorTable from '@/components/RacePredictorTable';
 import InsightsSection from '@/components/InsightsSection';
 import PeriodComparator from '@/components/PeriodComparator';
 import AchievementShowcase from '@/components/AchievementShowcase';
-import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
@@ -31,10 +30,8 @@ import {
   HomeTabsBar,
   HomeTabsInner,
   HomeTabBtn,
-  SectionTitle,
   DashboardContent,
   PatternsGrid,
-  FullWidthChart,
   LoadingOverlay,
   LoadingText,
   LoadingCount,
@@ -147,13 +144,6 @@ const Dashboard: React.FC<DashboardProps> = ({
               <RecordHistorySection activities={activities} />
 
               <SesionesLegendarias activities={activities} stats={stats} />
-
-              <section>
-                <SectionTitle>Tu año en actividad</SectionTitle>
-                <FullWidthChart>
-                  <ActivityHeatmap data={stats.daily} />
-                </FullWidthChart>
-              </section>
 
               <CollapsibleSection
                 title="Patrones y Tendencias"

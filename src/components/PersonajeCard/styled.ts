@@ -117,6 +117,20 @@ export const XpEventLabel = styled.span`
   color: var(--text-secondary);
 `;
 
+export const ActivitySection = styled.div`
+  margin-top: 0.9rem;
+  width: 100%;
+`;
+
+export const ActivityTitle = styled.h3`
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+`;
+
 /* ── Primary afinidad bar (below XP bar) ─────────────────────── */
 
 export const AfinRow = styled.div`

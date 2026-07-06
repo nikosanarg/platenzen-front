@@ -6,6 +6,7 @@ import { ProcessedStats } from '@/types/stats';
 import { getLevelInfo } from '@/lib/xpSystem';
 import { computeRoles, computeAdnScores } from '@/lib/roles';
 import { computeWeeklyStreak } from '@/utils/streaks';
+import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import SpiderChart from './SpiderChart';
 import RoleTree from './RoleTree';
 import {
@@ -23,6 +24,8 @@ import {
   XpEventRow,
   XpEventAmt,
   XpEventLabel,
+  ActivitySection,
+  ActivityTitle,
   AfinRow,
   AfinTrack,
   AfinFill,
@@ -99,6 +102,11 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             </XpEventRow>
           ))}
         </XpEventsList>
+
+        <ActivitySection>
+          <ActivityTitle>Tu año en actividad</ActivityTitle>
+          <ActivityHeatmap data={stats.daily} />
+        </ActivitySection>
       </LevelSection>
 
       {/* ── Spider chart + Role tree (side by side on desktop) ── */}
