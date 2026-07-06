@@ -85,6 +85,18 @@ function formatKm(km: number): string {
   return Number.isInteger(km) ? km.toFixed(0) : km.toFixed(1);
 }
 
+function updateTooltipPosition(
+  current: { x: number; y: number; date: string; km: number } | null,
+  coords: { x: number; y: number }
+) {
+  if (!current) return current;
+  return {
+    ...current,
+    x: Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD ? coords.x : current.x,
+    y: Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD ? coords.y : current.y,
+  };
+}
+
 const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const weeks = React.useMemo(() => getWeeksInLastYear(), []);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -104,7 +116,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
     () => getMonthLabelsByWeek(weeks.map((week) => week[0])),
     [weeks]
   );
-  const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
+  const calculateTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
     const x = clientX - (rect?.left ?? 0);
     const y = clientY - (rect?.top ?? 0);
@@ -151,7 +163,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                         $level={level}
                         aria-label={`${formatDate(date)}: ${formatKm(distanceKm)} km`}
                         onMouseEnter={(e) => {
-                          const coords = getTooltipPosition(e.clientX, e.clientY);
+                          const coords = calculateTooltipPosition(e.clientX, e.clientY);
                           setTooltip({
                             x: coords.x,
                             y: coords.y,
@@ -160,22 +172,8 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                           });
                         }}
                         onMouseMove={(e) => {
-                          const coords = getTooltipPosition(e.clientX, e.clientY);
-                          setTooltip((current) =>
-                            current
-                              ? {
-                                  ...current,
-                              x:
-                                Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD
-                                  ? coords.x
-                                  : current.x,
-                              y:
-                                Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD
-                                  ? coords.y
-                                  : current.y,
-                            }
-                              : current
-                          );
+                          const coords = calculateTooltipPosition(e.clientX, e.clientY);
+                          setTooltip((current) => updateTooltipPosition(current, coords));
                         }}
                         onMouseLeave={() => setTooltip(null)}
                       />
