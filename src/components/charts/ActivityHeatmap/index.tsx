@@ -1,38 +1,26 @@
 'use client';
 
 import React from 'react';
-import dynamic from 'next/dynamic';
 import { DayStats } from '@/types/stats';
 import {
   HeatmapCard,
-  HeatmapTitle,
+  HeatmapBody,
+  HeatmapCell,
+  HeatmapContent,
+  HeatmapDayLabel,
+  HeatmapDayLabels,
+  HeatmapGrid,
+  HeatmapMonthCell,
+  HeatmapMonthsRow,
   HeatmapViewport,
-  HeatmapLoading,
+  HeatmapTooltip,
+  HeatmapWeekColumn,
 } from './styled';
-import type { Heatmap3DCell, Heatmap3DSceneProps } from './scene';
 
 const DAYS_IN_WEEK = 7;
-const CELL_SIZE = 0.9;
-const CELL_GAP = 0.18;
-const GRID_STEP = CELL_SIZE + CELL_GAP;
-const HEIGHT_PER_KM = 0.2;
-function get3DMonthLabels(weeks: string[][]): Array<{ monthNum: number; weekIdx: number }> {
-  const result: Array<{ monthNum: number; weekIdx: number }> = [];
-  let lastMonth = '';
-  weeks.forEach((week, wi) => {
-    const month = week[0].split('-')[1];
-    if (month !== lastMonth) {
-      result.push({ monthNum: parseInt(month, 10), weekIdx: wi });
-      lastMonth = month;
-    }
-  });
-  return result;
-}
-
-const ActivityHeatmapScene3D = dynamic<Heatmap3DSceneProps>(() => import('./scene'), {
-  ssr: false,
-  loading: () => <HeatmapLoading>Cargando vista 3D</HeatmapLoading>,
-});
+const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+const DAY_LABELS = ['', 'LUN', '', 'MIÉ', '', 'VIE', ''];
+const ORANGE_SCALE = ['#1a1f28', '#3a2413', '#6c3c14', '#9c560f', '#fc7f1c'];
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -63,57 +51,118 @@ function getWeeksInLastYear(): string[][] {
   return weeks;
 }
 
+function getMonthLabelsByWeek(weeks: string[]): string[] {
+  let lastMonth = '';
+  return weeks.map((date) => {
+    const month = date.slice(5, 7);
+    if (month === lastMonth) return '';
+    lastMonth = month;
+    return MONTH_LABELS[parseInt(month, 10) - 1];
+  });
+}
+
+function getCellLevel(distanceKm: number, maxDistanceKm: number): number {
+  if (distanceKm <= 0 || maxDistanceKm <= 0) return 0;
+  const ratio = distanceKm / maxDistanceKm;
+  if (ratio <= 0.25) return 1;
+  if (ratio <= 0.5) return 2;
+  if (ratio <= 0.75) return 3;
+  return 4;
+}
+
+function formatDate(date: string): string {
+  const [y, m, d] = date.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
+
+function formatKm(km: number): string {
+  return Number.isInteger(km) ? km.toFixed(0) : km.toFixed(1);
+}
+
 const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const weeks = React.useMemo(() => getWeeksInLastYear(), []);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = React.useState<{
+    x: number;
+    y: number;
+    date: string;
+    km: number;
+  } | null>(null);
 
-  const { cells, maxBarHeight } = React.useMemo(() => {
+  const { distanceMap, maxDistanceKm } = React.useMemo(() => {
     const distanceMap = buildDistanceGrid(data);
-    const xOffset = ((weeks.length - 1) * GRID_STEP) / 2;
-    const zOffset = ((DAYS_IN_WEEK - 1) * GRID_STEP) / 2;
-
-    const mappedCells: Heatmap3DCell[] = [];
-    let tallest = 0;
-
-    weeks.forEach((week, wi) => {
-      week.forEach((date, di) => {
-        const rawKm = distanceMap.get(date) ?? 0;
-        const distanceKm = rawKm > 0 ? rawKm : 0;
-        const height = distanceKm * HEIGHT_PER_KM;
-
-        if (distanceKm > 0) {
-          if (height > tallest) tallest = height;
-        }
-
-        mappedCells.push({
-          date,
-          distanceKm,
-          height,
-          x: wi * GRID_STEP - xOffset,
-          z: (DAYS_IN_WEEK - 1 - di) * GRID_STEP - zOffset,
-        });
-      });
-    });
-
-    return {
-      cells: mappedCells,
-      maxBarHeight: tallest,
-    };
+    return { distanceMap, maxDistanceKm: Math.max(...Array.from(distanceMap.values()), 0) };
   }, [data, weeks]);
 
-  const gridWidth = Math.max(1, weeks.length) * GRID_STEP;
-  const gridDepth = DAYS_IN_WEEK * GRID_STEP;
+  const monthLabelsByWeek = React.useMemo(
+    () => getMonthLabelsByWeek(weeks.map((week) => week[0])),
+    [weeks]
+  );
 
   return (
     <HeatmapCard>
-      <HeatmapTitle>Tu año en actividad</HeatmapTitle>
-      <HeatmapViewport style={{ marginLeft: '-10vw', width: 'calc(100% + 10vw)' }}>
-        <ActivityHeatmapScene3D
-          cells={cells}
-          gridWidth={gridWidth}
-          gridDepth={gridDepth}
-          maxBarHeight={maxBarHeight}
-          monthLabels={get3DMonthLabels(weeks)}
-        />
+      <HeatmapViewport ref={containerRef}>
+        <HeatmapContent>
+          <HeatmapDayLabels>
+            {Array.from({ length: DAYS_IN_WEEK }).map((_, dayIdx) => (
+              <HeatmapDayLabel key={dayIdx}>{DAY_LABELS[dayIdx]}</HeatmapDayLabel>
+            ))}
+          </HeatmapDayLabels>
+
+          <HeatmapBody>
+            <HeatmapMonthsRow>
+              {monthLabelsByWeek.map((monthLabel, weekIdx) => (
+                <HeatmapMonthCell key={`${monthLabel}-${weekIdx}`}>{monthLabel}</HeatmapMonthCell>
+              ))}
+            </HeatmapMonthsRow>
+
+            <HeatmapGrid>
+              {weeks.map((week, weekIdx) => (
+                <HeatmapWeekColumn key={`week-${weekIdx}`}>
+                  {week.map((date) => {
+                    const distanceKm = distanceMap.get(date) ?? 0;
+                    const level = getCellLevel(distanceKm, maxDistanceKm);
+                    const rect = containerRef.current?.getBoundingClientRect();
+                    return (
+                      <HeatmapCell
+                        key={date}
+                        style={{ ['--cell-color' as string]: ORANGE_SCALE[level] }}
+                        aria-label={`${formatDate(date)}: ${formatKm(distanceKm)} km`}
+                        onMouseEnter={(e) =>
+                          setTooltip({
+                            x: e.clientX - (rect?.left ?? 0),
+                            y: e.clientY - (rect?.top ?? 0),
+                            date,
+                            km: distanceKm,
+                          })
+                        }
+                        onMouseMove={(e) =>
+                          setTooltip((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  x: e.clientX - (rect?.left ?? 0),
+                                  y: e.clientY - (rect?.top ?? 0),
+                                }
+                              : current
+                          )
+                        }
+                        onMouseLeave={() => setTooltip(null)}
+                      />
+                    );
+                  })}
+                </HeatmapWeekColumn>
+              ))}
+            </HeatmapGrid>
+          </HeatmapBody>
+        </HeatmapContent>
+
+        {tooltip && (
+          <HeatmapTooltip style={{ left: tooltip.x + 12, top: tooltip.y - 18 }}>
+            <div><b>{formatDate(tooltip.date)}</b></div>
+            <div>{formatKm(tooltip.km)} km</div>
+          </HeatmapTooltip>
+        )}
       </HeatmapViewport>
     </HeatmapCard>
   );
