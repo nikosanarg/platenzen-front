@@ -32,6 +32,13 @@ interface ActivityHeatmapProps {
   data: DayStats[];
 }
 
+type HeatmapTooltipState = {
+  x: number;
+  y: number;
+  date: string;
+  km: number;
+} | null;
+
 function buildDistanceGrid(data: DayStats[]): Map<string, number> {
   const distanceMap = new Map<string, number>();
   for (const d of data) distanceMap.set(d.date, d.distance);
@@ -86,9 +93,9 @@ function formatKm(km: number): string {
 }
 
 function updateTooltipPosition(
-  current: { x: number; y: number; date: string; km: number } | null,
+  current: HeatmapTooltipState,
   coords: { x: number; y: number }
-) {
+): HeatmapTooltipState {
   if (!current) return current;
   return {
     ...current,
@@ -100,12 +107,7 @@ function updateTooltipPosition(
 const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const weeks = React.useMemo(() => getWeeksInLastYear(), []);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [tooltip, setTooltip] = React.useState<{
-    x: number;
-    y: number;
-    date: string;
-    km: number;
-  } | null>(null);
+  const [tooltip, setTooltip] = React.useState<HeatmapTooltipState>(null);
 
   const { distanceMap, maxDistanceKm } = React.useMemo(() => {
     const distanceMap = buildDistanceGrid(data);
@@ -161,7 +163,11 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                       <HeatmapCell
                         key={date}
                         $level={level}
-                        aria-label={`${formatDate(date)}: ${formatKm(distanceKm)} km`}
+                        aria-label={
+                          distanceKm > 0
+                            ? `${formatDate(date)}: ${formatKm(distanceKm)} km`
+                            : `${formatDate(date)}: Sin actividad`
+                        }
                         onMouseEnter={(e) => {
                           const coords = calculateTooltipPosition(e.clientX, e.clientY);
                           setTooltip({
