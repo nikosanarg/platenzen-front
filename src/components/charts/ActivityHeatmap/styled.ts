@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-const ORANGE_SCALE = ['#1a1f28', '#3a2413', '#6c3c14', '#9c560f', '#fc7f1c'];
+const ORANGE_SCALE = ['#1a1f28', '#6b3f1a', '#97561d', '#c9711f', '#ff9d42'];
 
 export const HeatmapCard = styled.div`
   background: none;

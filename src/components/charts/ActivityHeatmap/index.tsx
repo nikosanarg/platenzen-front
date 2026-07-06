@@ -84,8 +84,11 @@ function getCellLevel(distanceKm: number, maxDistanceKm: number): number {
 }
 
 function formatDate(date: string): string {
-  const [y, m, d] = date.split('-');
-  return `${d}/${m}/${y.slice(2)}`;
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  }).format(new Date(`${date}T00:00:00`));
 }
 
 function formatKm(km: number): string {
@@ -138,7 +141,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
             {Array.from({ length: DAYS_IN_WEEK }).map((_, dayIdx) => (
               <HeatmapDayLabel
                 key={dayIdx}
-                aria-label={DAY_ARIA_LABELS[dayIdx]}
+                aria-label={DAY_LABELS[dayIdx] ? DAY_ARIA_LABELS[dayIdx] : undefined}
                 aria-hidden={DAY_LABELS[dayIdx] === ''}
               >
                 {DAY_LABELS[dayIdx]}
@@ -153,7 +156,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
               ))}
             </HeatmapMonthsRow>
 
-            <HeatmapGrid>
+            <HeatmapGrid role="grid" aria-label="Mapa anual de actividad por día">
               {weeks.map((week, weekIdx) => (
                 <HeatmapWeekColumn key={`week-${weekIdx}`}>
                   {week.map((date) => {
@@ -163,6 +166,8 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                       <HeatmapCell
                         key={date}
                         $level={level}
+                        type="button"
+                        role="gridcell"
                         aria-label={
                           distanceKm > 0
                             ? `${formatDate(date)}: ${formatKm(distanceKm)} km`
