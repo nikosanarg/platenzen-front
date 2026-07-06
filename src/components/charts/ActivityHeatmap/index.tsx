@@ -84,11 +84,12 @@ function getCellLevel(distanceKm: number, maxDistanceKm: number): number {
 }
 
 function formatDate(date: string): string {
+  const [year, month, day] = date.split('-').map(Number);
   return new Intl.DateTimeFormat('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: '2-digit',
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(year, month - 1, day));
 }
 
 function formatKm(km: number): string {
@@ -100,10 +101,13 @@ function updateTooltipPosition(
   coords: { x: number; y: number }
 ): HeatmapTooltipState {
   if (!current) return current;
+  const shouldUpdateX = Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD;
+  const shouldUpdateY = Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD;
+  if (!shouldUpdateX && !shouldUpdateY) return current;
   return {
     ...current,
-    x: Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD ? coords.x : current.x,
-    y: Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD ? coords.y : current.y,
+    x: shouldUpdateX ? coords.x : current.x,
+    y: shouldUpdateY ? coords.y : current.y,
   };
 }
 
