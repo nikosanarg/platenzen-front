@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import {
@@ -12,17 +12,23 @@ import {
 import {
   ShowcaseRoot,
   CategoryBlock,
+  CategoryHeader,
   CategoryTitle,
-  StepperRow,
-  StepLine,
-  StepCard,
-  StepDot,
-  StepXP,
-  StepName,
-  StepDate,
-  StepProgressTrack,
-  StepProgressFill,
-  StepProgressText,
+  ConceptBlock,
+  ConceptTitle,
+  ViewModeSwitch,
+  ViewModeButton,
+  AchievementsList,
+  AchievementsGrid,
+  AchievementCard,
+  AchievementArtwork,
+  AchievementImage,
+  AchievementImageFallback,
+  AchievementBody,
+  AchievementTitle,
+  AchievementDescription,
+  AchievementXP,
+  AchievementDate,
 } from './styled';
 
 const CATEGORY_ORDER: AchievementCategory[] = [
@@ -33,49 +39,88 @@ const CATEGORY_ORDER: AchievementCategory[] = [
   'exploration',
 ];
 
+const CONSISTENCY_GROUPS = [
+  { key: 'actividades', idsPrefix: 'act', title: 'Actividades' },
+  { key: 'semanal', idsPrefix: 'week', title: 'Semanal' },
+  { key: 'mensual', idsPrefix: 'month', title: 'Mensual' },
+] as const;
+
+const VIEW_MODE_STORAGE_KEY = 'achievement-showcase.view-mode';
+
 interface AchievementShowcaseProps {
   activities: StravaActivity[];
   stats: ProcessedStats;
 }
 
-// ── Stepper renderer ───────────────────────────────────────────────────────
+type ViewMode = 'list' | 'grid';
 
-function Stepper({ achs }: { achs: Achievement[] }) {
-  const currentIdx = achs.findIndex(a => !a.unlocked);
+function getStoredViewMode(): ViewMode {
+  if (typeof window === 'undefined') return 'list';
+  try {
+    const storedMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return storedMode === 'grid' ? 'grid' : 'list';
+  } catch {
+    return 'list';
+  }
+}
+
+/**
+ * Convención de assets: cada logro puede tener su imagen en
+ * `/public/assets/achievements/<achievementId>.png`.
+ */
+function achievementImagePath(achievementId: string): string {
+  return `/assets/achievements/${achievementId}.png`;
+}
+
+/**
+ * Texto descriptivo extendido para tooltip/cuerpo:
+ * - desbloqueado: descripción + motivo de desbloqueo
+ * - bloqueado: descripción + progreso hacia el objetivo
+ */
+function achievementLongDescription(achievement: Achievement): string {
+  if (achievement.unlocked) {
+    return `${achievement.description}. ${achievement.unlockedReason}`;
+  }
+  return `${achievement.description}. Progreso: ${achievement.progressText}`;
+}
+
+function AchievementCardItem({
+  achievement,
+  viewMode,
+}: {
+  achievement: Achievement;
+  viewMode: ViewMode;
+}) {
+  const [imageError, setImageError] = useState(false);
+  const description = achievementLongDescription(achievement);
+  const tooltip = `${achievement.name} — ${description}`;
+
   return (
-    <StepperRow>
-      {achs.map((ach, i) => (
-        <React.Fragment key={ach.id}>
-          <StepCard
-            $unlocked={ach.unlocked}
-            $isCurrent={i === currentIdx}
-            title={ach.unlockedReason}
-          >
-            {/* Dot must be first child — StepLine margin-top depends on its fixed Y */}
-            <StepDot $unlocked={ach.unlocked} />
-            <StepXP $unlocked={ach.unlocked}>+{ach.xp} XP</StepXP>
-            <StepName>{ach.name}</StepName>
-
-            {ach.unlocked && ach.unlockedAt && (
-              <StepDate>{formatDate(ach.unlockedAt)}</StepDate>
-            )}
-
-            {!ach.unlocked && ach.progress > 0 && (
-              <>
-                <StepProgressTrack>
-                  <StepProgressFill $pct={ach.progress} />
-                </StepProgressTrack>
-                <StepProgressText>{ach.progressText}</StepProgressText>
-              </>
-            )}
-          </StepCard>
-
-          {i < achs.length - 1 && (
-            <StepLine $active={achs[i + 1].unlocked} />
-          )}
-        </React.Fragment>
-      ))}
-    </StepperRow>
+    <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} title={tooltip}>
+      <AchievementArtwork $viewMode={viewMode}>
+        {!imageError && (
+          <AchievementImage
+            src={achievementImagePath(achievement.id)}
+            alt={achievement.name}
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
+        )}
+        {imageError && <AchievementImageFallback aria-label="Imagen de logro no disponible">🏆</AchievementImageFallback>}
+      </AchievementArtwork>
+      <AchievementBody>
+        <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
+        <AchievementTitle $viewMode={viewMode}>
+          {achievement.name}
+        </AchievementTitle>
+        <AchievementDescription $viewMode={viewMode}>
+          {description}
+        </AchievementDescription>
+        {achievement.unlocked && achievement.unlockedAt && (
+          <AchievementDate>Desbloqueado: {formatDate(achievement.unlockedAt)}</AchievementDate>
+        )}
+      </AchievementBody>
+    </AchievementCard>
   );
 }
 
@@ -83,26 +128,70 @@ function Stepper({ achs }: { achs: Achievement[] }) {
 
 const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({ activities, stats }) => {
   const achievementMap = computeAchievements(activities, stats);
+  const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
+
+  const onChangeViewMode = (nextMode: ViewMode) => {
+    setViewMode(nextMode);
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextMode);
+    } catch {
+      // noop: view preference persistence is optional
+    }
+  };
 
   return (
     <ShowcaseRoot>
+      <ViewModeSwitch>
+        <ViewModeButton $active={viewMode === 'list'} onClick={() => onChangeViewMode('list')}>
+          Lista
+        </ViewModeButton>
+        <ViewModeButton $active={viewMode === 'grid'} onClick={() => onChangeViewMode('grid')}>
+          Cuadrícula
+        </ViewModeButton>
+      </ViewModeSwitch>
+
       {CATEGORY_ORDER.map(cat => {
         const achs = achievementMap[cat];
         if (!achs?.length) return null;
 
-        // Consistencia: render as 3 independent steppers stacked vertically
         if (cat === 'consistency') {
-          const groups = [
-            achs.filter(a => a.id.startsWith('act')),
-            achs.filter(a => a.id.startsWith('week')),
-            achs.filter(a => a.id.startsWith('month')),
-          ].filter(g => g.length > 0);
+          const groups = CONSISTENCY_GROUPS
+            .map(group => ({
+              title: group.title,
+              achievements: achs.filter(a => a.id.startsWith(group.idsPrefix)),
+            }))
+            .filter(group => group.achievements.length > 0);
 
           return (
             <CategoryBlock key={cat}>
-              <CategoryTitle>{CATEGORY_LABELS[cat]}</CategoryTitle>
-              {groups.map((group, gi) => (
-                <Stepper key={gi} achs={group} />
+              <CategoryHeader>
+                <CategoryTitle>{CATEGORY_LABELS[cat]}</CategoryTitle>
+              </CategoryHeader>
+              {groups.map(group => (
+                <ConceptBlock key={group.title}>
+                  <ConceptTitle>{group.title}</ConceptTitle>
+                  {viewMode === 'list' ? (
+                    <AchievementsList>
+                      {group.achievements.map(achievement => (
+                        <AchievementCardItem
+                          key={achievement.id}
+                          achievement={achievement}
+                          viewMode={viewMode}
+                        />
+                      ))}
+                    </AchievementsList>
+                  ) : (
+                    <AchievementsGrid>
+                      {group.achievements.map(achievement => (
+                        <AchievementCardItem
+                          key={achievement.id}
+                          achievement={achievement}
+                          viewMode={viewMode}
+                        />
+                      ))}
+                    </AchievementsGrid>
+                  )}
+                </ConceptBlock>
               ))}
             </CategoryBlock>
           );
@@ -110,8 +199,22 @@ const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({ activities, s
 
         return (
           <CategoryBlock key={cat}>
-            <CategoryTitle>{CATEGORY_LABELS[cat]}</CategoryTitle>
-            <Stepper achs={achs} />
+            <CategoryHeader>
+              <CategoryTitle>{CATEGORY_LABELS[cat]}</CategoryTitle>
+            </CategoryHeader>
+            {viewMode === 'list' ? (
+              <AchievementsList>
+                {achs.map(achievement => (
+                  <AchievementCardItem key={achievement.id} achievement={achievement} viewMode={viewMode} />
+                ))}
+              </AchievementsList>
+            ) : (
+              <AchievementsGrid>
+                {achs.map(achievement => (
+                  <AchievementCardItem key={achievement.id} achievement={achievement} viewMode={viewMode} />
+                ))}
+              </AchievementsGrid>
+            )}
           </CategoryBlock>
         );
       })}
