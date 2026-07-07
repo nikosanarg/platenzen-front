@@ -72,15 +72,32 @@ export const CategoryTitle = styled.h3`
 `;
 
 export const AchievementsList = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 0.8rem;
+
+  /* Wide desktop: up to 2 cards per row (items 1&2, then 3&4, …) */
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 export const AchievementsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.9rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 800px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 export const AchievementCard = styled.article<{ $viewMode: 'list' | 'grid'; $unlocked: boolean }>`
@@ -108,7 +125,8 @@ export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid'; $unlo
   position: relative;
   flex-shrink: 0;
   width: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '100%')};
-  height: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '146px')};
+  height: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : 'auto')};
+  aspect-ratio: ${({ $viewMode }) => ($viewMode === 'list' ? 'auto' : '1 / 1')};
   border-radius: 6px;
   overflow: hidden;
   box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.35), 0 0 14px rgba(74, 222, 128, 0.22)' : 'none')};
@@ -120,8 +138,9 @@ export const AchievementImage = styled.img<{ $unlocked: boolean }>`
   object-fit: cover;
   object-position: center;
   display: block;
-  filter: ${({ $unlocked }) => ($unlocked ? 'none' : 'grayscale(1) brightness(0.52) contrast(1.05)')};
-  transform: scale(1.01);
+  filter: ${({ $unlocked }) =>
+    $unlocked ? 'none' : 'grayscale(1) brightness(0.52) contrast(1.05) blur(2px)'};
+  transform: ${({ $unlocked }) => ($unlocked ? 'scale(1.01)' : 'scale(1.06)')};
 `;
 
 export const AchievementBody = styled.div`
@@ -133,8 +152,45 @@ export const AchievementBody = styled.div`
   min-width: 0;
 `;
 
+// ── List-mode columns ────────────────────────────────────────────────────────
+
+export const AchievementInfoColumn = styled.div`
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+`;
+
+export const AchievementStatColumn = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  width: 128px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--border);
+  text-align: center;
+
+  @media (max-width: 600px) {
+    width: 92px;
+    padding-left: 0.4rem;
+  }
+`;
+
+export const AchievementStatValue = styled.span<{ $tone: 'xp' | 'unlocked' | 'muted' }>`
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: ${({ $tone }) =>
+    $tone === 'xp' ? '#fbbf24' : $tone === 'unlocked' ? '#4ade80' : 'var(--text-muted)'};
+`;
+
 export const AchievementXP = styled.div<{ $unlocked: boolean }>`
-  font-size: 0.64rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--text-secondary)')};
@@ -142,7 +198,7 @@ export const AchievementXP = styled.div<{ $unlocked: boolean }>`
 `;
 
 export const AchievementTitle = styled.h4<{ $viewMode: 'list' | 'grid' }>`
-  font-size: 0.85rem;
+  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '1.02rem' : '0.98rem')};
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
@@ -156,7 +212,7 @@ export const AchievementTitle = styled.h4<{ $viewMode: 'list' | 'grid' }>`
 `;
 
 export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
-  font-size: 0.72rem;
+  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '0.86rem' : '0.82rem')};
   color: var(--text-secondary);
   line-height: 1.35;
   overflow: hidden;
@@ -168,7 +224,7 @@ export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
 
 export const AchievementMeta = styled.div<{ $unlocked: boolean }>`
   margin-top: auto;
-  font-size: 0.64rem;
+  font-size: 0.78rem;
   color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : '#f59e0b')};
   font-weight: 500;
 `;

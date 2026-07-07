@@ -158,7 +158,8 @@ function computeConsistencyAchievements(allRuns: StravaActivity[], stats: Proces
     { id: 'act25', name: '25 actividades', target: 25, xp: 150 },
     { id: 'act50', name: '50 actividades', target: 50, xp: 200 },
     { id: 'act100', name: '100 actividades', target: 100, xp: 350 },
-    { id: 'act200', name: '200 actividades', target: 200, xp: 500 },
+    { id: 'act250', name: '250 actividades', target: 250, xp: 500 },
+    { id: 'act500', name: '500 actividades', target: 500, xp: 750 },
   ];
 
   const actAchievements: Achievement[] = actTargets.map(t => {
@@ -258,6 +259,7 @@ function computeSpeedAchievements(allRuns: StravaActivity[]): Achievement[] {
     { id: 'pace500', name: 'Ritmo menor a 5:00/km', threshold: 300, xp: 250 },
     { id: 'pace430', name: 'Ritmo menor a 4:30/km', threshold: 270, xp: 400 },
     { id: 'pace400', name: 'Ritmo menor a 4:00/km', threshold: 240, xp: 600 },
+    { id: 'pace330', name: 'Ritmo menor a 3:30/km', threshold: 210, xp: 800 },
   ];
 
   const sorted = sortedAsc(allRuns.filter(a => a.distance >= 3000 && a.average_speed > 0));
@@ -297,76 +299,68 @@ function computeSpeedAchievements(allRuns: StravaActivity[]): Achievement[] {
 function computeExplorationAchievements(allRuns: StravaActivity[]): Achievement[] {
   const sorted = sortedAsc(allRuns);
   const trailRuns = sorted.filter(a => (a.sport_type || a.type) === 'TrailRun');
-  const totalElevation = allRuns.reduce((s, a) => s + a.total_elevation_gain, 0);
 
-  // First trail run
-  const firstTrail = trailRuns[0];
-  const firstTrailAch: Achievement = {
-    id: 'first_trail',
-    name: 'Primera salida de trail',
-    category: 'exploration',
-    description: 'Completar una salida de trail running',
-    xp: 150,
-    unlocked: !!firstTrail,
-    unlockedAt: firstTrail?.start_date_local.slice(0, 10) ?? null,
-    unlockedReason: firstTrail
-      ? `Desbloqueado el ${formatDate(firstTrail.start_date_local.slice(0, 10))} con tu primera salida de trail.`
-      : 'Completá una salida de trail running.',
-    progress: firstTrail ? 1 : 0,
-    progressText: firstTrail ? '✓' : '0 / 1 salidas de trail',
-  };
+  // ── Trail run milestones ──────────────────────────────────────
+  const trailTargets = [
+    { id: 'trail5', name: '5 salidas de trail', target: 5, xp: 200 },
+    { id: 'trail25', name: '25 salidas de trail', target: 25, xp: 400 },
+    { id: 'trail100', name: '100 salidas de trail', target: 100, xp: 800 },
+  ];
 
-  // 5 trail runs
-  const fiveTrail = trailRuns[4];
-  const fiveTrailAch: Achievement = {
-    id: 'five_trail',
-    name: '5 salidas de trail',
-    category: 'exploration',
-    description: 'Completar 5 salidas de trail running',
-    xp: 250,
-    unlocked: trailRuns.length >= 5,
-    unlockedAt: fiveTrail?.start_date_local.slice(0, 10) ?? null,
-    unlockedReason: fiveTrail
-      ? `Desbloqueado el ${formatDate(fiveTrail.start_date_local.slice(0, 10))} con tu quinta salida de trail.`
-      : 'Completá 5 salidas de trail running.',
-    progress: pct(trailRuns.length, 5),
-    progressText: progressText(trailRuns.length, 5, 'salidas de trail'),
-  };
+  const trailAchievements: Achievement[] = trailTargets.map(t => {
+    const unlockRun = trailRuns[t.target - 1];
+    const date = unlockRun?.start_date_local.slice(0, 10) ?? null;
+    return {
+      id: t.id,
+      name: t.name,
+      category: 'exploration',
+      description: `Completar ${t.target} salidas de trail running`,
+      xp: t.xp,
+      unlocked: trailRuns.length >= t.target,
+      unlockedAt: date,
+      unlockedReason: date
+        ? `Desbloqueado el ${formatDate(date)} con tu salida de trail número ${t.target}.`
+        : `Completá ${t.target} salidas de trail running.`,
+      progress: pct(trailRuns.length, t.target),
+      progressText: progressText(trailRuns.length, t.target, 'salidas de trail'),
+    };
+  });
 
-  // First big elevation (200m+)
-  const firstBigElev = sorted.find(a => a.total_elevation_gain >= 200);
-  const bigElevAch: Achievement = {
-    id: 'elev200',
-    name: 'Primera ascensión',
-    category: 'exploration',
-    description: 'Completar una salida con 200 m de desnivel positivo',
-    xp: 200,
-    unlocked: !!firstBigElev,
-    unlockedAt: firstBigElev?.start_date_local.slice(0, 10) ?? null,
-    unlockedReason: firstBigElev
-      ? `Desbloqueado el ${formatDate(firstBigElev.start_date_local.slice(0, 10))} con ${Math.round(firstBigElev.total_elevation_gain)} m de desnivel.`
-      : 'Completá una salida con 200 m o más de desnivel positivo.',
-    progress: Math.min(Math.max(...sorted.map(a => a.total_elevation_gain), 0) / 200, 1),
-    progressText: `${Math.round(Math.max(...sorted.map(a => a.total_elevation_gain), 0))} / 200 m`,
-  };
+  // ── Accumulated elevation milestones ──────────────────────────
+  const cumulativeElev: Array<{ date: string; m: number }> = [];
+  let accElev = 0;
+  for (const a of sorted) {
+    accElev += a.total_elevation_gain;
+    cumulativeElev.push({ date: a.start_date_local.slice(0, 10), m: accElev });
+  }
+  const totalElevation = accElev;
 
-  // Total elevation 5000m
-  const elev5kAch: Achievement = {
-    id: 'elev5000',
-    name: '5000 m de desnivel acumulado',
-    category: 'exploration',
-    description: 'Acumular 5000 m de desnivel positivo en todas las salidas',
-    xp: 400,
-    unlocked: totalElevation >= 5000,
-    unlockedAt: null, // complex to compute exact date
-    unlockedReason: totalElevation >= 5000
-      ? `Superaste 5000 m de desnivel acumulado.`
-      : 'Acumulá 5000 m de desnivel positivo en tus salidas.',
-    progress: pct(totalElevation, 5000),
-    progressText: progressText(Math.round(totalElevation), 5000, 'm de desnivel'),
-  };
+  const heightTargets = [
+    { id: 'alt3000', name: '3000 m de desnivel acumulado', target: 3000, xp: 250, ref: '' },
+    { id: 'aconcagua', name: 'Altura del Aconcagua', target: 6961, xp: 500, ref: ' (altura del Aconcagua)' },
+    { id: 'everest', name: 'Altura del Everest', target: 8849, xp: 800, ref: ' (altura del Everest)' },
+  ];
 
-  return [firstTrailAch, fiveTrailAch, bigElevAch, elev5kAch];
+  const heightAchievements: Achievement[] = heightTargets.map(t => {
+    const entry = cumulativeElev.find(c => c.m >= t.target);
+    const date = entry?.date ?? null;
+    return {
+      id: t.id,
+      name: t.name,
+      category: 'exploration',
+      description: `Acumular ${t.target} m de desnivel positivo en todas las salidas${t.ref}`,
+      xp: t.xp,
+      unlocked: totalElevation >= t.target,
+      unlockedAt: date,
+      unlockedReason: date
+        ? `Desbloqueado el ${formatDate(date)} al acumular ${t.target} m de desnivel.`
+        : `Acumulá ${t.target} m de desnivel positivo en tus salidas.`,
+      progress: pct(totalElevation, t.target),
+      progressText: progressText(Math.round(totalElevation), t.target, 'm de desnivel'),
+    };
+  });
+
+  return [...trailAchievements, ...heightAchievements];
 }
 
 // ── Main export ────────────────────────────────────────────────────────────
