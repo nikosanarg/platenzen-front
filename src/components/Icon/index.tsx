@@ -72,6 +72,20 @@ export const IconCalendar: React.FC<Props> = ({ size = 20, color = 'currentColor
   </svg>
 );
 
+export const IconFlame: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <path d="M10 2.5c1.5 2.5 4.5 4 4.5 8a4.5 4.5 0 0 1-9 0c0-1.5.6-2.6 1.4-3.4.2 1 .8 1.6 1.5 1.8C8.5 7 8 5 10 2.5z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
+export const IconRoute: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <circle cx="5" cy="15" r="2" stroke={color} strokeWidth="1.5" />
+    <circle cx="15" cy="5" r="2" stroke={color} strokeWidth="1.5" />
+    <path d="M7 15h5a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export const IconHourglass: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <path d="M6 3h8M6 17h8" stroke={color} strokeWidth="1.5" strokeLinecap="round" />

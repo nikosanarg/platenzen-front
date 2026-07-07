@@ -3,6 +3,8 @@
  * activates or evolves. All numeric values are in km, sec/km, or counts.
  */
 
+import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
+
 // ── Distance branch ────────────────────────────────────────────────────────
 
 export const DISTANCE_THRESHOLDS = {
@@ -12,10 +14,10 @@ export const DISTANCE_THRESHOLDS = {
   fondista_longest_km: 15,
   /** Weekly km average required for Ultrafondista */
   ultrafondista_weekly_km: 35,
-  /** Single-run km required for Ultrafondista */
-  ultrafondista_longest_km: 21.1,
-  /** Single-run km required for Maratonista */
-  maratonista_longest_km: 42.2,
+  /** Single-run km required for Ultrafondista (exact half marathon) */
+  ultrafondista_longest_km: HALF_MARATHON_KM,
+  /** Single-run km required for Maratonista (exact marathon) */
+  maratonista_longest_km: MARATHON_KM,
 } as const;
 
 /** Afinidad scoring weights for the distance branch (must add up to 100) */
@@ -25,7 +27,7 @@ export const DISTANCE_AFINIDAD = {
   reference_weekly_km: 35,
   /** Max pts from longest run (divided by reference_long_km) */
   maxPts_longest: 35,
-  reference_long_km: 21.1,
+  reference_long_km: HALF_MARATHON_KM,
   /** Max pts from long-run ratio (≥ 15 km) */
   maxPts_longRatio: 25,
 } as const;
@@ -97,7 +99,7 @@ export const ACHIEVEMENT_THRESHOLDS = {
   coleccionador_min_milestones: 4,
   /** Min activities for Medallista */
   medallista_min_activities: 100,
-  /** Min milestones for Medallista (must include 21.1 km) */
+  /** Min milestones for Medallista (must include the half marathon) */
   medallista_min_milestones: 6,
   coleccionador_min_total_km: 500,
   medallista_min_total_km: 1000
@@ -116,4 +118,4 @@ export const ACHIEVEMENT_AFINIDAD = {
 // ── Milestone distances ────────────────────────────────────────────────────
 
 /** Standard race distances used for milestone detection (km) */
-export const MILESTONE_KM = [5, 10, 15, 21.1, 31.5, 42.2] as const;
+export const MILESTONE_KM = [5, 10, 15, HALF_MARATHON_KM, 31.5, MARATHON_KM] as const;

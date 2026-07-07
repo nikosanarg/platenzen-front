@@ -3,6 +3,7 @@ import { PermissionProgress } from '@/types/gamification';
 import { LevelInfo } from '@/lib/levels';
 import { getRecentAvgKm } from '@/lib/momentum';
 import { computeEtaWeeks, formatEta } from '@/lib/gamification';
+import { HALF_MARATHON_KM, formatKmExact } from '@/lib/distances';
 
 export interface Prediction {
   id: string;
@@ -83,15 +84,15 @@ export function computePredictions(
     }
   }
 
-  // 4. First half marathon (if runs 10km+ but not 21km yet)
-  if (stats.longestActivity >= 10 && stats.longestActivity < 21 && avgKmPerWeek >= 15) {
+  // 4. First half marathon (if runs 10km+ but not a full half marathon yet)
+  if (stats.longestActivity >= 10 && stats.longestActivity < HALF_MARATHON_KM && avgKmPerWeek >= 15) {
     const weeksUntilReady = Math.max(0, (25 - avgKmPerWeek) / (avgKmPerWeek * 0.08));
     if (weeksUntilReady < 20) {
       const eta = weeksUntilReady < 2 ? 'casi listo' : `en ~${Math.round(weeksUntilReady)} semanas`;
       predictions.push({
         id: 'half_marathon',
         label: 'Primera media',
-        value: '21 km',
+        value: `${formatKmExact(HALF_MARATHON_KM)} km`,
         detail: eta,
       });
     }

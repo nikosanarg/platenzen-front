@@ -5,43 +5,40 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { getLevelInfo } from '@/lib/xpSystem';
 import { computeRoles, computeAdnScores } from '@/lib/roles';
-import { computeWeeklyStreak } from '@/utils/streaks';
+import { computeLongestWeeklyStreak } from '@/utils/streaks';
+import { computeCoreRecord } from '@/lib/coreRecord';
+import { formatRecordTime } from '@/lib/recordHistory';
+import { buildPersonaDescription } from '@/lib/runnerPersona';
+import { IconRoute, IconCalendar, IconFlame, IconHourglass } from '@/components/Icon';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import SpiderChart from './SpiderChart';
 import RoleTree from './RoleTree';
 import {
   Card,
-  LevelSection,
+  TopRow,
+  IdentityCol,
+  VisualCol,
+  AdnChartWrapper,
   RoleHeading,
   RoleNamePrimary,
   LevelBadge,
-  StreakBadge,
-  XpRow,
-  XpTrack,
-  XpFill,
+  LevelBarRow,
+  LevelTrack,
+  LevelFill,
+  LevelEndpoint,
+  LevelEndpointDot,
+  LevelEndpointLabel,
   XpLabel,
-  XpEventsList,
-  XpEventRow,
-  XpEventAmt,
-  XpEventLabel,
+  PersonaText,
+  StatsGrid,
+  StatCard,
+  StatIcon,
+  StatBody,
+  StatValue,
+  StatLabel,
   ActivitySection,
   ActivityTitle,
-  AfinRow,
-  AfinTrack,
-  AfinFill,
-  AfinLabel,
-  VisualsRow,
-  AdnSection,
-  AdnChartWrapper,
-  TreeSection,
 } from './styled';
-
-const BRANCH_LABELS: Record<string, string> = {
-  distance: 'Distancia',
-  speed: 'Velocidad',
-  exploration: 'Exploración',
-  achievement: 'Logros',
-};
 
 interface PersonajeCardProps {
   activities: StravaActivity[];
@@ -52,75 +49,99 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const levelInfo = getLevelInfo(activities, stats);
   const roles = computeRoles(activities, stats);
   const adn = computeAdnScores(activities, stats);
-  const weeklyStreak = computeWeeklyStreak(stats.weekly);
+  const longestStreak = computeLongestWeeklyStreak(stats.daily);
+  const coreRecord = computeCoreRecord(activities);
 
   const sortedBranches = [...roles.branches].sort((a, b) => {
     const ld = b.currentRole.level - a.currentRole.level;
     return ld !== 0 ? ld : b.afinidad - a.afinidad;
   });
-
   const primary = sortedBranches[0];
+
+  const persona = buildPersonaDescription(primary, stats, adn.consistencia);
 
   const xpLabel = levelInfo.nextThreshold
     ? `${levelInfo.xp.toLocaleString('es-AR')} / ${levelInfo.nextThreshold.toLocaleString('es-AR')} XP`
     : `${levelInfo.xp.toLocaleString('es-AR')} XP`;
 
+  const nextLevelLabel = levelInfo.nextThreshold ? `Nivel ${levelInfo.level + 1}` : 'MÁX';
+
   return (
     <Card>
-      {/* ── Identity header ── */}
-      <LevelSection>
-        <RoleHeading>
-          <RoleNamePrimary>{primary.currentRole.name}</RoleNamePrimary>
-          <LevelBadge>(Nivel {levelInfo.level})</LevelBadge>
-          {weeklyStreak >= 2 && (
-            <StreakBadge>🔥 {weeklyStreak} sem</StreakBadge>
-          )}
-        </RoleHeading>
+      <TopRow>
+        {/* ── Identity ── */}
+        <IdentityCol>
+          <RoleHeading>
+            <RoleNamePrimary>{primary.currentRole.name}</RoleNamePrimary>
+            <LevelBadge>(Nivel {levelInfo.level})</LevelBadge>
+          </RoleHeading>
 
-        <XpRow>
-          <XpTrack>
-            <XpFill $pct={levelInfo.progress} />
-          </XpTrack>
+          <LevelBarRow>
+            <LevelTrack>
+              <LevelFill $pct={levelInfo.progress} />
+            </LevelTrack>
+            <LevelEndpoint>
+              <LevelEndpointDot />
+              <LevelEndpointLabel>{nextLevelLabel}</LevelEndpointLabel>
+            </LevelEndpoint>
+          </LevelBarRow>
           <XpLabel>{xpLabel}</XpLabel>
-        </XpRow>
 
-        <AfinRow>
-          <AfinTrack>
-            <AfinFill $pct={primary.afinidad} />
-          </AfinTrack>
-          <AfinLabel>
-            {primary.currentRole.name} · {BRANCH_LABELS[primary.branch]} · {primary.afinidad}%
-          </AfinLabel>
-        </AfinRow>
+          <PersonaText>{persona}</PersonaText>
 
-        {/* Last 5 XP event sources */}
-        <XpEventsList>
-          {levelInfo.breakdown.xpEvents.map((ev, i) => (
-            <XpEventRow key={i}>
-              <XpEventAmt $type={ev.type}>+{ev.xp.toLocaleString('es-AR')} XP</XpEventAmt>
-              <XpEventLabel>{ev.label}</XpEventLabel>
-            </XpEventRow>
-          ))}
-        </XpEventsList>
+          <StatsGrid>
+            <StatCard>
+              <StatIcon><IconRoute size={18} color="currentColor" /></StatIcon>
+              <StatBody>
+                <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')} km</StatValue>
+                <StatLabel>recorrido</StatLabel>
+              </StatBody>
+            </StatCard>
 
-        <ActivitySection>
-          <ActivityTitle>Tu año en actividad</ActivityTitle>
-          <ActivityHeatmap data={stats.daily} />
-        </ActivitySection>
-      </LevelSection>
+            <StatCard>
+              <StatIcon><IconCalendar size={18} color="currentColor" /></StatIcon>
+              <StatBody>
+                <StatValue>{stats.totalActivities.toLocaleString('es-AR')}</StatValue>
+                <StatLabel>actividades</StatLabel>
+              </StatBody>
+            </StatCard>
 
-      {/* ── Spider chart + Role tree (side by side on desktop) ── */}
-      <VisualsRow>
-        <AdnSection>
+            <StatCard>
+              <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
+              <StatBody>
+                <StatValue>{longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}</StatValue>
+                <StatLabel>Mejor racha</StatLabel>
+              </StatBody>
+            </StatCard>
+
+            <StatCard>
+              <StatIcon><IconHourglass size={18} color="currentColor" /></StatIcon>
+              <StatBody>
+                <StatValue>{coreRecord ? formatRecordTime(coreRecord.timeSeconds) : '—'}</StatValue>
+                <StatLabel>{coreRecord ? `Récord ${coreRecord.label}` : 'Récord'}</StatLabel>
+              </StatBody>
+            </StatCard>
+          </StatsGrid>
+        </IdentityCol>
+
+        {/* ── Spider chart ── */}
+        <VisualCol>
           <AdnChartWrapper>
             <SpiderChart scores={adn} />
           </AdnChartWrapper>
-        </AdnSection>
+        </VisualCol>
 
-        <TreeSection>
+        {/* ── Role tree ── */}
+        <VisualCol>
           <RoleTree branches={roles.branches} activities={activities} stats={stats} />
-        </TreeSection>
-      </VisualsRow>
+        </VisualCol>
+      </TopRow>
+
+      {/* ── Activity heatmap (full width) ── */}
+      <ActivitySection>
+        <ActivityTitle>Tu año en actividad</ActivityTitle>
+        <ActivityHeatmap data={stats.daily} />
+      </ActivitySection>
     </Card>
   );
 };

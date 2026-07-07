@@ -1,6 +1,7 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { getRecentAvgKm } from '@/lib/momentum';
+import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 
 export interface PersonalGoal {
   id: string;
@@ -87,10 +88,10 @@ export function computePersonalGoals(
 
   // Longest run PR goal
   if (stats.longestActivity > 0) {
-    const nextDistances = [5, 10, 15, 21.1, 30, 42.2];
+    const nextDistances = [5, 10, 15, HALF_MARATHON_KM, 30, MARATHON_KM];
     const nextTarget = nextDistances.find(d => d > stats.longestActivity + 0.5);
     if (nextTarget && recentAvgKm >= nextTarget * 0.25) {
-      const label = nextTarget >= 21 ? '21 km' : nextTarget >= 30 ? '30 km' : `${nextTarget} km`;
+      const label = `${formatKmExact(nextTarget)} km`;
       goals.push({
         id: 'longest',
         label: `Completar ${label}`,

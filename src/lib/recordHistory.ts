@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { mpsToSecPerKm } from '@/utils/pace';
+import { HALF_MARATHON_KM, HALF_MARATHON_M } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -63,7 +64,7 @@ export function computeRecordHistories(activities: StravaActivity[]): DistanceHi
     { label: '5K', distanceKm: 5, targetM: 5000, minM: 4000 },
     { label: '10K', distanceKm: 10, targetM: 10000, minM: 8500 },
     { label: '15K', distanceKm: 15, targetM: 15000, minM: 13000 },
-    { label: '21K', distanceKm: 21.1, targetM: 21097, minM: 18000 },
+    { label: '21K', distanceKm: HALF_MARATHON_KM, targetM: HALF_MARATHON_M, minM: 18000 },
   ].map(d => {
     const history = buildHistory(activities, d.minM, d.targetM);
     return {

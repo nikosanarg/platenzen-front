@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
+import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -56,9 +57,9 @@ function computeDistanceAchievements(allRuns: StravaActivity[]): Achievement[] {
     { id: 'first5k', name: 'Primer 5K', km: 5, xp: 100, desc: 'Completar una salida de 5 km' },
     { id: 'first10k', name: 'Primer 10K', km: 10, xp: 200, desc: 'Completar una salida de 10 km' },
     { id: 'first15k', name: 'Primer 15K', km: 15, xp: 300, desc: 'Completar una salida de 15 km' },
-    { id: 'first21k', name: 'Primera media maratón', km: 21.1, xp: 500, desc: 'Completar 21.1 km en una sola salida' },
+    { id: 'first21k', name: 'Primera media maratón', km: HALF_MARATHON_KM, xp: 500, desc: 'Completar una media maratón (21,0975 km) en una sola salida' },
     { id: 'first31k', name: 'Primer 31K', km: 31.5, xp: 600, desc: 'Completar una salida de 31.5 km' },
-    { id: 'first42k', name: 'Primera maratón', km: 42.2, xp: 1000, desc: 'Completar 42.2 km en una sola salida' },
+    { id: 'first42k', name: 'Primera maratón', km: MARATHON_KM, xp: 1000, desc: 'Completar una maratón (42,195 km) en una sola salida' },
   ];
 
   const maxKmReached = sorted.reduce((max, a) => Math.max(max, a.distance / 1000), 0);
@@ -75,7 +76,7 @@ function computeDistanceAchievements(allRuns: StravaActivity[]): Achievement[] {
       xp: m.xp,
       unlocked,
       unlockedAt: date,
-      unlockedReason: date ? `Desbloqueado el ${formatDate(date)} al completar ${m.km} km.` : m.desc,
+      unlockedReason: date ? `Desbloqueado el ${formatDate(date)} al completar ${formatKmExact(m.km)} km.` : m.desc,
       progress: pct(maxKmReached, m.km),
       progressText: `${maxKmReached.toFixed(1)} / ${m.km} km`,
     };

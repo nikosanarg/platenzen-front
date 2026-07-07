@@ -7,7 +7,7 @@ export const Card = styled.div`
   padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.75rem;
 
   @media (max-width: 600px) {
     padding: 1.75rem 1.25rem;
@@ -15,13 +15,42 @@ export const Card = styled.div`
   }
 `;
 
-/* ── Level / identity header ─────────────────────────────────── */
+/* ── Top row: identity · spider · role tree ──────────────────────── */
 
-export const LevelSection = styled.div`
+export const TopRow = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.75rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+export const IdentityCol = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  min-width: 0;
 `;
+
+export const VisualCol = styled.div`
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    width: 100%;
+  }
+`;
+
+export const AdnChartWrapper = styled.div`
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+`;
+
+/* ── Identity header ─────────────────────────────────────────────── */
 
 export const RoleHeading = styled.div`
   display: flex;
@@ -62,64 +91,137 @@ export const StreakBadge = styled.span`
   padding: 0.1rem 0.6rem;
 `;
 
-export const XpRow = styled.div`
+/* ── Chromatic level-progress bar ────────────────────────────────── */
+
+export const LevelBarRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  gap: 0.65rem;
+  margin-top: 0.6rem;
 `;
 
-export const XpTrack = styled.div`
+export const LevelTrack = styled.div`
   flex: 1;
-  height: 6px;
+  height: 8px;
   background: var(--border);
   border-radius: 999px;
   overflow: hidden;
 `;
 
-export const XpFill = styled.div<{ $pct: number }>`
+export const LevelFill = styled.div<{ $pct: number }>`
   height: 100%;
-  width: ${({ $pct }) => ($pct * 100).toFixed(1)}%;
-  background: var(--accent);
   border-radius: 999px;
+  width: ${({ $pct }) => Math.max(2, $pct * 100).toFixed(1)}%;
+  /* The gradient spans the full track width so the fill reveals the
+     chromatic scale up to the current progress point. */
+  background-image: linear-gradient(90deg, #fc4c02 0%, #f97316 28%, #f5c518 58%, #7bd938 82%, #22c55e 100%);
+  background-size: ${({ $pct }) => (100 / Math.max(0.02, $pct)).toFixed(1)}% 100%;
+  background-position: left center;
+  background-repeat: no-repeat;
   transition: width 0.8s ease;
+`;
+
+export const LevelEndpoint = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+`;
+
+export const LevelEndpointDot = styled.div`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--text-muted);
+`;
+
+export const LevelEndpointLabel = styled.div`
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 `;
 
 export const XpLabel = styled.div`
   font-size: 0.72rem;
   color: var(--text-muted);
   white-space: nowrap;
+  margin-top: 0.35rem;
+`;
+
+/* ── Persona description ──────────────────────────────────────────── */
+
+export const PersonaText = styled.p`
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 0.85rem;
+`;
+
+/* ── Stat cards ───────────────────────────────────────────────────── */
+
+export const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+  margin-top: 1.15rem;
+
+  @media (max-width: 440px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const StatCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+`;
+
+export const StatIcon = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-muted);
+  color: var(--accent);
   flex-shrink: 0;
 `;
 
-export const XpEventsList = styled.div`
+export const StatBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding-top: 0.25rem;
+  line-height: 1.2;
+  min-width: 0;
 `;
 
-export const XpEventRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  font-size: 0.73rem;
-  line-height: 1.4;
-`;
-
-export const XpEventAmt = styled.span<{ $type: 'level' | 'role' }>`
+export const StatValue = styled.div`
+  font-size: 0.98rem;
   font-weight: 700;
+  color: var(--text-primary);
   white-space: nowrap;
-  color: ${({ $type }) => $type === 'level' ? 'var(--accent)' : '#f5c518'};
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-export const XpEventLabel = styled.span`
-  color: var(--text-secondary);
+export const StatLabel = styled.div`
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
+
+/* ── Activity heatmap (full-width, bottom) ───────────────────────── */
 
 export const ActivitySection = styled.div`
-  margin-top: 0.9rem;
   width: 100%;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 `;
 
 export const ActivityTitle = styled.h3`
@@ -129,78 +231,4 @@ export const ActivityTitle = styled.h3`
   letter-spacing: 0.09em;
   color: var(--text-muted);
   margin-bottom: 0.75rem;
-`;
-
-/* ── Primary afinidad bar (below XP bar) ─────────────────────── */
-
-export const AfinRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-`;
-
-export const AfinTrack = styled.div`
-  flex: 1;
-  height: 3px;
-  background: rgba(184,134,11,0.18);
-  border-radius: 999px;
-  overflow: hidden;
-`;
-
-export const AfinFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => $pct}%;
-  background: #f5c518;
-  border-radius: 999px;
-  transition: width 0.6s ease;
-`;
-
-export const AfinLabel = styled.div`
-  font-size: 0.68rem;
-  color: #c9a42a;
-  white-space: nowrap;
-  flex-shrink: 0;
-`;
-
-/* ── Visuals row: spider + tree side by side on desktop ──────── */
-
-export const VisualsRow = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
-  align-items: flex-start;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-  }
-`;
-
-export const AdnSection = styled.div`
-  flex: 1;
-  min-width: 0;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-export const AdnChartWrapper = styled.div`
-  width: 100%;
-  max-width: 280px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    max-width: 380px;
-  }
-`;
-
-export const TreeSection = styled.div`
-  flex: 1;
-  min-width: 0;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
 `;

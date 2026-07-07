@@ -11,6 +11,7 @@ import {
   ACHIEVEMENT_THRESHOLDS,
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
+import { HALF_MARATHON_KM } from '@/lib/distances';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ function buildChecklist(
   const totalActs = stats.totalActivities;
   const trail = calcTrailRatio(activities);
   const msCount = countMilestones(activities);
-  const hasHalf = msCount >= MILESTONE_KM.indexOf(21.1) + 1;
+  const hasHalf = msCount >= MILESTONE_KM.indexOf(HALF_MARATHON_KM) + 1;
   const fmtP = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}/km`;
 
   if (branch === 'distance') {

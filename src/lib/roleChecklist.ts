@@ -9,6 +9,7 @@ import {
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
+import { HALF_MARATHON_KM } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -134,7 +135,7 @@ export function computeNodeChecklist(
     ],
     medallista: [
       { label: `Completar ${medallista_min_activities} actividades`, passed: totalActivities >= medallista_min_activities },
-      { label: `Desbloquear ${medallista_min_milestones} hitos (incluyendo media maratón)`, passed: milestoneCount >= medallista_min_milestones && milestones.has(21.1) },
+      { label: `Desbloquear ${medallista_min_milestones} hitos (incluyendo media maratón)`, passed: milestoneCount >= medallista_min_milestones && milestones.has(HALF_MARATHON_KM) },
       { label: `Acumular ${medallista_min_total_km} km en total`, passed: totalKm >= medallista_min_total_km },
     ],
   };

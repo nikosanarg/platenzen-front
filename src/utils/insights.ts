@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
+import { HALF_MARATHON_KM } from '@/lib/distances';
 
 const WEEKDAY_NAMES_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
@@ -97,7 +98,7 @@ export function generateSmartInsights(
   }
 
   // 7. Longest run context
-  if (stats.longestActivity >= 21) {
+  if (stats.longestActivity >= HALF_MARATHON_KM) {
     insights.push({
       id: 'long_run',
       text: `Ya alcanzaste una distancia de media maratón o más (${Math.round(stats.longestActivity * 10) / 10} km)`,

@@ -2,6 +2,7 @@ import { StravaActivity } from '@/types/strava';
 import { WeeklyStats } from '@/types/stats';
 import { metersToKm } from '@/utils/units';
 import { mpsToSecPerKm } from '@/utils/pace';
+import { HALF_MARATHON_M } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -113,7 +114,7 @@ export function computePersonalRecords(
   return {
     best5k: findBestProjected(activities, 4000, 5000),
     best10k: findBestProjected(activities, 8500, 10000),
-    best21k: findBestProjected(activities, 18000, 21097),
+    best21k: findBestProjected(activities, 18000, HALF_MARATHON_M),
     longest,
     bestElevation,
     bestWeek,

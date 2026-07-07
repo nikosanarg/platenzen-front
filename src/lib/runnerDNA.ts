@@ -2,6 +2,7 @@ import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
+import { MARATHON_KM } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -57,8 +58,8 @@ function computeResistencia(runs12mo: StravaActivity[]): number {
   const avgKm = distancesKm.reduce((s, d) => s + d, 0) / distancesKm.length;
 
   const rawScore = (7 * maxKm + 3 * avgKm) / 10;
-  // Normalize: 0 km = 0, 42.2 km = 100
-  return clamp100((rawScore / 42.2) * 100);
+  // Normalize: 0 km = 0, marathon distance = 100
+  return clamp100((rawScore / MARATHON_KM) * 100);
 }
 
 function computeVelocidad(runs12mo: StravaActivity[]): number {
@@ -126,7 +127,7 @@ export function computeRunnerDNA(
 
 export function getRunnerDNATooltips(dna: RunnerDNA): RunnerDNATooltips {
   return {
-    resistencia: `Resistencia (${dna.resistencia}/100)\nFórmula: (7 × distancia máxima + 3 × distancia promedio) / 10\nNormalizado: 0 km = 0, 42.2 km = 100\nBase: actividades de los últimos 12 meses`,
+    resistencia: `Resistencia (${dna.resistencia}/100)\nFórmula: (7 × distancia máxima + 3 × distancia promedio) / 10\nNormalizado: 0 km = 0, 42,195 km = 100\nBase: actividades de los últimos 12 meses`,
     velocidad: `Velocidad (${dna.velocidad}/100)\nFórmula: (3 × mejor ritmo + 2 × ritmo promedio) / 5\nNormalizado: 12:00/km = 0, 3:00/km = 100\nMenor ritmo = mayor puntaje\nBase: actividades de los últimos 12 meses`,
     consistencia: `Consistencia (${dna.consistencia}/100)\nDías distintos con actividad en los últimos 30 días\n0 días = 0, 30 días = 100`,
     exploracion: `Exploración (${dna.exploracion}/100)\nLugares de inicio distintos en los últimos 12 meses\n(tolerancia 500 m entre puntos de partida)\n0 lugares = 0, 25 lugares = 100`,

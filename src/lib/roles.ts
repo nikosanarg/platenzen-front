@@ -8,6 +8,7 @@ import {
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
+import { HALF_MARATHON_KM } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -289,7 +290,7 @@ function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats)
   const totalActivities = stats.totalActivities;
   const reached = milestonesReached(runs);
   const milestoneCount = reached.size;
-  const hasHalfMarathon = reached.has(21.1);
+  const hasHalfMarathon = reached.has(HALF_MARATHON_KM);
 
   let levelIdx = 0;
   if (

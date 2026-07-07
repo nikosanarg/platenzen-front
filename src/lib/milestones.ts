@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
+import { HALF_MARATHON_KM } from '@/lib/distances';
 
 export interface Milestone {
   id: string;
@@ -48,7 +49,7 @@ export function computeMilestones(
   const has5k = runs.some(a => a.distance >= 5000);
   const has10k = runs.some(a => a.distance >= 10000);
   const has15k = runs.some(a => a.distance >= 15000);
-  const has21k = runs.some(a => a.distance >= 21000);
+  const has21k = runs.some(a => a.distance >= HALF_MARATHON_KM * 1000);
 
   return [
     {
@@ -84,12 +85,12 @@ export function computeMilestones(
     {
       id: 'first_21k',
       label: 'Primera media maratón',
-      description: 'Una salida de al menos 21 km',
+      description: 'Una salida de al menos una media maratón (21,0975 km)',
       xpReward: 500,
       unlocked: has21k,
-      unlockedDate: has21k ? shortDate(firstDateWithDistance(21)!) : undefined,
-      progress: Math.min(1, stats.longestActivity / 21),
-      progressLabel: !has21k ? `${Math.round(stats.longestActivity * 10) / 10} de 21 km` : undefined,
+      unlockedDate: has21k ? shortDate(firstDateWithDistance(HALF_MARATHON_KM)!) : undefined,
+      progress: Math.min(1, stats.longestActivity / HALF_MARATHON_KM),
+      progressLabel: !has21k ? `${Math.round(stats.longestActivity * 10) / 10} de 21,0975 km` : undefined,
     },
     {
       id: 'km_100',

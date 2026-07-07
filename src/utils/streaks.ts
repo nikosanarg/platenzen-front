@@ -37,6 +37,18 @@ function prevWeekKey(weekKey: string): string {
 }
 
 /**
+ * Monday-anchored week index for a `YYYY-MM-DD` date, computed from date
+ * components (timezone-safe). Consecutive weeks differ by exactly 1, across
+ * month and year boundaries.
+ */
+function weekIndexFromDate(dateStr: string): number {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const days = Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+  // 1970-01-01 was a Thursday; shift by 3 so Mondays start each week bucket.
+  return Math.floor((days + 3) / 7);
+}
+
+/**
  * Consecutive active weeks ending at the most recent active week.
  * Current week counts only if it already has ≥1 activity.
  * Minimum to display: 2 weeks.
@@ -54,6 +66,31 @@ export function computeWeeklyStreak(weekly: WeeklyStats[]): number {
     w = prevWeekKey(w);
   }
   return streak;
+}
+
+/**
+ * Longest run of consecutive active weeks across every week available
+ * (last ~12 months). A week counts as active with ≥1 activity — going out
+ * twice in a week still counts as a single active week for the streak.
+ */
+export function computeLongestWeeklyStreak(daily: DayStats[]): number {
+  const weeks = new Set(
+    daily.filter(d => d.count > 0).map(d => weekIndexFromDate(d.date))
+  );
+  if (!weeks.size) return 0;
+
+  const sorted = [...weeks].sort((a, b) => a - b);
+  let longest = 1;
+  let current = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === sorted[i - 1] + 1) {
+      current++;
+      if (current > longest) longest = current;
+    } else {
+      current = 1;
+    }
+  }
+  return longest;
 }
 
 export function getLongestStreak(daily: DayStats[]): number {

@@ -1,4 +1,5 @@
 import { StravaActivity } from '@/types/strava';
+import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -14,9 +15,9 @@ export const RACE_DISTANCES: RaceDistance[] = [
   { km: 5, label: '5 km' },
   { km: 10, label: '10 km' },
   { km: 15, label: '15 km' },
-  { km: 21.1, label: '21.1 km' },
+  { km: HALF_MARATHON_KM, label: `${formatKmExact(HALF_MARATHON_KM)} km` },
   { km: 31.5, label: '31.5 km' },
-  { km: 42.2, label: '42.2 km' },
+  { km: MARATHON_KM, label: `${formatKmExact(MARATHON_KM)} km` },
 ];
 
 export interface RacePredictionRow {
@@ -105,9 +106,9 @@ export function computeRacePredictions(activities: StravaActivity[]): RacePredic
     5: 4,
     10: 8.5,
     15: 13,
-    21.1: 18,
+    [HALF_MARATHON_KM]: 18,
     31.5: 28,
-    42.2: 38,
+    [MARATHON_KM]: 38,
   };
 
   return RACE_DISTANCES.map(({ km, label }) => {

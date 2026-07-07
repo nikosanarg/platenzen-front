@@ -1,6 +1,7 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
+import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -32,7 +33,7 @@ export const LEVEL_NAMES = [
   'Corredor inmortal',
 ];
 
-const MILESTONE_DISTANCES_KM = [5, 10, 15, 21.1, 31.5, 42.2];
+const MILESTONE_DISTANCES_KM = [5, 10, 15, HALF_MARATHON_KM, 31.5, MARATHON_KM];
 
 export interface XpEventItem {
   label: string;
