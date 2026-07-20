@@ -13,13 +13,38 @@ export const HistoryGrid = styled.div`
 `;
 
 export const DistanceCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #08080a;
   border-radius: var(--radius);
-  padding: 1.25rem 1rem 1.75rem;
+  box-shadow: 0 0 8px rgba(163, 230, 53, 0.12);
+  padding: 1.25rem 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 0 8px rgba(163, 230, 53, 0.22);
+  }
+`;
+
+export const StravaBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #fc4c02;
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.625rem;
+  transition: background 0.15s;
+  text-decoration: none;
+  align-self: flex-start;
+  margin-top: 0.75rem;
+
+  &:hover {
+    background: rgba(252, 76, 2, 0.1);
+  }
 `;
 
 export const DistanceLabel = styled.div`
@@ -27,7 +52,14 @@ export const DistanceLabel = styled.div`
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: #4ade80;
+`;
+
+export const TimeRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 `;
 
 export const CurrentTime = styled.div`
@@ -36,6 +68,12 @@ export const CurrentTime = styled.div`
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.1;
+`;
+
+export const PaceSmall = styled.span`
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
 `;
 
 export const ImprovementBadge = styled.div<{ $isFirst?: boolean }>`
@@ -51,7 +89,8 @@ export const ImprovementBadge = styled.div<{ $isFirst?: boolean }>`
 export const RecordDate = styled.div`
   font-size: 0.68rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
 `;
 
 export const NoRecord = styled.div`

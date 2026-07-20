@@ -4,7 +4,6 @@ import React, { useMemo } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { computeLegendarySessions } from '@/lib/legendarySessions';
-import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
   SessionsGrid,
@@ -18,12 +17,9 @@ import {
   SessionStatLabel,
   ReasonsList,
   ReasonBadge,
-  LegendaryIcon,
   StravaBtn,
   EmptyState,
 } from './styled';
-
-const RANK_ICONS = ['🥇', '🥈', '🥉', '⭐', '⭐'];
 
 interface SesionesLegendariasProps {
   activities: StravaActivity[];
@@ -38,20 +34,14 @@ const SesionesLegendarias: React.FC<SesionesLegendariasProps> = ({ activities, s
 
   return (
     <Root>
-      <SectionTitle>Sesiones legendarias</SectionTitle>
-
       {sessions.length === 0 ? (
         <EmptyState>Registrá más actividades para descubrir tus sesiones legendarias.</EmptyState>
       ) : (
         <SessionsGrid>
-          {sessions.map((session, idx) => (
+          {sessions.map((session) => (
             <SessionCard key={session.activity.id}>
               <SessionHeader>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <LegendaryIcon>{RANK_ICONS[idx]}</LegendaryIcon>
-                  <SessionName>{session.activity.name}</SessionName>
-                </div>
-                <SessionDate>{session.dateLabel}</SessionDate>
+                <SessionName>{session.activity.name}</SessionName>
               </SessionHeader>
 
               <SessionStats>
@@ -65,10 +55,10 @@ const SesionesLegendarias: React.FC<SesionesLegendariasProps> = ({ activities, s
                 </SessionStat>
               </SessionStats>
 
+              <SessionDate>{session.dateLabel}</SessionDate>
+
               <ReasonsList>
-                {session.reasons.map((reason, i) => (
-                  <ReasonBadge key={i}>🏆 {reason}</ReasonBadge>
-                ))}
+                <ReasonBadge>{session.icon} {session.reason}</ReasonBadge>
               </ReasonsList>
 
               <StravaBtn href={session.stravaUrl} target="_blank" rel="noopener noreferrer">

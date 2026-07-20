@@ -8,60 +8,48 @@ export const Root = styled.div`
 
 export const SessionsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.875rem;
 
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
 export const SessionCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid rgba(184, 134, 11, 0.25);
+  background: #08080a;
   border-radius: var(--radius);
+  box-shadow: 0 0 8px rgba(245, 197, 24, 0.14);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.2s;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #b8860b, #f5c518, #b8860b);
-  }
+  transition: box-shadow 0.2s;
 
   &:hover {
-    border-color: rgba(245, 197, 24, 0.4);
+    box-shadow: 0 0 8px rgba(245, 197, 24, 0.26);
   }
 `;
 
 export const SessionHeader = styled.div`
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem;
 `;
 
 export const SessionName = styled.div`
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #f5c518;
   line-height: 1.3;
 `;
 
 export const SessionDate = styled.div`
   font-size: 0.7rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
+  margin-top: auto;
 `;
 
 export const SessionStats = styled.div`
@@ -123,7 +111,6 @@ export const StravaBtn = styled.a`
   transition: background 0.15s;
   text-decoration: none;
   align-self: flex-start;
-  margin-top: auto;
 
   &:hover {
     background: rgba(252, 76, 2, 0.1);

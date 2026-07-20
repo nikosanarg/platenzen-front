@@ -97,3 +97,19 @@ export function shortDate(date: string): string {
   const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   return `${parseInt(da)} ${MONTHS[parseInt(mo) - 1]}`;
 }
+
+export function fullDate(date: string): string {
+  const [yr, mo, da] = date.split('-');
+  const MONTHS = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  ];
+  return `${parseInt(da)} de ${MONTHS[parseInt(mo) - 1]} de ${yr}`;
+}
+
+export function formatPace(secPerKm: number): string {
+  if (secPerKm <= 0) return '—';
+  const m = Math.floor(secPerKm / 60);
+  const s = Math.round(secPerKm % 60);
+  return `${m}:${String(s).padStart(2, '0')}/km`;
+}

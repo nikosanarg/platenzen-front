@@ -142,6 +142,12 @@ export const DashboardContent = styled.main`
   }
 `;
 
+export const LegendaryGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
 export const SectionTitle = styled.h2`
   font-size: 0.72rem;
   font-weight: 600;

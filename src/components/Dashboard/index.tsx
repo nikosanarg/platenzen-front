@@ -4,7 +4,7 @@ import React, { useEffect, useState, useState as useStateReact } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import PersonajeCard from '@/components/PersonajeCard';
-import CoachPersonalizado from '@/components/CoachPersonalizado';
+import CoachAnalisis from '@/components/CoachAnalisis';
 import RecordHistorySection from '@/components/RecordHistorySection';
 import RacePredictorTable from '@/components/RacePredictorTable';
 import InsightsSection from '@/components/InsightsSection';
@@ -14,7 +14,6 @@ import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import CollapsibleSection from '@/components/CollapsibleSection';
-import UltimaActividad from '@/components/UltimaActividad';
 import SesionesLegendarias from '@/components/SesionesLegendarias';
 import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
 import {
@@ -31,6 +30,7 @@ import {
   HomeTabsInner,
   HomeTabBtn,
   DashboardContent,
+  LegendaryGroup,
   PatternsGrid,
   LoadingOverlay,
   LoadingText,
@@ -137,13 +137,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             <>
               <PersonajeCard activities={activities} stats={stats} />
 
-              <CoachPersonalizado activities={activities} stats={stats} />
+              <CoachAnalisis activities={activities} stats={stats} />
 
-              <UltimaActividad activities={activities} stats={stats} />
-
-              <RecordHistorySection activities={activities} />
-
-              <SesionesLegendarias activities={activities} stats={stats} />
+              <LegendaryGroup>
+                <RecordHistorySection activities={activities} />
+                <SesionesLegendarias activities={activities} stats={stats} />
+              </LegendaryGroup>
 
               <CollapsibleSection
                 title="Patrones y Tendencias"
