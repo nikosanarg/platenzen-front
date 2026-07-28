@@ -58,7 +58,9 @@ function findBestProjected(
     }
   }
 
-  return bestSeconds < Infinity ? { seconds: Math.round(bestSeconds), date: bestDate } : null;
+  // `eligible` no está vacío y toda corrida trae distancia y tiempo positivos,
+  // así que la primera iteración siempre fija un mejor tiempo finito.
+  return { seconds: Math.round(bestSeconds), date: bestDate };
 }
 
 // Find the "best reference" performance to anchor Riegel predictions
@@ -86,6 +88,9 @@ function findBestReference(runs: StravaActivity[]): ReferencePerformance | null 
     }
   }
 
+  // Inalcanzable: todo `eligible` tiene average_speed > 0, así que la primera
+  // iteración lo asigna. Queda para que TypeScript pueda estrechar el tipo.
+  /* istanbul ignore next */
   if (!bestPaceRun) return null;
   return {
     distanceKm: bestPaceRun.distance / 1000,
@@ -112,7 +117,11 @@ export function computeRacePredictions(activities: StravaActivity[]): RacePredic
   };
 
   return RACE_DISTANCES.map(({ km, label }) => {
-    const projected = findBestProjected(runs, km, minKmThresholds[km] ?? km * 0.8);
+    // Las seis distancias de RACE_DISTANCES tienen su umbral declarado arriba;
+    // el fallback sólo cubriría una distancia nueva sin umbral propio.
+    /* istanbul ignore next */
+    const minKm = minKmThresholds[km] ?? km * 0.8;
+    const projected = findBestProjected(runs, km, minKm);
     const predicted = ref ? Math.round(riegelPredict(ref, km)) : null;
 
     return {

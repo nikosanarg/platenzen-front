@@ -65,6 +65,27 @@ describe('computeRacePredictions sin datos', () => {
     ]);
     expect(rows.every((r) => r.bestSeconds === null)).toBe(true);
   });
+
+  it('cae a `type` cuando la actividad no trae `sport_type`', () => {
+    // Strava no siempre manda sport_type en actividades viejas.
+    const rows = computeRacePredictions([
+      on('2026-07-01', { sport_type: '', type: 'Run', distance: 10000, moving_time: 3000 }),
+    ]);
+
+    expect(rows.find((r) => r.distanceKm === 10)!.bestSeconds).toBe(3000);
+  });
+
+  it('descarta las salidas sin tiempo o sin distancia', () => {
+    expect(
+      computeRacePredictions([on('2026-07-01', { distance: 10000, moving_time: 0 })])
+        .every((r) => r.bestSeconds === null),
+    ).toBe(true);
+
+    expect(
+      computeRacePredictions([on('2026-07-01', { distance: 0, moving_time: 3000 })])
+        .every((r) => r.bestSeconds === null),
+    ).toBe(true);
+  });
 });
 
 describe('bestSeconds: proyección lineal', () => {

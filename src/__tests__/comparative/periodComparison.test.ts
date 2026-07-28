@@ -106,6 +106,26 @@ describe('métricas del período', () => {
     expect(p.current.avgTimePerActivitySec).toBe(2250);
   });
 
+  it('sin ninguna corrida el ritmo queda en 0, no en NaN', () => {
+    const p = periodo(
+      [on('2026-07-10', { sport_type: 'Ride', type: 'Ride', distance: 30000, moving_time: 3600 })],
+      '30d',
+    );
+
+    expect(p.current.activities).toBe(1);
+    expect(p.current.avgPaceSec).toBe(0);
+  });
+
+  it('cae a `type` cuando la actividad no trae `sport_type`', () => {
+    // Strava no siempre manda sport_type en actividades viejas.
+    const p = periodo(
+      [on('2026-07-10', { sport_type: '', type: 'Run', distance: 10000, moving_time: 3000 })],
+      '30d',
+    );
+
+    expect(p.current.avgPaceSec).toBe(300);
+  });
+
   it('promedia el ritmo sólo sobre las actividades de running', () => {
     const p = periodo(
       [

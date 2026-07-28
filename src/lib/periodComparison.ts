@@ -8,6 +8,7 @@ export interface PeriodData {
   avgPaceSec: number;
   totalTimeSec: number;
   avgTimePerActivitySec: number;
+  avgDistancePerActivityKm: number;
 }
 
 export interface PeriodComparison {
@@ -31,7 +32,16 @@ function filterByDateRange(
 }
 
 function computePeriodData(acts: StravaActivity[]): PeriodData {
-  if (acts.length === 0) return { distanceKm: 0, activities: 0, avgPaceSec: 0, totalTimeSec: 0, avgTimePerActivitySec: 0 };
+  if (acts.length === 0) {
+    return {
+      distanceKm: 0,
+      activities: 0,
+      avgPaceSec: 0,
+      totalTimeSec: 0,
+      avgTimePerActivitySec: 0,
+      avgDistancePerActivityKm: 0,
+    };
+  }
 
   const distanceKm = acts.reduce((s, a) => s + a.distance / 1000, 0);
   const totalTimeSec = acts.reduce((s, a) => s + a.moving_time, 0);
@@ -47,7 +57,10 @@ function computePeriodData(acts: StravaActivity[]): PeriodData {
     activities: acts.length,
     avgPaceSec: Math.round(avgPaceSec),
     totalTimeSec,
-    avgTimePerActivitySec: acts.length > 0 ? Math.round(totalTimeSec / acts.length) : 0,
+    // `acts` no puede estar vacío: el caso se resolvió con el return de arriba.
+    avgTimePerActivitySec: Math.round(totalTimeSec / acts.length),
+    // Se divide la distancia sin redondear: redondear antes corre el promedio.
+    avgDistancePerActivityKm: Math.round((distanceKm / acts.length) * 10) / 10,
   };
 }
 

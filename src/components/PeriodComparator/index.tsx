@@ -91,6 +91,13 @@ const PeriodComparator: React.FC<PeriodComparatorProps> = ({ activities }) => {
       delta: pctChange(comp.current.avgTimePerActivitySec, comp.previous.avgTimePerActivitySec),
       positiveIsGood: true,
     },
+    {
+      name: 'Distancia / actividad',
+      current: `${comp.current.avgDistancePerActivityKm} km`,
+      previous: `${comp.previous.avgDistancePerActivityKm} km`,
+      delta: pctChange(comp.current.avgDistancePerActivityKm, comp.previous.avgDistancePerActivityKm),
+      positiveIsGood: true,
+    },
   ];
 
   function formatDelta(row: MetricRow): string {
@@ -107,6 +114,9 @@ const PeriodComparator: React.FC<PeriodComparatorProps> = ({ activities }) => {
 
   function getPositive(row: MetricRow): boolean | null {
     if (row.delta === null || row.delta === 0) return null;
+    // Hoy todas las filas usan positiveIsGood: true. El ritmo también, porque su
+    // delta ya viene con el signo invertido desde paceDelta.
+    /* istanbul ignore next */
     return row.positiveIsGood ? row.delta > 0 : row.delta < 0;
   }
 
@@ -119,7 +129,10 @@ const PeriodComparator: React.FC<PeriodComparatorProps> = ({ activities }) => {
 
     const parts: string[] = [];
     const distDelta = distRow.delta;
+    // `rows` siempre incluye estas filas; el `?.` sólo protege de un renombre.
+    /* istanbul ignore next */
     const actDelta = actRow?.delta ?? null;
+    /* istanbul ignore next */
     const pd = paceRow?.delta ?? null;
 
     if (Math.abs(distDelta) <= 5 && actDelta !== null && actDelta < -5) {

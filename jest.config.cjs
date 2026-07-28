@@ -19,6 +19,10 @@ const customJestConfig = {
     'src/lib/**/*.{ts,tsx}',
     'src/utils/**/*.{ts,tsx}',
     'src/hooks/**/*.{ts,tsx}',
+    // Componentes de la tab Comparar: se miden junto con su lógica para que el
+    // 100% de esa tab signifique lo que dice.
+    'src/components/PeriodComparator/index.tsx',
+    'src/components/RacePredictorTable/index.tsx',
     '!**/*.d.ts',
     '!**/styled.{ts,tsx}',
     '!src/lib/registry.tsx',
