@@ -196,7 +196,7 @@ export const AchievementCard = styled.article<{
   background: var(--bg-card);
   border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(74, 222, 128, 0.35)' : 'var(--border)')};
   border-radius: var(--radius-sm);
-  padding: 0.72rem;
+  padding: ${({ $viewMode }) => ($viewMode === 'list' ? '0.55rem' : '0.72rem')};
   /* Tapa la parte interna del halo, que sólo debe verse por fuera del borde */
   position: relative;
   z-index: 1;
@@ -205,8 +205,8 @@ export const AchievementCard = styled.article<{
   display: flex;
   flex-direction: ${({ $viewMode }) => ($viewMode === 'list' ? 'row' : 'column')};
   align-items: ${({ $viewMode }) => ($viewMode === 'list' ? 'stretch' : 'flex-start')};
-  gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.8rem' : '0.6rem')};
-  min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '112px' : '252px')};
+  gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.65rem' : '0.6rem')};
+  min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '84px' : '252px')};
   opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
   box-shadow: ${({ $unlocked, $tier }) =>
     $tier
@@ -226,17 +226,26 @@ export const AchievementCard = styled.article<{
           ? '0 0 0 1px rgba(74, 222, 128, 0.32), 0 0 22px rgba(74, 222, 128, 0.22)'
           : 'none'};
   }
+
+  @media (max-width: 600px) {
+    min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '76px' : '252px')};
+  }
 `;
 
 export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid'; $unlocked: boolean }>`
   position: relative;
   flex-shrink: 0;
-  width: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : '100%')};
-  height: ${({ $viewMode }) => ($viewMode === 'list' ? '96px' : 'auto')};
+  width: ${({ $viewMode }) => ($viewMode === 'list' ? '68px' : '100%')};
+  height: ${({ $viewMode }) => ($viewMode === 'list' ? '68px' : 'auto')};
   aspect-ratio: ${({ $viewMode }) => ($viewMode === 'list' ? 'auto' : '1 / 1')};
   border-radius: 6px;
   overflow: hidden;
   box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.35), 0 0 14px rgba(74, 222, 128, 0.22)' : 'none')};
+
+  @media (max-width: 600px) {
+    width: ${({ $viewMode }) => ($viewMode === 'list' ? '60px' : '100%')};
+    height: ${({ $viewMode }) => ($viewMode === 'list' ? '60px' : 'auto')};
+  }
 `;
 
 export const AchievementImage = styled.img<{ $unlocked: boolean }>`
@@ -273,23 +282,23 @@ export const AchievementInfoColumn = styled.div`
 export const AchievementStatColumn = styled.div`
   display: flex;
   flex-shrink: 0;
-  width: 128px;
+  width: 104px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding-left: 0.6rem;
+  gap: 0.3rem;
+  padding-left: 0.5rem;
   border-left: 1px solid var(--border);
   text-align: center;
 
   @media (max-width: 600px) {
-    width: 92px;
-    padding-left: 0.4rem;
+    width: 76px;
+    padding-left: 0.35rem;
   }
 `;
 
 export const AchievementStatValue = styled.span<{ $tone: 'xp' | 'unlocked' | 'muted' }>`
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.25;
   color: ${({ $tone }) =>
@@ -305,7 +314,7 @@ export const AchievementXP = styled.div<{ $unlocked: boolean }>`
 `;
 
 export const AchievementTitle = styled.h4<{ $viewMode: 'list' | 'grid' }>`
-  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '1.02rem' : '0.98rem')};
+  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '0.9rem' : '0.98rem')};
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
@@ -319,13 +328,13 @@ export const AchievementTitle = styled.h4<{ $viewMode: 'list' | 'grid' }>`
 `;
 
 export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
-  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '0.86rem' : '0.82rem')};
+  font-size: ${({ $viewMode }) => ($viewMode === 'list' ? '0.79rem' : '0.82rem')};
   color: var(--text-secondary);
   line-height: 1.35;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: ${({ $viewMode }) => ($viewMode === 'grid' ? 2 : 3)};
+  -webkit-line-clamp: 2;
   text-overflow: ellipsis;
 `;
 

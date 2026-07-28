@@ -178,7 +178,7 @@ function AchievementCardItem({
 
           {/* Column 3: medal + XP */}
           <AchievementStatColumn>
-            <IconMedal size={26} color={isUnlocked ? '#fbbf24' : 'var(--text-muted)'} />
+            <IconMedal size={20} color={isUnlocked ? '#fbbf24' : 'var(--text-muted)'} />
             <AchievementStatValue $tone={isUnlocked ? 'xp' : 'muted'}>+{achievement.xp} XP</AchievementStatValue>
           </AchievementStatColumn>
 
@@ -186,14 +186,14 @@ function AchievementCardItem({
           <AchievementStatColumn>
             {isUnlocked ? (
               <>
-                <IconCalendar size={26} color="#4ade80" />
+                <IconCalendar size={20} color="#4ade80" />
                 <AchievementStatValue $tone="unlocked">
                   {formatDate(achievement.unlockedAt!)}
                 </AchievementStatValue>
               </>
             ) : (
               <>
-                <IconHourglass size={26} color="var(--text-muted)" />
+                <IconHourglass size={20} color="var(--text-muted)" />
                 <AchievementStatValue $tone="muted">
                   {achievement.progressText}
                 </AchievementStatValue>
