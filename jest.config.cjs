@@ -26,9 +26,10 @@ const customJestConfig = {
     '!src/lib/{gamification,levels,milestones,predictions,personalRecords,personalGoals,worldMap,recap,roleChecklist,momentum,consistencyStats,runnerProfile}.ts',
     '!src/utils/equivalences.ts',
   ],
-  // El 50% es el piso acordado, no una foto: si un cambio lo baja, falla.
+  // Piso acordado, no una foto: si un cambio lo baja, falla. Se deja algo por
+  // debajo del valor alcanzado para tolerar refactors sin volverse un obstáculo.
   coverageThreshold: {
-    global: { statements: 50, lines: 50 },
+    global: { statements: 90, lines: 90, functions: 90, branches: 80 },
   },
 };
 
