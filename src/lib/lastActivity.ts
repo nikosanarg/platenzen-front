@@ -3,6 +3,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeXPBreakdown, getLevelInfo } from '@/lib/xpSystem';
 import { computeRunnerDNA } from '@/lib/runnerDNA';
 import { computeAchievements } from '@/lib/achievements';
+import { splitPace } from '@/utils/pace';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -57,9 +58,8 @@ function isRun(a: StravaActivity): boolean {
 }
 
 function formatPace(secPerKm: number): string {
-  const m = Math.floor(secPerKm / 60);
-  const s = Math.round(secPerKm % 60);
-  return `${m}:${String(s).padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(secPerKm);
+  return `${minutes}:${seconds}/km`;
 }
 
 function formatDuration(seconds: number): string {

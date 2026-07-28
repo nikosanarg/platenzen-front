@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { decodePolyline } from '@/lib/polylineDecoder';
+import { splitPace } from '@/utils/pace';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -183,7 +184,6 @@ export function computeWorldMap(activities: StravaActivity[]): WorldMapData | nu
 
 export function formatPaceStr(secPerKm: number): string {
   if (secPerKm <= 0) return '—';
-  const m = Math.floor(secPerKm / 60);
-  const s = Math.round(secPerKm % 60);
-  return `${m}:${String(s).padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(secPerKm);
+  return `${minutes}:${seconds}/km`;
 }

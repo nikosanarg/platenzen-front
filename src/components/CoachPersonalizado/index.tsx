@@ -6,6 +6,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeCoachRecommendation, RecommendationType } from '@/lib/coach';
 import { computeFormShape } from '@/lib/formShape';
 import { computeMomentum } from '@/lib/momentum';
+import { splitPace } from '@/utils/pace';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -67,9 +68,8 @@ interface CoachPersonalizadoProps {
 }
 
 function formatPace(sec: number): string {
-  const m = Math.floor(sec / 60);
-  const s = Math.round(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(sec);
+  return `${minutes}:${seconds}/km`;
 }
 
 // ── EstadoActual observations ──────────────────────────────────────────────

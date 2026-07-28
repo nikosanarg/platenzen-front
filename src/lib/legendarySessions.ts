@@ -1,5 +1,6 @@
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
+import { splitPace } from '@/utils/pace';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -47,9 +48,8 @@ function byDateAsc(a: StravaActivity, b: StravaActivity): number {
 
 function formatPace(secPerKm: number): string {
   if (secPerKm <= 0) return '—';
-  const m = Math.floor(secPerKm / 60);
-  const s = Math.round(secPerKm % 60);
-  return `${m}:${String(s).padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(secPerKm);
+  return `${minutes}:${seconds}/km`;
 }
 
 const FULL_MONTHS = [

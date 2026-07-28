@@ -3,6 +3,7 @@
 import React from 'react';
 import { ProcessedStats } from '@/types/stats';
 import { computeMomentum } from '@/lib/momentum';
+import { splitPace } from '@/utils/pace';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import { EstadoRoot, CardList, ObsCard, ObsText } from './styled';
 
@@ -16,9 +17,8 @@ interface Observation {
 }
 
 function formatPace(sec: number): string {
-  const m = Math.floor(sec / 60);
-  const s = Math.round(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(sec);
+  return `${minutes}:${seconds}/km`;
 }
 
 function buildObservations(stats: ProcessedStats): Observation[] {

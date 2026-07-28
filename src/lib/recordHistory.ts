@@ -1,5 +1,5 @@
 import { StravaActivity } from '@/types/strava';
-import { mpsToSecPerKm } from '@/utils/pace';
+import { mpsToSecPerKm, splitPace } from '@/utils/pace';
 import { HALF_MARATHON_KM, HALF_MARATHON_M } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
@@ -109,7 +109,6 @@ export function fullDate(date: string): string {
 
 export function formatPace(secPerKm: number): string {
   if (secPerKm <= 0) return '—';
-  const m = Math.floor(secPerKm / 60);
-  const s = Math.round(secPerKm % 60);
-  return `${m}:${String(s).padStart(2, '0')}/km`;
+  const { minutes, seconds } = splitPace(secPerKm);
+  return `${minutes}:${seconds}/km`;
 }
