@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import styled, { css } from 'styled-components';
 
 export const DashboardRoot = styled.div`
@@ -109,7 +110,7 @@ export const HomeTabsInner = styled.div`
   gap: 0;
 `;
 
-export const HomeTabBtn = styled.button<{ $active: boolean }>`
+export const HomeTabLink = styled(Link)<{ $active: boolean }>`
   background: none;
   border: none;
   border-bottom: 2px solid ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
@@ -122,6 +123,7 @@ export const HomeTabBtn = styled.button<{ $active: boolean }>`
   letter-spacing: 0.01em;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
+  text-decoration: none;
 
   &:hover {
     color: var(--text-secondary);

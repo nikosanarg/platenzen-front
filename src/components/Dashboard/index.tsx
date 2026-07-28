@@ -1,20 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useState as useStateReact } from 'react';
-import { StravaActivity } from '@/types/strava';
-import { ProcessedStats } from '@/types/stats';
-import PersonajeCard from '@/components/PersonajeCard';
-import CoachAnalisis from '@/components/CoachAnalisis';
-import RecordHistorySection from '@/components/RecordHistorySection';
-import RacePredictorTable from '@/components/RacePredictorTable';
-import InsightsSection from '@/components/InsightsSection';
-import PeriodComparator from '@/components/PeriodComparator';
-import AchievementShowcase from '@/components/AchievementShowcase';
-import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
-import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
-import PerformanceTabs from '@/components/charts/PerformanceTabs';
-import CollapsibleSection from '@/components/CollapsibleSection';
-import SesionesLegendarias from '@/components/SesionesLegendarias';
+import React, { useEffect, useState as useStateReact } from 'react';
+import { usePathname } from 'next/navigation';
 import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
 import {
   DashboardRoot,
@@ -28,27 +15,29 @@ import {
   ButtonText,
   HomeTabsBar,
   HomeTabsInner,
-  HomeTabBtn,
+  HomeTabLink,
   DashboardContent,
-  LegendaryGroup,
-  PatternsGrid,
   LoadingOverlay,
   LoadingText,
   LoadingCount,
   Spinner,
 } from './styled';
 
-type HomeTab = 'progreso' | 'logros' | 'comparar';
+/** Una tab por ruta: la URL es la unica fuente de verdad de la tab activa. */
+const HOME_TABS = [
+  { href: '/', label: 'Progreso' },
+  { href: '/achievements', label: 'Logros' },
+  { href: '/comparative', label: 'Comparar' },
+] as const;
 
 interface DashboardProps {
-  activities: StravaActivity[];
-  stats: ProcessedStats;
   loading: boolean;
   loadingCount: number;
   isFromCache: boolean;
   cacheAge: number | null;
   onRefresh: () => void;
   onLogout: () => void;
+  children: React.ReactNode;
 }
 
 function formatCacheAge(ms: number): string {
@@ -61,16 +50,15 @@ function formatCacheAge(ms: number): string {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
-  activities,
-  stats,
   loading,
   loadingCount,
   isFromCache,
   cacheAge,
   onRefresh,
   onLogout,
+  children,
 }) => {
-  const [activeTab, setActiveTab] = useState<HomeTab>('progreso');
+  const pathname = usePathname();
   const [isMounted, setIsMounted] = useStateReact(false);
   const isMobile = useIsMobile(isMounted);
 
@@ -112,15 +100,19 @@ const Dashboard: React.FC<DashboardProps> = ({
       {!loading && (
         <HomeTabsBar>
           <HomeTabsInner>
-            <HomeTabBtn $active={activeTab === 'progreso'} onClick={() => setActiveTab('progreso')}>
-              Progreso
-            </HomeTabBtn>
-            <HomeTabBtn $active={activeTab === 'logros'} onClick={() => setActiveTab('logros')}>
-              Logros
-            </HomeTabBtn>
-            <HomeTabBtn $active={activeTab === 'comparar'} onClick={() => setActiveTab('comparar')}>
-              Comparar
-            </HomeTabBtn>
+            {HOME_TABS.map(tab => {
+              const isActive = pathname === tab.href;
+              return (
+                <HomeTabLink
+                  key={tab.href}
+                  href={tab.href}
+                  $active={isActive}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {tab.label}
+                </HomeTabLink>
+              );
+            })}
           </HomeTabsInner>
         </HomeTabsBar>
       )}
@@ -132,48 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           {loadingCount > 0 && <LoadingCount>{loadingCount} actividades encontradas...</LoadingCount>}
         </LoadingOverlay>
       ) : (
-        <DashboardContent>
-          {activeTab === 'progreso' && (
-            <>
-              <PersonajeCard activities={activities} stats={stats} />
-
-              <CoachAnalisis activities={activities} stats={stats} />
-
-              <LegendaryGroup>
-                <RecordHistorySection activities={activities} />
-                <SesionesLegendarias activities={activities} stats={stats} />
-              </LegendaryGroup>
-
-              <CollapsibleSection
-                title="Patrones y Tendencias"
-                subtitle="cómo, cuándo y cuánto entrenás"
-                defaultOpen
-              >
-                <PatternsGrid>
-                  <HourlyDistributionChart data={stats.hourlyDistribution} />
-                  <WeekdayDistributionChart data={stats.weekdayDistribution} />
-                  <PerformanceTabs
-                    monthly={stats.monthly}
-                    paceEvolution={stats.paceEvolution}
-                    cumulativeDistance={stats.cumulativeDistance}
-                  />
-                </PatternsGrid>
-                <InsightsSection activities={activities} stats={stats} />
-              </CollapsibleSection>
-            </>
-          )}
-
-          {activeTab === 'logros' && (
-            <AchievementShowcase activities={activities} stats={stats} />
-          )}
-
-          {activeTab === 'comparar' && (
-            <>
-              <PeriodComparator activities={activities} />
-              <RacePredictorTable activities={activities} />
-            </>
-          )}
-        </DashboardContent>
+        <DashboardContent>{children}</DashboardContent>
       )}
     </DashboardRoot>
   );

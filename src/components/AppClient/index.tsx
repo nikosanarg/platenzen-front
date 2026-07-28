@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useToken, StoredToken } from '@/hooks/useToken';
 import { useActivities } from '@/hooks/useActivities';
+import { StravaDataProvider } from '@/hooks/useStravaData';
 import { computeStats } from '@/lib/stats';
 import TokenInput from '@/components/TokenInput';
 import Dashboard from '@/components/Dashboard';
@@ -31,7 +32,7 @@ function readAndClearOAuthCookie(): StoredToken | null {
   }
 }
 
-const AppClient: React.FC = () => {
+const AppClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mounted, setMounted] = useState(false);
   const { hasToken, saveToken, clearToken, getValidToken } = useToken();
   const { activities, status, error, loadingCount, isFromCache, cacheAge, fetch, refresh } = useActivities();
@@ -96,16 +97,18 @@ const AppClient: React.FC = () => {
   const stats = status === 'success' ? computeStats(activities) : null;
 
   return (
-    <Dashboard
-      activities={activities}
-      stats={stats ?? computeStats([])}
-      loading={status === 'loading' || status === 'idle'}
-      loadingCount={loadingCount}
-      isFromCache={isFromCache}
-      cacheAge={cacheAge}
-      onRefresh={handleRefresh}
-      onLogout={handleLogout}
-    />
+    <StravaDataProvider value={{ activities, stats: stats ?? computeStats([]) }}>
+      <Dashboard
+        loading={status === 'loading' || status === 'idle'}
+        loadingCount={loadingCount}
+        isFromCache={isFromCache}
+        cacheAge={cacheAge}
+        onRefresh={handleRefresh}
+        onLogout={handleLogout}
+      >
+        {children}
+      </Dashboard>
+    </StravaDataProvider>
   );
 };
 

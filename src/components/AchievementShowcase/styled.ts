@@ -21,15 +21,15 @@ const FRESHNESS_TIERS = {
   gold: {
     core: 'rgba(251, 191, 36, 0.85)',
     soft: 'rgba(251, 191, 36, 0.32)',
-    haloDuration: '3.4s',
-    sparkDuration: '4.8s',
+    haloDuration: '1.9s',
+    sparkDuration: '2.7s',
     cardShadow: '0 0 0 1px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2)',
   },
   silver: {
     core: 'rgba(226, 232, 240, 0.78)',
     soft: 'rgba(203, 213, 225, 0.26)',
-    haloDuration: '8.5s',
-    sparkDuration: '12s',
+    haloDuration: '4.5s',
+    sparkDuration: '6.5s',
     cardShadow: '0 0 0 1px rgba(203, 213, 225, 0.34), 0 0 18px rgba(203, 213, 225, 0.16)',
   },
 } as const;
@@ -83,16 +83,6 @@ export const AchievementCardShell = styled.div<{ $tier: 'gold' | 'silver' | null
         filter: blur(2.5px);
         animation: ${spinCounter} ${tier.sparkDuration} linear infinite,
           ${twinkle} 2.6s ease-in-out infinite;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        &::before,
-        &::after {
-          animation: none;
-        }
-        &::after {
-          opacity: 0.4;
-        }
       }
     `;
   }}
