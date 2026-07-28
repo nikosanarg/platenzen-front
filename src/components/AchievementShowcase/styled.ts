@@ -1,4 +1,102 @@
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
+
+// ── Freshness glow (logros recién desbloqueados) ─────────────────────────────
+
+const spinClockwise = keyframes`
+  to { transform: rotate(360deg); }
+`;
+
+const spinCounter = keyframes`
+  to { transform: rotate(-360deg); }
+`;
+
+const twinkle = keyframes`
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 0.72; }
+`;
+
+/* Dorado = desbloqueado hace menos de una semana; plata = menos de un mes y gira
+   más lento. El dorado reusa el #fbbf24 que ya marca XP y medalla en esta sección. */
+const FRESHNESS_TIERS = {
+  gold: {
+    core: 'rgba(251, 191, 36, 0.85)',
+    soft: 'rgba(251, 191, 36, 0.32)',
+    haloDuration: '3.4s',
+    sparkDuration: '4.8s',
+    cardShadow: '0 0 0 1px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2)',
+  },
+  silver: {
+    core: 'rgba(226, 232, 240, 0.78)',
+    soft: 'rgba(203, 213, 225, 0.26)',
+    haloDuration: '8.5s',
+    sparkDuration: '12s',
+    cardShadow: '0 0 0 1px rgba(203, 213, 225, 0.34), 0 0 18px rgba(203, 213, 225, 0.16)',
+  },
+} as const;
+
+export const AchievementCardShell = styled.div<{ $tier: 'gold' | 'silver' | null }>`
+  position: relative;
+  display: flex;
+  min-width: 0;
+
+  ${({ $tier }) => {
+    if (!$tier) return null;
+    const tier = FRESHNESS_TIERS[$tier];
+
+    return css`
+      /* Halo difuso girando: el brillo de fondo */
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        border-radius: calc(var(--radius-sm) + 8px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      &::before {
+        inset: -6px;
+        background: conic-gradient(
+          from 0deg,
+          transparent 0deg,
+          ${tier.core} 30deg,
+          ${tier.soft} 75deg,
+          transparent 135deg,
+          transparent 195deg,
+          ${tier.core} 225deg,
+          ${tier.soft} 270deg,
+          transparent 330deg
+        );
+        filter: blur(8px);
+        animation: ${spinClockwise} ${tier.haloDuration} linear infinite;
+      }
+
+      /* Partículas: destellos finos girando en sentido contrario, más lento */
+      &::after {
+        inset: -10px;
+        background: repeating-conic-gradient(
+          from 0deg,
+          transparent 0deg 13deg,
+          ${tier.core} 13deg 15deg,
+          transparent 15deg 30deg
+        );
+        filter: blur(2.5px);
+        animation: ${spinCounter} ${tier.sparkDuration} linear infinite,
+          ${twinkle} 2.6s ease-in-out infinite;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        &::before,
+        &::after {
+          animation: none;
+        }
+        &::after {
+          opacity: 0.4;
+        }
+      }
+    `;
+  }}
+`;
 
 export const ShowcaseRoot = styled.section`
   display: flex;
@@ -100,24 +198,43 @@ export const AchievementsGrid = styled.div`
   }
 `;
 
-export const AchievementCard = styled.article<{ $viewMode: 'list' | 'grid'; $unlocked: boolean }>`
+export const AchievementCard = styled.article<{
+  $viewMode: 'list' | 'grid';
+  $unlocked: boolean;
+  $tier: 'gold' | 'silver' | null;
+}>`
   background: var(--bg-card);
   border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(74, 222, 128, 0.35)' : 'var(--border)')};
   border-radius: var(--radius-sm);
   padding: 0.72rem;
+  /* Tapa la parte interna del halo, que sólo debe verse por fuera del borde */
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: ${({ $viewMode }) => ($viewMode === 'list' ? 'row' : 'column')};
   align-items: ${({ $viewMode }) => ($viewMode === 'list' ? 'stretch' : 'flex-start')};
   gap: ${({ $viewMode }) => ($viewMode === 'list' ? '0.8rem' : '0.6rem')};
   min-height: ${({ $viewMode }) => ($viewMode === 'list' ? '112px' : '252px')};
   opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
-  box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(34, 197, 94, 0.22), 0 0 18px rgba(34, 197, 94, 0.16)' : 'none')};
+  box-shadow: ${({ $unlocked, $tier }) =>
+    $tier
+      ? FRESHNESS_TIERS[$tier].cardShadow
+      : $unlocked
+        ? '0 0 0 1px rgba(34, 197, 94, 0.22), 0 0 18px rgba(34, 197, 94, 0.16)'
+        : 'none'};
   transition: border-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     border-color: var(--border-light);
     opacity: 1;
-    box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.32), 0 0 22px rgba(74, 222, 128, 0.22)' : 'none')};
+    box-shadow: ${({ $unlocked, $tier }) =>
+      $tier
+        ? FRESHNESS_TIERS[$tier].cardShadow
+        : $unlocked
+          ? '0 0 0 1px rgba(74, 222, 128, 0.32), 0 0 22px rgba(74, 222, 128, 0.22)'
+          : 'none'};
   }
 `;
 

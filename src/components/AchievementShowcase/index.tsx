@@ -21,6 +21,7 @@ import {
   ViewModeButton,
   AchievementsList,
   AchievementsGrid,
+  AchievementCardShell,
   AchievementCard,
   AchievementArtwork,
   AchievementImage,
@@ -106,6 +107,13 @@ interface AchievementShowcaseProps {
 
 type ViewMode = 'list' | 'grid';
 
+/** Antigüedad del desbloqueo, para el glow: dorado la primera semana, plata el primer mes. */
+type FreshnessTier = 'gold' | 'silver';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const GOLD_MAX_DAYS = 7;
+const SILVER_MAX_DAYS = 30;
+
 function getStoredViewMode(): ViewMode {
   if (typeof window === 'undefined') return 'list';
   try {
@@ -138,6 +146,7 @@ function AchievementCardItem({
   const description = achievement.description;
   const tooltip = `${achievement.name} — ${description}`;
   const isUnlocked = achievement.unlocked && !!achievement.unlockedAt;
+  const tier = isUnlocked ? freshnessTier(achievement.unlockedAt) : null;
 
   const artwork = (
     <AchievementArtwork $viewMode={viewMode} $unlocked={achievement.unlocked}>
@@ -157,65 +166,69 @@ function AchievementCardItem({
 
   if (viewMode === 'list') {
     return (
-      <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} title={tooltip}>
-        {artwork}
+      <AchievementCardShell $tier={tier}>
+        <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} $tier={tier} title={tooltip}>
+          {artwork}
 
-        {/* Column 2: title + description */}
-        <AchievementInfoColumn>
-          <AchievementTitle $viewMode={viewMode}>{achievement.name}</AchievementTitle>
-          <AchievementDescription $viewMode={viewMode}>{description}</AchievementDescription>
-        </AchievementInfoColumn>
+          {/* Column 2: title + description */}
+          <AchievementInfoColumn>
+            <AchievementTitle $viewMode={viewMode}>{achievement.name}</AchievementTitle>
+            <AchievementDescription $viewMode={viewMode}>{description}</AchievementDescription>
+          </AchievementInfoColumn>
 
-        {/* Column 3: medal + XP */}
-        <AchievementStatColumn>
-          <IconMedal size={26} color={isUnlocked ? '#fbbf24' : 'var(--text-muted)'} />
-          <AchievementStatValue $tone={isUnlocked ? 'xp' : 'muted'}>+{achievement.xp} XP</AchievementStatValue>
-        </AchievementStatColumn>
+          {/* Column 3: medal + XP */}
+          <AchievementStatColumn>
+            <IconMedal size={26} color={isUnlocked ? '#fbbf24' : 'var(--text-muted)'} />
+            <AchievementStatValue $tone={isUnlocked ? 'xp' : 'muted'}>+{achievement.xp} XP</AchievementStatValue>
+          </AchievementStatColumn>
 
-        {/* Column 4: date (unlocked) or progress (locked) */}
-        <AchievementStatColumn>
-          {isUnlocked ? (
-            <>
-              <IconCalendar size={26} color="#4ade80" />
-              <AchievementStatValue $tone="unlocked">
-                {formatDate(achievement.unlockedAt!)}
-              </AchievementStatValue>
-            </>
-          ) : (
-            <>
-              <IconHourglass size={26} color="var(--text-muted)" />
-              <AchievementStatValue $tone="muted">
-                {achievement.progressText}
-              </AchievementStatValue>
-            </>
-          )}
-        </AchievementStatColumn>
-      </AchievementCard>
+          {/* Column 4: date (unlocked) or progress (locked) */}
+          <AchievementStatColumn>
+            {isUnlocked ? (
+              <>
+                <IconCalendar size={26} color="#4ade80" />
+                <AchievementStatValue $tone="unlocked">
+                  {formatDate(achievement.unlockedAt!)}
+                </AchievementStatValue>
+              </>
+            ) : (
+              <>
+                <IconHourglass size={26} color="var(--text-muted)" />
+                <AchievementStatValue $tone="muted">
+                  {achievement.progressText}
+                </AchievementStatValue>
+              </>
+            )}
+          </AchievementStatColumn>
+        </AchievementCard>
+      </AchievementCardShell>
     );
   }
 
   return (
-    <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} title={tooltip}>
-      {artwork}
-      <AchievementBody>
-        <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
-        <AchievementTitle $viewMode={viewMode}>
-          {achievement.name}
-        </AchievementTitle>
-        <AchievementDescription $viewMode={viewMode}>
-          {description}
-        </AchievementDescription>
-        {isUnlocked ? (
-          <AchievementMeta $unlocked>
-            Desbloqueado: {formatDate(achievement.unlockedAt!)}
-          </AchievementMeta>
-        ) : (
-          <AchievementMeta $unlocked={false}>
-            Progreso: {achievement.progressText}
-          </AchievementMeta>
-        )}
-      </AchievementBody>
-    </AchievementCard>
+    <AchievementCardShell $tier={tier}>
+      <AchievementCard $viewMode={viewMode} $unlocked={achievement.unlocked} $tier={tier} title={tooltip}>
+        {artwork}
+        <AchievementBody>
+          <AchievementXP $unlocked={achievement.unlocked}>+{achievement.xp} XP</AchievementXP>
+          <AchievementTitle $viewMode={viewMode}>
+            {achievement.name}
+          </AchievementTitle>
+          <AchievementDescription $viewMode={viewMode}>
+            {description}
+          </AchievementDescription>
+          {isUnlocked ? (
+            <AchievementMeta $unlocked>
+              Desbloqueado: {formatDate(achievement.unlockedAt!)}
+            </AchievementMeta>
+          ) : (
+            <AchievementMeta $unlocked={false}>
+              Progreso: {achievement.progressText}
+            </AchievementMeta>
+          )}
+        </AchievementBody>
+      </AchievementCard>
+    </AchievementCardShell>
   );
 }
 
@@ -321,6 +334,21 @@ function formatDate(iso: string): string {
   const [y, mo, d] = iso.slice(0, 10).split('-').map(Number);
   const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   return `${d} ${months[mo - 1]} ${y}`;
+}
+
+function freshnessTier(unlockedAt: string | null): FreshnessTier | null {
+  if (!unlockedAt) return null;
+
+  const [y, mo, d] = unlockedAt.slice(0, 10).split('-').map(Number);
+  const now = new Date();
+  const daysSinceUnlock = Math.floor(
+    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(y, mo - 1, d)) / DAY_MS
+  );
+
+  if (daysSinceUnlock < 0) return null;
+  if (daysSinceUnlock < GOLD_MAX_DAYS) return 'gold';
+  if (daysSinceUnlock < SILVER_MAX_DAYS) return 'silver';
+  return null;
 }
 
 export default AchievementShowcase;
