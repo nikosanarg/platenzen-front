@@ -1,7 +1,7 @@
 /**
- * Análisis del coach sobre la última salida. Compone cinco bloques (cabecera de
- * la actividad, observaciones, destacados, agenda de 3 días y veredicto) a
- * partir de la última corrida, el estado de forma y la recomendación del coach.
+ * Análisis del coach sobre la última salida. Compone cuatro bloques (cabecera de
+ * la actividad, observaciones, destacados y agenda de ayer a +72h) a partir de la
+ * última corrida, el estado de forma y la recomendación del coach.
  *
  * Lo que se verifica es que ningún bloque afirme algo que los datos no sostienen
  * y que el tono se mantenga factual, sin arengas. Al pasar por
@@ -119,9 +119,7 @@ describe('observaciones', () => {
     const todoElTexto = [
       ...analisis.insights.map((i) => i.text),
       ...analisis.highlights.map((h) => `${h.value} ${h.label} ${h.sub}`),
-      ...analisis.bottomStats.map((s) => `${s.label} ${s.value} ${s.sub}`),
-      analisis.verdict.title,
-      analisis.verdict.detail,
+      ...analisis.agenda.map((d) => `${d.day} ${d.label}`),
     ].join(' ');
 
     expect(todoElTexto).not.toMatch(/[!¡]/);
@@ -129,6 +127,27 @@ describe('observaciones', () => {
 });
 
 describe('destacados', () => {
+  /** Stats con 8 semanas de `prev` km y 4 recientes de `recent`, para fijar la tendencia. */
+  const statsConTendencia = (prev: number, recent: number) => {
+    const semana = (i: number, distance: number) => ({
+      week: `2026-W${String(i + 1).padStart(2, '0')}`,
+      label: '',
+      distance,
+      count: 3,
+    });
+
+    return {
+      ...computeStats([runDaysAgo(1)]),
+      weekly: [
+        ...Array.from({ length: 8 }, (_, i) => semana(i, prev)),
+        ...Array.from({ length: 4 }, (_, i) => semana(i + 8, recent)),
+      ],
+    };
+  };
+
+  const destacadosCon = (prev: number, recent: number) =>
+    computeCoachAnalisis([runDaysAgo(1)], statsConTendencia(prev, recent))!.highlights;
+
   it('cada tarjeta trae ícono conocido, valor, etiqueta y tono', () => {
     for (const card of analisisOf(historial(12))!.highlights) {
       expect(['trend', 'medal', 'route', 'flame', 'calendar']).toContain(card.icon);
@@ -137,22 +156,76 @@ describe('destacados', () => {
       expect(['positive', 'neutral', 'warning']).toContain(card.tone);
     }
   });
+
+  it('nunca son más de seis: la grilla es de 3 × 2', () => {
+    expect(analisisOf(historial(12))!.highlights.length).toBeLessThanOrEqual(6);
+  });
+
+  it('ninguna tarjeta repite la etiqueta de otra', () => {
+    const labels = analisisOf(historial(12))!.highlights.map((h) => h.label);
+    expect(new Set(labels).size).toBe(labels.length);
+  });
+
+  it('declara "primera semana con registro" cuando no hay con qué comparar', () => {
+    const semana = analisisOf([runDaysAgo(1)])!.highlights.find((h) => h.label === 'esta semana')!;
+    expect(semana.sub).toBe('primera semana con registro');
+  });
+
+  it('el volumen en baja se marca con tono de aviso', () => {
+    const volumen = destacadosCon(100, 70).find((h) => h.label === 'volumen semanal')!;
+
+    expect(volumen.value).toBe('-30%');
+    expect(volumen.tone).toBe('warning');
+  });
+
+  it('el volumen en alza se marca con signo y tono positivo', () => {
+    const volumen = destacadosCon(100, 130).find((h) => h.label === 'volumen semanal')!;
+
+    expect(volumen.value).toBe('+30%');
+    expect(volumen.tone).toBe('positive');
+  });
+
+  it('con volumen estable no hay tarjeta de tendencia', () => {
+    expect(destacadosCon(100, 100).some((h) => h.label === 'volumen semanal')).toBe(false);
+  });
 });
 
 describe('agenda', () => {
-  it('muestra hoy más los tres días siguientes', () => {
+  it('va de ayer a los tres días siguientes', () => {
     const agenda = analisisOf(historial(12))!.agenda;
 
-    expect(agenda).toHaveLength(4);
-    expect(agenda[0].day).toBe('Hoy');
-    expect(agenda[1].day).toBe('Mañana');
+    expect(agenda).toHaveLength(5);
+    expect(agenda.map((d) => d.day).slice(0, 3)).toEqual(['Ayer', 'Hoy', 'Mañana']);
   });
 
   it('declara que hoy no hubo salida cuando la última fue otro día', () => {
-    const agenda = analisisOf([runDaysAgo(3)])!.agenda;
+    const hoy = analisisOf([runDaysAgo(3)])!.agenda[1];
 
-    expect(agenda[0].kind).toBe('none');
-    expect(agenda[0].label).toBe('Sin salida todavía');
+    expect(hoy.kind).toBe('none');
+    expect(hoy.label).toBe('Sin salida todavía');
+  });
+
+  it('informa lo corrido ayer, no un plan', () => {
+    const ayer = analisisOf([runDaysAgo(1, { distance: 8200 })])!.agenda[0];
+
+    expect(ayer.kind).toBe('done');
+    expect(ayer.label).toBe('Corriste 8.2 km');
+  });
+
+  it('ayer sin salida no inventa un descanso planificado', () => {
+    const ayer = analisisOf([runDaysAgo(5)])!.agenda[0];
+
+    expect(ayer.kind).toBe('none');
+    expect(ayer.label).toBe('Sin salida');
+  });
+
+  it('suma las salidas del mismo día', () => {
+    const acts = [
+      runDaysAgo(1, { distance: 6000 }, 1),
+      runDaysAgo(1.2, { distance: 4000 }, 2),
+    ];
+
+    expect(analisisOf(acts)!.agenda[0].label).toBe('Corriste 10.0 km');
   });
 
   it('cada día trae nombre, plan y tipo conocido', () => {
@@ -166,85 +239,6 @@ describe('agenda', () => {
   it('marca como hecho el día en que ya salió', () => {
     const analisis = analisisOf([runDaysAgo(0.1)])!;
     expect(analisis.agenda.some((d) => d.kind === 'done')).toBe(true);
-  });
-});
-
-describe('estadísticas del pie', () => {
-  it('cada una trae ícono, etiqueta, valor y tono', () => {
-    for (const stat of analisisOf(historial(12))!.bottomStats) {
-      expect(['calendar', 'route', 'flame', 'trend', 'medal']).toContain(stat.icon);
-      expect(stat.label.length).toBeGreaterThan(0);
-      expect(stat.value.length).toBeGreaterThan(0);
-      expect(['positive', 'neutral', 'warning']).toContain(stat.tone);
-    }
-  });
-
-  it('concuerda el singular y el plural de la racha', () => {
-    const analisis = analisisOf(historial(12))!;
-    const racha = analisis.bottomStats.find((s) => s.label === 'Racha de actividad')!;
-
-    expect(racha.value).toMatch(/^\d+ semanas?$/);
-  });
-
-  it('declara "primera semana con registro" cuando no hay con qué comparar', () => {
-    const analisis = analisisOf([runDaysAgo(1)])!;
-    const km = analisis.bottomStats.find((s) => s.label === 'Kilómetros esta semana')!;
-
-    expect(km.sub).toBe('primera semana con registro');
-  });
-});
-
-describe('veredicto', () => {
-  /** Stats con 8 semanas de `prev` km y 4 recientes de `recent`, para fijar la tendencia. */
-  const statsConTendencia = (prev: number, recent: number, currentStreak = 0) => {
-    const semana = (i: number, distance: number) => ({
-      week: `2026-W${String(i + 1).padStart(2, '0')}`,
-      label: '',
-      distance,
-      count: 3,
-    });
-
-    return {
-      ...computeStats([runDaysAgo(1)]),
-      currentStreak,
-      weekly: [
-        ...Array.from({ length: 8 }, (_, i) => semana(i, prev)),
-        ...Array.from({ length: 4 }, (_, i) => semana(i + 8, recent)),
-      ],
-    };
-  };
-
-  const verdictoCon = (prev: number, recent: number, streak = 0) =>
-    computeCoachAnalisis([runDaysAgo(1)], statsConTendencia(prev, recent, streak))!.verdict;
-
-  it('siempre trae título y detalle', () => {
-    const { verdict } = analisisOf(historial(12))!;
-
-    expect(verdict.title.length).toBeGreaterThan(0);
-    expect(verdict.detail.length).toBeGreaterThan(0);
-  });
-
-  it('con volumen estable habla de consolidar', () => {
-    const verdict = verdictoCon(100, 100);
-
-    expect(verdict.title).toContain('estable');
-    expect(verdict.detail).toContain('consolidar');
-  });
-
-  it('con volumen en alza reconoce la base sólida', () => {
-    expect(verdictoCon(100, 130).title).toContain('camino correcto');
-  });
-
-  it('con volumen en baja lo dice sin dramatizar', () => {
-    expect(verdictoCon(100, 70).title).toContain('Bajaste el volumen');
-  });
-
-  it('en baja con racha activa propone recuperar carga gradual', () => {
-    expect(verdictoCon(100, 70, 3).detail).toContain('gradual');
-  });
-
-  it('en baja sin racha propone retomar con salidas cortas', () => {
-    expect(verdictoCon(100, 70, 0).detail).toContain('cortas');
   });
 });
 

@@ -12,16 +12,14 @@ import {
 } from '@/components/Icon';
 import {
   Root, Card, CardHead, HeadTitle, HeadSubtitle,
-  MainGrid, ColActivity, ColInsights, ColAgenda, ColTitle,
+  MainGrid, ColActivity, ColInsights, ColTitle,
   ActivityHead, ActivityIcon, ActivityName, ActivityDate,
   StatsRow, StatItem, StatValue, StatUnit, StatLabel,
   MapContainer, MapSvg, MapNoData, StravaLink,
   InsightList, InsightItem, InsightIcon,
   HighlightGrid, HighlightCardBox, HighlightIcon, HighlightBody,
   HighlightValue, HighlightLabel, HighlightSub,
-  NextList, NextItem, NextDay, NextRow, NextIcon, NextLabel, NextSep, TodayItem,
-  BottomStrip, BottomCell, BottomIcon, BottomBody, BottomLabel, BottomValue, BottomSub,
-  Verdict, VerdictStar, VerdictTitle, VerdictDetail,
+  AgendaStrip, AgendaCell, AgendaDay, AgendaRow, AgendaIcon, AgendaLabel,
 } from './styled';
 
 // ── Mini map (ported from UltimaActividad) ───────────────────────────────────
@@ -117,14 +115,6 @@ const HIGHLIGHT_ICONS = {
   calendar: IconCalendar,
 } as const;
 
-const BOTTOM_ICONS = {
-  calendar: IconCalendar,
-  route: IconRoute,
-  flame: IconFlame,
-  trend: IconTrendUp,
-  medal: IconMedal,
-} as const;
-
 function dayIcon(kind: DayKind) {
   if (kind === 'done') return <IconCheck size={15} color="currentColor" />;
   if (kind === 'run') return <IconRun size={15} color="currentColor" />;
@@ -143,7 +133,7 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
   const data = useMemo(() => computeCoachAnalisis(activities, stats), [activities, stats]);
   if (!data) return null;
 
-  const { activity, insights, highlights, agenda, bottomStats, verdict } = data;
+  const { activity, insights, highlights, agenda } = data;
 
   return (
     <Root>
@@ -225,54 +215,24 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
             </HighlightGrid>
           </ColInsights>
 
-          {/* ── Column 3: hoy + próximas 72h ── */}
-          <ColAgenda>
-            <NextList>
-              {agenda.map((s, i) => (
-                <React.Fragment key={i}>
-                  {i === 1 && <NextSep />}
-                  <NextItem as={i === 0 ? TodayItem : undefined}>
-                    <NextDay>{s.day}</NextDay>
-                    <NextRow>
-                      <NextIcon $kind={s.kind}>{dayIcon(s.kind)}</NextIcon>
-                      <NextLabel $muted={s.kind === 'rest' || s.kind === 'none'}>
-                        {s.label}
-                      </NextLabel>
-                    </NextRow>
-                  </NextItem>
-                </React.Fragment>
-              ))}
-            </NextList>
-          </ColAgenda>
-
-          {/* ── Verdict (below insights + agenda, right of the map) ── */}
-          <Verdict>
-            <VerdictStar>✦</VerdictStar>
-            <div>
-              <VerdictTitle>{verdict.title}</VerdictTitle>
-              <VerdictDetail>{verdict.detail}</VerdictDetail>
-            </div>
-          </Verdict>
+          {/* ── Agenda horizontal: ayer, hoy y las próximas 72h ── */}
+          <AgendaStrip>
+            {agenda.map((s, i) => {
+              const esHoy = s.day === 'Hoy';
+              return (
+                <AgendaCell key={i} $today={esHoy}>
+                  <AgendaDay $today={esHoy}>{s.day}</AgendaDay>
+                  <AgendaRow>
+                    <AgendaIcon $kind={s.kind}>{dayIcon(s.kind)}</AgendaIcon>
+                    <AgendaLabel $muted={s.kind === 'rest' || s.kind === 'none'}>
+                      {s.label}
+                    </AgendaLabel>
+                  </AgendaRow>
+                </AgendaCell>
+              );
+            })}
+          </AgendaStrip>
         </MainGrid>
-
-        {/* ── Bottom stat strip ── */}
-        <BottomStrip>
-          {bottomStats.map((b, i) => {
-            const Ico = BOTTOM_ICONS[b.icon];
-            return (
-              <BottomCell key={i}>
-                <BottomIcon $tone={b.tone}>
-                  <Ico size={18} color="currentColor" />
-                </BottomIcon>
-                <BottomBody>
-                  <BottomLabel>{b.label}</BottomLabel>
-                  <BottomValue>{b.value}</BottomValue>
-                  <BottomSub $tone={b.tone}>{b.sub}</BottomSub>
-                </BottomBody>
-              </BottomCell>
-            );
-          })}
-        </BottomStrip>
       </Card>
     </Root>
   );

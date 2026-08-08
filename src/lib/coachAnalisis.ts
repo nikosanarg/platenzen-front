@@ -42,21 +42,11 @@ export interface DayPlan {
   kind: DayKind;
 }
 
-export interface BottomStat {
-  icon: 'calendar' | 'route' | 'flame' | 'trend' | 'medal';
-  label: string;
-  value: string;
-  sub: string;
-  tone: InsightTone;
-}
-
 export interface CoachAnalisis {
   activity: AnalisisActivity;
   insights: Insight[];
   highlights: HighlightCard[];
   agenda: DayPlan[];
-  bottomStats: BottomStat[];
-  verdict: { title: string; detail: string };
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -155,7 +145,12 @@ function buildInsights(activity: StravaActivity, allRuns: StravaActivity[]): Ins
   return insights.slice(0, 4);
 }
 
-// ── Highlight mini-cards (middle bottom) ─────────────────────────────────────
+// ── Highlight mini-cards ─────────────────────────────────────────────────────
+//
+// Seis tarjetas como máximo, en el orden en que se leen (3 × 2): lo propio de esta
+// salida arriba, el contexto del bloque abajo. Ninguna repite el número de otra.
+
+const MAX_HIGHLIGHTS = 6;
 
 function buildHighlights(
   activity: StravaActivity,
@@ -168,19 +163,7 @@ function buildHighlights(
   const km = activity.distance / 1000;
   const bucket = distanceBucketLabel(km);
 
-  // Volume trend.
-  if (volumeChangePct !== 0) {
-    const positive = volumeChangePct > 0;
-    cards.push({
-      icon: 'trend',
-      value: `${positive ? '+' : ''}${volumeChangePct}%`,
-      label: 'Volumen semanal',
-      sub: `${recentWeeklyAvgKm} km/sem promedio`,
-      tone: positive ? 'positive' : 'warning',
-    });
-  }
-
-  // Ranking within distance bucket.
+  // Ranking within distance bucket — lo más específico de esta salida.
   const similar = allRuns.filter(a => Math.abs(a.distance / 1000 - km) <= 2.5 && paceSecPerKm(a) > 0);
   if (similar.length >= 3) {
     const sorted = [...similar].sort((a, b) => paceSecPerKm(a) - paceSecPerKm(b));
@@ -196,12 +179,39 @@ function buildHighlights(
     }
   }
 
-  // Historic distance.
+  // Semana en curso contra la anterior.
+  const lastTwoWeeks = stats.weekly.slice(-2);
+  const thisWeekKm = lastTwoWeeks.length ? lastTwoWeeks[lastTwoWeeks.length - 1].distance : 0;
+  const prevWeekKm = lastTwoWeeks.length > 1 ? lastTwoWeeks[0].distance : 0;
+  const weekDeltaPct = prevWeekKm > 0.5 ? Math.round(((thisWeekKm - prevWeekKm) / prevWeekKm) * 100) : null;
   cards.push({
     icon: 'route',
-    value: `${Math.round(stats.totalDistance)} km`,
-    label: 'históricos',
-    sub: `${stats.totalActivities} salidas`,
+    value: `${thisWeekKm.toFixed(1)} km`,
+    label: 'esta semana',
+    sub: weekDeltaPct !== null
+      ? `${weekDeltaPct >= 0 ? '+' : ''}${weekDeltaPct}% vs. semana anterior`
+      : 'primera semana con registro',
+    tone: weekDeltaPct !== null && weekDeltaPct < 0 ? 'warning' : 'positive',
+  });
+
+  // Volume trend: últimas 4 semanas contra las 4 previas.
+  if (volumeChangePct !== 0) {
+    const positive = volumeChangePct > 0;
+    cards.push({
+      icon: 'trend',
+      value: `${positive ? '+' : ''}${volumeChangePct}%`,
+      label: 'volumen semanal',
+      sub: 'vs. el bloque anterior',
+      tone: positive ? 'positive' : 'warning',
+    });
+  }
+
+  // Media del bloque actual.
+  cards.push({
+    icon: 'calendar',
+    value: `${recentWeeklyAvgKm} km`,
+    label: 'promedio semanal',
+    sub: 'media de las últimas 4 semanas',
     tone: 'neutral',
   });
 
@@ -211,13 +221,22 @@ function buildHighlights(
     cards.push({
       icon: 'flame',
       value: `${activeWeeks} sem`,
-      label: 'consistentes',
+      label: 'consecutivas',
       sub: 'sin cortes de continuidad',
       tone: 'positive',
     });
   }
 
-  return cards.slice(0, 4);
+  // Historic distance.
+  cards.push({
+    icon: 'route',
+    value: `${Math.round(stats.totalDistance)} km`,
+    label: 'históricos',
+    sub: `${stats.totalActivities} salidas`,
+    tone: 'neutral',
+  });
+
+  return cards.slice(0, MAX_HIGHLIGHTS);
 }
 
 function trailingActiveWeeks(stats: ProcessedStats): number {
@@ -229,7 +248,7 @@ function trailingActiveWeeks(stats: ProcessedStats): number {
   return n;
 }
 
-// ── Agenda: Hoy + próximas 72h ───────────────────────────────────────────────
+// ── Agenda: Ayer + Hoy + próximas 72h ────────────────────────────────────────
 
 const PLAN_LABELS: Record<string, string> = {
   easy: 'Trote suave 5–8K',
@@ -250,20 +269,29 @@ const PLAN_TEMPLATES: Record<string, string[]> = {
   velocidad: ['velocidad', 'rest', 'easy'],
 };
 
-function buildAgenda(
-  activities: StravaActivity[],
-  stats: ProcessedStats,
-  lastActivity: StravaActivity
-): DayPlan[] {
+/** Kilómetros corridos en un día concreto (varias salidas suman). */
+function kmOnDay(runs: StravaActivity[], day: Date): number {
+  const target = day.toDateString();
+  return runs
+    .filter(a => new Date(a.start_date_local).toDateString() === target)
+    .reduce((sum, a) => sum + a.distance, 0) / 1000;
+}
+
+function buildAgenda(activities: StravaActivity[], stats: ProcessedStats): DayPlan[] {
   const rec = computeCoachRecommendation(activities, stats);
   const now = new Date();
+  const runs = activities.filter(isRun);
 
-  // ── "Hoy": did the athlete already run today? ──
-  const lastDate = new Date(lastActivity.start_date_local);
-  const ranToday = lastDate.toDateString() === now.toDateString();
-  const today: DayPlan = ranToday
-    ? { day: 'Hoy', label: `Corriste ${(lastActivity.distance / 1000).toFixed(1)} km`, kind: 'done' }
-    : { day: 'Hoy', label: 'Sin salida todavía', kind: 'none' };
+  // ── Días ya transcurridos: se informa lo que pasó, no lo que se planeaba ──
+  const pastDay = (date: Date, day: string, emptyLabel: string): DayPlan => {
+    const km = kmOnDay(runs, date);
+    return km > 0
+      ? { day, label: `Corriste ${km.toFixed(1)} km`, kind: 'done' }
+      : { day, label: emptyLabel, kind: 'none' };
+  };
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
 
   // ── Next 72h (3 upcoming days) ──
   const template = PLAN_TEMPLATES[rec.type] ?? PLAN_TEMPLATES.normal;
@@ -278,72 +306,11 @@ function buildAgenda(
     };
   });
 
-  return [today, ...upcoming];
-}
-
-// ── Bottom stat strip ────────────────────────────────────────────────────────
-
-function buildBottomStats(
-  stats: ProcessedStats,
-  recentWeeklyAvgKm: number
-): BottomStat[] {
-  const stripLast = stats.weekly.slice(-2);
-  const thisWeekKm = stripLast.length ? stripLast[stripLast.length - 1].distance : 0;
-  const prevWeekKm = stripLast.length > 1 ? stripLast[0].distance : 0;
-  const weekDeltaPct = prevWeekKm > 0.5 ? Math.round(((thisWeekKm - prevWeekKm) / prevWeekKm) * 100) : null;
-
-  // Weekly streak: consecutive trailing weeks with ≥1 activity.
-  const weekStreak = trailingActiveWeeks(stats);
-  const streakSub = weekStreak >= 8 ? '¡Excelente!' : weekStreak >= 3 ? 'En marcha' : 'Sumá continuidad';
-
   return [
-    {
-      icon: 'route',
-      label: 'Kilómetros esta semana',
-      value: `${thisWeekKm.toFixed(1)} km`,
-      sub: weekDeltaPct !== null
-        ? `${weekDeltaPct >= 0 ? '+' : ''}${weekDeltaPct}% vs. semana anterior`
-        : 'primera semana con registro',
-      tone: weekDeltaPct !== null && weekDeltaPct < 0 ? 'warning' : 'positive',
-    },
-    {
-      icon: 'trend',
-      label: 'Promedio semanal (4 sem.)',
-      value: `${recentWeeklyAvgKm} km`,
-      sub: 'media de tu bloque actual',
-      tone: 'neutral',
-    },
-    {
-      icon: 'flame',
-      label: 'Racha de actividad',
-      value: `${weekStreak} ${weekStreak === 1 ? 'semana' : 'semanas'}`,
-      sub: streakSub,
-      tone: weekStreak >= 3 ? 'positive' : 'neutral',
-    },
+    pastDay(yesterday, 'Ayer', 'Sin salida'),
+    pastDay(now, 'Hoy', 'Sin salida todavía'),
+    ...upcoming,
   ];
-}
-
-// ── Verdict footer ───────────────────────────────────────────────────────────
-
-function buildVerdict(volumeChangePct: number, streak: number): { title: string; detail: string } {
-  if (volumeChangePct > 10) {
-    return {
-      title: 'Vas por el camino correcto. Estás construyendo una base sólida y sostenida.',
-      detail: 'La clave ahora: seguir sumando volumen con inteligencia y respetar los días de descanso.',
-    };
-  }
-  if (volumeChangePct < -10) {
-    return {
-      title: 'Bajaste el volumen respecto al bloque anterior.',
-      detail: streak > 0
-        ? 'Aprovechá la racha activa para recuperar carga de forma gradual, sin saltos bruscos.'
-        : 'Retomá con salidas cortas y regulares para reconstruir la base.',
-    };
-  }
-  return {
-    title: 'Mantenés una carga estable y consistente.',
-    detail: 'Buen momento para consolidar el hábito antes de buscar un nuevo salto de volumen.',
-  };
 }
 
 // ── Main export ──────────────────────────────────────────────────────────────
@@ -377,8 +344,6 @@ export function computeCoachAnalisis(
     activity,
     insights: buildInsights(last, allRuns),
     highlights: buildHighlights(last, allRuns, stats, volumeChangePct, recentWeeklyAvgKm),
-    agenda: buildAgenda(activities, stats, last),
-    bottomStats: buildBottomStats(stats, recentWeeklyAvgKm),
-    verdict: buildVerdict(volumeChangePct, stats.currentStreak),
+    agenda: buildAgenda(activities, stats),
   };
 }

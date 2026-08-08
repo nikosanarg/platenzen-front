@@ -50,14 +50,14 @@ export const HeadSubtitle = styled.span`
   color: var(--text-muted);
 `;
 
-/* ── Main 3-column grid ─────────────────────────────────── */
+/* ── Main grid: actividad + observaciones, y la agenda a lo ancho ─────────── */
 
 export const MainGrid = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.8fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   grid-template-areas:
-    "activity insights agenda"
-    "activity verdict verdict";
+    "activity insights"
+    "agenda   agenda";
   align-items: start;
   gap: 1.25rem 1.5rem;
   padding: 1.5rem;
@@ -67,8 +67,7 @@ export const MainGrid = styled.div`
     grid-template-areas:
       "activity"
       "insights"
-      "agenda"
-      "verdict";
+      "agenda";
     padding: 1.25rem 1.15rem;
   }
 `;
@@ -94,10 +93,6 @@ export const ColActivity = styled(Column)`
 
 export const ColInsights = styled(ColDivider)`
   grid-area: insights;
-`;
-
-export const ColAgenda = styled(ColDivider)`
-  grid-area: agenda;
 `;
 
 export const ColTitle = styled.div`
@@ -246,11 +241,16 @@ export const InsightIcon = styled.div<{ $tone: InsightTone }>`
       : 'rgba(144, 144, 168, 0.12)'};
 `;
 
+/* Seis destacados en 3 × 2; bajan a 2 y a 1 columna según el ancho. */
 export const HighlightGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
   margin-top: 0.35rem;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   @media (max-width: 520px) {
     grid-template-columns: 1fr;
@@ -298,33 +298,54 @@ export const HighlightSub = styled.div`
   margin-top: 0.1rem;
 `;
 
-/* ── Next 48h (right) ───────────────────────────────────── */
+/* ── Agenda: Ayer → +72h, en una tira horizontal ─────────── */
 
-export const NextList = styled.div`
+/* Los separadores son el fondo del contenedor asomando por el gap de 1px: así
+   siguen cayendo donde corresponde cuando las celdas envuelven a dos filas. */
+export const AgendaStrip = styled.div`
+  grid-area: agenda;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const AgendaCell = styled.div<{ $today?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.45rem;
+  padding: 0.85rem 0.9rem;
+  min-width: 0;
+  background: ${({ $today }) => ($today ? 'rgba(252, 76, 2, 0.07)' : 'var(--bg-card)')};
 `;
 
-export const NextItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+export const AgendaDay = styled.div<{ $today?: boolean }>`
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${({ $today }) => ($today ? 'var(--accent)' : 'var(--text-muted)')};
 `;
 
-export const NextDay = styled.div`
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-`;
-
-export const NextRow = styled.div`
+export const AgendaRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  min-width: 0;
 `;
 
-export const NextIcon = styled.div<{ $kind: DayKind }>`
+export const AgendaIcon = styled.div<{ $kind: DayKind }>`
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -339,118 +360,13 @@ export const NextIcon = styled.div<{ $kind: DayKind }>`
     ACTIVE_KINDS.includes($kind) ? 'rgba(74, 222, 128, 0.25)' : 'var(--border)'};
 `;
 
-export const NextLabel = styled.div<{ $muted?: boolean }>`
-  font-size: 0.88rem;
+export const AgendaLabel = styled.div<{ $muted?: boolean }>`
   font-weight: 600;
+  line-height: 1.25;
+  min-width: 0;
   color: ${({ $muted }) => ($muted ? 'var(--text-muted)' : 'var(--text-primary)')};
   text-transform: ${({ $muted }) => ($muted ? 'uppercase' : 'none')};
   letter-spacing: ${({ $muted }) => ($muted ? '0.06em' : 'normal')};
+  font-size: ${({ $muted }) => ($muted ? '0.72rem' : '0.8rem')};
 `;
 
-export const TodayItem = styled.div`
-  padding-bottom: 0.25rem;
-`;
-
-export const NextSep = styled.div`
-  height: 1px;
-  background: var(--border);
-`;
-
-/* ── Bottom stat strip ──────────────────────────────────── */
-
-export const BottomStrip = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--border);
-
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-export const BottomCell = styled.div`
-  display: flex;
-  gap: 0.7rem;
-  padding: 1.1rem 1.25rem;
-  border-right: 1px solid var(--border);
-
-  &:last-child {
-    border-right: none;
-  }
-
-  @media (max-width: 700px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-`;
-
-export const BottomIcon = styled.div<{ $tone: InsightTone }>`
-  flex-shrink: 0;
-  color: ${({ $tone }) => toneColor($tone)};
-  margin-top: 0.15rem;
-`;
-
-export const BottomBody = styled.div`
-  min-width: 0;
-`;
-
-export const BottomLabel = styled.div`
-  font-size: 0.64rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-`;
-
-export const BottomValue = styled.div`
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.15;
-  margin-top: 0.15rem;
-`;
-
-export const BottomSub = styled.div<{ $tone: InsightTone }>`
-  font-size: 0.68rem;
-  margin-top: 0.1rem;
-  color: ${({ $tone }) => ($tone === 'neutral' ? 'var(--text-muted)' : toneColor($tone))};
-`;
-
-/* ── Verdict footer ─────────────────────────────────────── */
-
-export const Verdict = styled.div`
-  grid-area: verdict;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  padding: 1rem 1.15rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: linear-gradient(to right, rgba(252, 76, 2, 0.06), transparent);
-  align-self: stretch;
-`;
-
-export const VerdictStar = styled.div`
-  color: var(--accent);
-  flex-shrink: 0;
-  font-size: 1.1rem;
-  line-height: 1.2;
-`;
-
-export const VerdictTitle = styled.div`
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.4;
-`;
-
-export const VerdictDetail = styled.div`
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 0.15rem;
-  line-height: 1.4;
-`;
