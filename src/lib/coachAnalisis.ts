@@ -3,6 +3,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { computeFormShape } from '@/lib/formShape';
 import { computeCoachRecommendation } from '@/lib/coach';
+import { splitPace } from '@/utils/pace';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
@@ -82,12 +83,37 @@ function formatClock(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function formatPace(secPerKm: number): string {
+  if (secPerKm <= 0) return '—';
+  const { minutes, seconds } = splitPace(secPerKm);
+  return `${minutes}:${seconds}/km`;
+}
+
 function distanceBucketLabel(km: number): string {
   return `${Math.round(km)}K`;
 }
 
 function ordinal(n: number): string {
   return `${n}`;
+}
+
+/** Kilómetros corridos en un día concreto (varias salidas suman). */
+function kmOnDay(runs: StravaActivity[], day: Date): number {
+  const target = day.toDateString();
+  return runs
+    .filter(a => new Date(a.start_date_local).toDateString() === target)
+    .reduce((sum, a) => sum + a.distance, 0) / 1000;
+}
+
+/** Suma de km en una ventana móvil de `days` días, empezando `offsetDays` atrás. */
+function kmInTrailingDays(runs: StravaActivity[], now: Date, days: number, offsetDays: number): number {
+  let total = 0;
+  for (let i = offsetDays; i < offsetDays + days; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    total += kmOnDay(runs, d);
+  }
+  return total;
 }
 
 // ── Insight generation ───────────────────────────────────────────────────────
@@ -147,23 +173,22 @@ function buildInsights(activity: StravaActivity, allRuns: StravaActivity[]): Ins
 
 // ── Highlight mini-cards ─────────────────────────────────────────────────────
 //
-// Seis tarjetas como máximo, en el orden en que se leen (3 × 2): lo propio de esta
-// salida arriba, el contexto del bloque abajo. Ninguna repite el número de otra.
-
-const MAX_HIGHLIGHTS = 6;
+// Tres tarjetas, en el orden en que se leen: lo propio de esta salida primero,
+// después el ritmo reciente (ventana móvil de 7 días, no casillero de calendario
+// — evita que el mismo bloque de entrenamiento se lea distinto según qué día de
+// la semana caiga hoy), y por último el contexto del bloque de 4 semanas.
 
 function buildHighlights(
   activity: StravaActivity,
   allRuns: StravaActivity[],
-  stats: ProcessedStats,
-  volumeChangePct: number,
   recentWeeklyAvgKm: number
 ): HighlightCard[] {
   const cards: HighlightCard[] = [];
   const km = activity.distance / 1000;
   const bucket = distanceBucketLabel(km);
+  const now = new Date();
 
-  // Ranking within distance bucket — lo más específico de esta salida.
+  // Ranking dentro del bucket de distancia, con el ritmo que lo sostiene.
   const similar = allRuns.filter(a => Math.abs(a.distance / 1000 - km) <= 2.5 && paceSecPerKm(a) > 0);
   if (similar.length >= 3) {
     const sorted = [...similar].sort((a, b) => paceSecPerKm(a) - paceSecPerKm(b));
@@ -171,40 +196,27 @@ function buildHighlights(
     if (rank > 0) {
       cards.push({
         icon: 'medal',
-        value: `Top ${rank}`,
-        label: `de tus ${bucket}`,
-        sub: 'por ritmo promedio',
+        value: formatPace(paceSecPerKm(activity)),
+        label: 'por ritmo promedio',
+        sub: `Top ${rank} de tus ${bucket}`,
         tone: rank <= 3 ? 'positive' : 'neutral',
       });
     }
   }
 
-  // Semana en curso contra la anterior.
-  const lastTwoWeeks = stats.weekly.slice(-2);
-  const thisWeekKm = lastTwoWeeks.length ? lastTwoWeeks[lastTwoWeeks.length - 1].distance : 0;
-  const prevWeekKm = lastTwoWeeks.length > 1 ? lastTwoWeeks[0].distance : 0;
-  const weekDeltaPct = prevWeekKm > 0.5 ? Math.round(((thisWeekKm - prevWeekKm) / prevWeekKm) * 100) : null;
+  // Últimos 7 días contra los 7 previos.
+  const last7Km = kmInTrailingDays(allRuns, now, 7, 0);
+  const prev7Km = kmInTrailingDays(allRuns, now, 7, 7);
+  const deltaPct = prev7Km > 0.5 ? Math.round(((last7Km - prev7Km) / prev7Km) * 100) : null;
   cards.push({
     icon: 'route',
-    value: `${thisWeekKm.toFixed(1)} km`,
-    label: 'esta semana',
-    sub: weekDeltaPct !== null
-      ? `${weekDeltaPct >= 0 ? '+' : ''}${weekDeltaPct}% vs. semana anterior`
-      : 'primera semana con registro',
-    tone: weekDeltaPct !== null && weekDeltaPct < 0 ? 'warning' : 'positive',
+    value: `${last7Km.toFixed(1)} km`,
+    label: 'últimos 7 días',
+    sub: deltaPct !== null
+      ? `${deltaPct >= 0 ? '+' : ''}${deltaPct}% vs. los 7 previos`
+      : 'primeros 7 días con registro',
+    tone: deltaPct !== null && deltaPct < 0 ? 'warning' : 'positive',
   });
-
-  // Volume trend: últimas 4 semanas contra las 4 previas.
-  if (volumeChangePct !== 0) {
-    const positive = volumeChangePct > 0;
-    cards.push({
-      icon: 'trend',
-      value: `${positive ? '+' : ''}${volumeChangePct}%`,
-      label: 'volumen semanal',
-      sub: 'vs. el bloque anterior',
-      tone: positive ? 'positive' : 'warning',
-    });
-  }
 
   // Media del bloque actual.
   cards.push({
@@ -215,37 +227,7 @@ function buildHighlights(
     tone: 'neutral',
   });
 
-  // Consistency streak (trailing active weeks).
-  const activeWeeks = trailingActiveWeeks(stats);
-  if (activeWeeks >= 2) {
-    cards.push({
-      icon: 'flame',
-      value: `${activeWeeks} sem`,
-      label: 'consecutivas',
-      sub: 'sin cortes de continuidad',
-      tone: 'positive',
-    });
-  }
-
-  // Historic distance.
-  cards.push({
-    icon: 'route',
-    value: `${Math.round(stats.totalDistance)} km`,
-    label: 'históricos',
-    sub: `${stats.totalActivities} salidas`,
-    tone: 'neutral',
-  });
-
-  return cards.slice(0, MAX_HIGHLIGHTS);
-}
-
-function trailingActiveWeeks(stats: ProcessedStats): number {
-  let n = 0;
-  for (let i = stats.weekly.length - 1; i >= 0; i--) {
-    if (stats.weekly[i].count > 0) n++;
-    else break;
-  }
-  return n;
+  return cards;
 }
 
 // ── Agenda: Ayer + Hoy + próximas 72h ────────────────────────────────────────
@@ -268,14 +250,6 @@ const PLAN_TEMPLATES: Record<string, string[]> = {
   tempo: ['tempo', 'rest', 'run'],
   velocidad: ['velocidad', 'rest', 'easy'],
 };
-
-/** Kilómetros corridos en un día concreto (varias salidas suman). */
-function kmOnDay(runs: StravaActivity[], day: Date): number {
-  const target = day.toDateString();
-  return runs
-    .filter(a => new Date(a.start_date_local).toDateString() === target)
-    .reduce((sum, a) => sum + a.distance, 0) / 1000;
-}
 
 function buildAgenda(activities: StravaActivity[], stats: ProcessedStats): DayPlan[] {
   const rec = computeCoachRecommendation(activities, stats);
@@ -326,7 +300,6 @@ export function computeCoachAnalisis(
   const last = enriched.activity;
 
   const forma = computeFormShape(activities, stats);
-  const volumeChangePct = forma?.volumeChangePct ?? 0;
   const recentWeeklyAvgKm = forma?.recentWeeklyAvgKm ?? Math.round(stats.weeklyAvgDistance * 10) / 10;
 
   const activity: AnalisisActivity = {
@@ -343,7 +316,7 @@ export function computeCoachAnalisis(
   return {
     activity,
     insights: buildInsights(last, allRuns),
-    highlights: buildHighlights(last, allRuns, stats, volumeChangePct, recentWeeklyAvgKm),
+    highlights: buildHighlights(last, allRuns, recentWeeklyAvgKm),
     agenda: buildAgenda(activities, stats),
   };
 }

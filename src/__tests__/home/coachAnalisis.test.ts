@@ -127,38 +127,17 @@ describe('observaciones', () => {
 });
 
 describe('destacados', () => {
-  /** Stats con 8 semanas de `prev` km y 4 recientes de `recent`, para fijar la tendencia. */
-  const statsConTendencia = (prev: number, recent: number) => {
-    const semana = (i: number, distance: number) => ({
-      week: `2026-W${String(i + 1).padStart(2, '0')}`,
-      label: '',
-      distance,
-      count: 3,
-    });
-
-    return {
-      ...computeStats([runDaysAgo(1)]),
-      weekly: [
-        ...Array.from({ length: 8 }, (_, i) => semana(i, prev)),
-        ...Array.from({ length: 4 }, (_, i) => semana(i + 8, recent)),
-      ],
-    };
-  };
-
-  const destacadosCon = (prev: number, recent: number) =>
-    computeCoachAnalisis([runDaysAgo(1)], statsConTendencia(prev, recent))!.highlights;
-
   it('cada tarjeta trae ícono conocido, valor, etiqueta y tono', () => {
     for (const card of analisisOf(historial(12))!.highlights) {
-      expect(['trend', 'medal', 'route', 'flame', 'calendar']).toContain(card.icon);
+      expect(['medal', 'route', 'calendar']).toContain(card.icon);
       expect(card.value.length).toBeGreaterThan(0);
       expect(card.label.length).toBeGreaterThan(0);
       expect(['positive', 'neutral', 'warning']).toContain(card.tone);
     }
   });
 
-  it('nunca son más de seis: la grilla es de 3 × 2', () => {
-    expect(analisisOf(historial(12))!.highlights.length).toBeLessThanOrEqual(6);
+  it('nunca son más de tres: una por ámbito, sin duplicar históricos ni racha', () => {
+    expect(analisisOf(historial(12))!.highlights.length).toBeLessThanOrEqual(3);
   });
 
   it('ninguna tarjeta repite la etiqueta de otra', () => {
@@ -166,27 +145,56 @@ describe('destacados', () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
-  it('declara "primera semana con registro" cuando no hay con qué comparar', () => {
-    const semana = analisisOf([runDaysAgo(1)])!.highlights.find((h) => h.label === 'esta semana')!;
-    expect(semana.sub).toBe('primera semana con registro');
+  describe('ranking por ritmo', () => {
+    it('el valor es el ritmo promedio, y el ranking baja a la fila de abajo', () => {
+      const medalla = analisisOf(historial(12))!.highlights.find((h) => h.icon === 'medal')!;
+
+      expect(medalla.value).toBe('5:00/km');
+      expect(medalla.label).toBe('por ritmo promedio');
+      expect(medalla.sub).toBe('Top 1 de tus 10K');
+    });
+
+    it('sin al menos tres salidas comparables, no hay tarjeta de ranking', () => {
+      expect(analisisOf([runDaysAgo(1)])!.highlights.some((h) => h.icon === 'medal')).toBe(false);
+    });
   });
 
-  it('el volumen en baja se marca con tono de aviso', () => {
-    const volumen = destacadosCon(100, 70).find((h) => h.label === 'volumen semanal')!;
+  describe('últimos 7 días', () => {
+    it('declara "primeros 7 días con registro" cuando no hay ventana previa con qué comparar', () => {
+      const semana = analisisOf([runDaysAgo(1)])!.highlights.find((h) => h.label === 'últimos 7 días')!;
+      expect(semana.sub).toBe('primeros 7 días con registro');
+    });
 
-    expect(volumen.value).toBe('-30%');
-    expect(volumen.tone).toBe('warning');
+    it('compara la ventana móvil de 7 días con los 7 previos, no con el casillero de calendario', () => {
+      const acts = [
+        runDaysAgo(2, { distance: 5000 }, 1),
+        runDaysAgo(10, { distance: 4000 }, 2),
+      ];
+      const semana = analisisOf(acts)!.highlights.find((h) => h.label === 'últimos 7 días')!;
+
+      expect(semana.value).toBe('5.0 km');
+      expect(semana.sub).toBe('+25% vs. los 7 previos');
+      expect(semana.tone).toBe('positive');
+    });
+
+    it('el retroceso se marca con tono de aviso', () => {
+      const acts = [
+        runDaysAgo(2, { distance: 3000 }, 1),
+        runDaysAgo(10, { distance: 6000 }, 2),
+      ];
+      const semana = analisisOf(acts)!.highlights.find((h) => h.label === 'últimos 7 días')!;
+
+      expect(semana.value).toBe('3.0 km');
+      expect(semana.sub).toBe('-50% vs. los 7 previos');
+      expect(semana.tone).toBe('warning');
+    });
   });
 
-  it('el volumen en alza se marca con signo y tono positivo', () => {
-    const volumen = destacadosCon(100, 130).find((h) => h.label === 'volumen semanal')!;
+  it('el promedio semanal está siempre presente, en km', () => {
+    const promedio = analisisOf(historial(12))!.highlights.find((h) => h.label === 'promedio semanal')!;
 
-    expect(volumen.value).toBe('+30%');
-    expect(volumen.tone).toBe('positive');
-  });
-
-  it('con volumen estable no hay tarjeta de tendencia', () => {
-    expect(destacadosCon(100, 100).some((h) => h.label === 'volumen semanal')).toBe(false);
+    expect(promedio.value).toMatch(/^\d+(\.\d+)? km$/);
+    expect(promedio.sub).toBe('media de las últimas 4 semanas');
   });
 });
 
