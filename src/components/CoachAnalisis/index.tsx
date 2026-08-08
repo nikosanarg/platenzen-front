@@ -144,8 +144,21 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
         </CardHead>
 
         <MainGrid>
-          {/* ── Column 1: activity ── */}
+          {/* ── Column 1: mapa ── */}
           <ColActivity>
+            <MapContainer>
+              {activity.polyline
+                ? <MiniMap polyline={activity.polyline} />
+                : <MapNoData>Sin ruta disponible</MapNoData>}
+            </MapContainer>
+
+            <StravaLink href={activity.stravaUrl} target="_blank" rel="noopener noreferrer">
+              Ver en Strava ↗
+            </StravaLink>
+          </ColActivity>
+
+          {/* ── Column 2: header de la actividad + insights ── */}
+          <ColInsights>
             <ActivityHead>
               <ActivityIcon>
                 <IconRun size={22} color="var(--accent)" />
@@ -171,19 +184,6 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
               </StatItem>
             </StatsRow>
 
-            <MapContainer>
-              {activity.polyline
-                ? <MiniMap polyline={activity.polyline} />
-                : <MapNoData>Sin ruta disponible</MapNoData>}
-            </MapContainer>
-
-            <StravaLink href={activity.stravaUrl} target="_blank" rel="noopener noreferrer">
-              Ver en Strava ↗
-            </StravaLink>
-          </ColActivity>
-
-          {/* ── Column 2: insights ── */}
-          <ColInsights>
             <ColTitle>¿Qué nos dice esta salida?</ColTitle>
             <InsightList>
               {insights.map((ins, i) => (

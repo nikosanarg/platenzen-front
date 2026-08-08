@@ -124,14 +124,14 @@ export const ActivityIcon = styled.div`
 `;
 
 export const ActivityName = styled.div`
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
 `;
 
 export const ActivityDate = styled.div`
-  font-size: 0.72rem;
+  font-size: 0.97rem;
   color: var(--text-muted);
   margin-top: 0.15rem;
 `;
@@ -149,21 +149,21 @@ export const StatItem = styled.div`
 `;
 
 export const StatValue = styled.div`
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
 `;
 
 export const StatUnit = styled.span`
-  font-size: 0.8rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-muted);
   margin-left: 0.15rem;
 `;
 
 export const StatLabel = styled.div`
-  font-size: 0.64rem;
+  font-size: 0.89rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
