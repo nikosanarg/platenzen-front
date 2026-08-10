@@ -2,8 +2,8 @@ import styled from 'styled-components';
 import { InsightTone, DayKind } from '@/lib/coachAnalisis';
 
 function toneColor(tone: InsightTone): string {
-  if (tone === 'positive') return '#4ade80';
-  if (tone === 'warning') return '#f59e0b';
+  if (tone === 'positive') return 'var(--positive)';
+  if (tone === 'warning') return 'var(--warning)';
   return 'var(--text-secondary)';
 }
 
@@ -116,7 +116,7 @@ export const ActivityIcon = styled.div`
   height: 44px;
   border-radius: 50%;
   background: var(--accent-muted);
-  border: 1px solid rgba(252, 76, 2, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,7 +198,7 @@ export const StravaLink = styled.a`
   gap: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #fc4c02;
+  color: var(--accent);
   align-self: flex-start;
 
   &:hover {
@@ -235,10 +235,10 @@ export const InsightIcon = styled.div<{ $tone: InsightTone }>`
   color: ${({ $tone }) => toneColor($tone)};
   background: ${({ $tone }) =>
     $tone === 'positive'
-      ? 'rgba(74, 222, 128, 0.12)'
+      ? 'rgba(var(--positive-rgb), 0.12)'
       : $tone === 'warning'
-      ? 'rgba(245, 158, 11, 0.12)'
-      : 'rgba(144, 144, 168, 0.12)'};
+      ? 'rgba(var(--warning-rgb), 0.12)'
+      : 'rgba(var(--text-secondary-rgb), 0.12)'};
 `;
 
 /* Seis destacados en 3 × 2; bajan a 2 y a 1 columna según el ancho. */
@@ -327,7 +327,7 @@ export const AgendaCell = styled.div<{ $today?: boolean }>`
   gap: 0.45rem;
   padding: 0.85rem 0.9rem;
   min-width: 0;
-  background: ${({ $today }) => ($today ? 'rgba(252, 76, 2, 0.07)' : 'var(--bg-card)')};
+  background: ${({ $today }) => ($today ? 'rgba(var(--accent-rgb), 0.07)' : 'var(--bg-card)')};
 `;
 
 export const AgendaDay = styled.div<{ $today?: boolean }>`
@@ -353,11 +353,11 @@ export const AgendaIcon = styled.div<{ $kind: DayKind }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ $kind }) => (ACTIVE_KINDS.includes($kind) ? '#4ade80' : 'var(--text-muted)')};
+  color: ${({ $kind }) => (ACTIVE_KINDS.includes($kind) ? 'var(--positive)' : 'var(--text-muted)')};
   background: ${({ $kind }) =>
-    ACTIVE_KINDS.includes($kind) ? 'rgba(74, 222, 128, 0.12)' : 'rgba(144, 144, 168, 0.1)'};
+    ACTIVE_KINDS.includes($kind) ? 'rgba(var(--positive-rgb), 0.12)' : 'rgba(var(--text-secondary-rgb), 0.1)'};
   border: 1px solid ${({ $kind }) =>
-    ACTIVE_KINDS.includes($kind) ? 'rgba(74, 222, 128, 0.25)' : 'var(--border)'};
+    ACTIVE_KINDS.includes($kind) ? 'rgba(var(--positive-rgb), 0.25)' : 'var(--border)'};
 `;
 
 export const AgendaLabel = styled.div<{ $muted?: boolean }>`

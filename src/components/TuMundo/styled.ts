@@ -53,8 +53,8 @@ export const ZoneList = styled.div`
 `;
 
 export const ZoneItem = styled.div<{ $active: boolean }>`
-  background: ${props => props.$active ? 'rgba(252, 76, 2, 0.08)' : 'var(--bg-card)'};
-  border: 1px solid ${props => props.$active ? 'rgba(252, 76, 2, 0.4)' : 'var(--border)'};
+  background: ${props => props.$active ? 'rgba(var(--accent-rgb), 0.08)' : 'var(--bg-card)'};
+  border: 1px solid ${props => props.$active ? 'rgba(var(--accent-rgb), 0.4)' : 'var(--border)'};
   border-radius: var(--radius-sm);
   padding: 0.625rem 0.875rem;
   cursor: pointer;
@@ -64,8 +64,8 @@ export const ZoneItem = styled.div<{ $active: boolean }>`
   gap: 0.75rem;
 
   &:hover {
-    border-color: rgba(252, 76, 2, 0.3);
-    background: rgba(252, 76, 2, 0.05);
+    border-color: rgba(var(--accent-rgb), 0.3);
+    background: rgba(var(--accent-rgb), 0.05);
   }
 `;
 

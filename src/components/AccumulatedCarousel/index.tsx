@@ -1,32 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { secondsToHMS } from '@/utils/units';
-import styled from 'styled-components';
 import { StatsPanel, StatsGroup, GroupTitle, StatsRow, StatItem, StatValue, StatLabel } from '@/components/RawDataSection/styled';
-
-const DotSpan = styled.span<{ $isActive: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${props => props.$isActive ? 'var(--accent)' : 'var(--border)'};
-  cursor: pointer;
-  transition: background 0.3s;
-`;
-
-const CarouselContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const DotsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-`;
+import { useCarousel, CarouselDots, CarouselContainer } from '@/components/Carousel';
 
 interface AccumulatedCarouselProps {
   activities: StravaActivity[];
@@ -34,14 +13,6 @@ interface AccumulatedCarouselProps {
 }
 
 const AccumulatedCarousel: React.FC<AccumulatedCarouselProps> = ({ activities, stats }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsHydrated(true);
-  }, []);
-
   const periods = useMemo(() => {
     const now = new Date();
     const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
@@ -92,14 +63,9 @@ const AccumulatedCarousel: React.FC<AccumulatedCarouselProps> = ({ activities, s
     ];
   }, [activities, stats]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % periods.length);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [periods.length]);
+  const { currentIndex, setCurrentIndex, ready } = useCarousel(periods.length);
 
-  if (!isHydrated || periods.length === 0) return null;
+  if (!ready) return null;
 
   const current = periods[currentIndex];
 
@@ -130,15 +96,7 @@ const AccumulatedCarousel: React.FC<AccumulatedCarouselProps> = ({ activities, s
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{current.detail}</div>
         </StatsGroup>
       </StatsPanel>
-      <DotsContainer>
-        {periods.map((_, index) => (
-          <DotSpan
-            key={index}
-            $isActive={index === currentIndex}
-            onClick={() => setCurrentIndex(index)}
-          />
-        ))}
-      </DotsContainer>
+      <CarouselDots count={periods.length} currentIndex={currentIndex} onSelect={setCurrentIndex} />
     </CarouselContainer>
   );
 };

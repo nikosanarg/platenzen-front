@@ -274,7 +274,7 @@ const CoachPersonalizado: React.FC<CoachPersonalizadoProps> = ({ activities, sta
                         {forma.weeklyChart.map((entry, i) => (
                           <Cell
                             key={i}
-                            fill={entry.isRecord ? '#4ade80' : entry.hasSharpIncrease ? 'var(--warning)' : 'var(--accent)'}
+                            fill={entry.isRecord ? 'var(--positive)' : entry.hasSharpIncrease ? 'var(--warning)' : 'var(--accent)'}
                             opacity={entry.km === 0 ? 0.2 : 0.85}
                           />
                         ))}

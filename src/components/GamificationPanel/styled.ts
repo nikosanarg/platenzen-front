@@ -73,7 +73,7 @@ export const MedalleroCode = styled.div`
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #fff;
+  color: var(--text-on-accent);
 `;
 
 export const MedalleroCategory = styled.div`

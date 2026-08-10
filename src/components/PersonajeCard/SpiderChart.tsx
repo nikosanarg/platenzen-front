@@ -74,8 +74,8 @@ const SpiderChart: React.FC<SpiderChartProps> = ({ scores }) => {
       {/* Value polygon */}
       <polygon
         points={polyPoints(fracs)}
-        fill="rgba(252,76,2,0.22)"
-        stroke="#fc4c02"
+        fill="rgba(var(--accent-rgb),0.22)"
+        stroke="var(--accent)"
         strokeWidth={1.5}
         strokeLinejoin="round"
       />
@@ -83,7 +83,7 @@ const SpiderChart: React.FC<SpiderChartProps> = ({ scores }) => {
       {/* Value dots */}
       {fracs.map((f, i) => {
         const [x, y] = polarXY(RADIUS * f, i);
-        return <circle key={i} cx={x.toFixed(2)} cy={y.toFixed(2)} r={3} fill="#fc4c02" />;
+        return <circle key={i} cx={x.toFixed(2)} cy={y.toFixed(2)} r={3} fill="var(--accent)" />;
       })}
 
       {/* Dual-line labels: name + numeric value */}
@@ -120,7 +120,7 @@ const SpiderChart: React.FC<SpiderChartProps> = ({ scores }) => {
               y={labelY.toFixed(2)}
               textAnchor={anchor}
               dominantBaseline="hanging"
-              fill="rgba(144,144,168,0.85)"
+              fill="rgba(var(--text-secondary-rgb),0.85)"
               fontSize={LABEL_H}
               fontFamily={font}
             >

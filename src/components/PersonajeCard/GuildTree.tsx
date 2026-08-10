@@ -71,26 +71,26 @@ const RoleNode = styled.button<{
   text-align: center;
   transition: all 0.15s;
   border: 1px solid ${({ $state }) =>
-    $state === 'current' ? '#f5c518' :
-    $state === 'reached' ? 'rgba(74, 222, 128, 0.4)' :
+    $state === 'current' ? 'var(--gold)' :
+    $state === 'reached' ? 'rgba(var(--positive-rgb), 0.4)' :
     'var(--border)'};
   background: ${({ $state }) =>
-    $state === 'current' ? 'rgba(245, 197, 24, 0.12)' :
-    $state === 'reached' ? 'rgba(74, 222, 128, 0.06)' :
+    $state === 'current' ? 'rgba(var(--gold-rgb), 0.12)' :
+    $state === 'reached' ? 'rgba(var(--positive-rgb), 0.06)' :
     'transparent'};
   color: ${({ $state }) =>
-    $state === 'current' ? '#f5c518' :
-    $state === 'reached' ? '#4ade80' :
+    $state === 'current' ? 'var(--gold)' :
+    $state === 'reached' ? 'var(--positive)' :
     'var(--text-muted)'};
   opacity: ${({ $state }) => $state === 'locked' ? 0.5 : 1};
   box-shadow: ${({ $state }) =>
-    $state === 'current' ? '0 0 8px rgba(245, 197, 24, 0.3)' : 'none'};
+    $state === 'current' ? '0 0 8px rgba(var(--gold-rgb), 0.3)' : 'none'};
 
   &:hover {
     opacity: 1;
     border-color: ${({ $state }) =>
-      $state === 'current' ? '#f5c518' :
-      $state === 'reached' ? '#4ade80' :
+      $state === 'current' ? 'var(--gold)' :
+      $state === 'reached' ? 'var(--positive)' :
       'var(--text-muted)'};
   }
 `;
@@ -108,9 +108,9 @@ const RootNode = styled.div<{ $reached: boolean }>`
   font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
-  border: 1px solid ${({ $reached }) => $reached ? 'rgba(74, 222, 128, 0.5)' : 'var(--border)'};
-  background: ${({ $reached }) => $reached ? 'rgba(74, 222, 128, 0.08)' : 'transparent'};
-  color: ${({ $reached }) => $reached ? '#4ade80' : 'var(--text-muted)'};
+  border: 1px solid ${({ $reached }) => $reached ? 'rgba(var(--positive-rgb), 0.5)' : 'var(--border)'};
+  background: ${({ $reached }) => $reached ? 'rgba(var(--positive-rgb), 0.08)' : 'transparent'};
+  color: ${({ $reached }) => $reached ? 'var(--positive)' : 'var(--text-muted)'};
 `;
 
 const ChecklistPanel = styled.div`
@@ -147,7 +147,7 @@ const CheckItem = styled.div<{ $passed: boolean }>`
 `;
 
 const CheckIcon = styled.span<{ $passed: boolean }>`
-  color: ${({ $passed }) => $passed ? '#4ade80' : '#f5c518'};
+  color: ${({ $passed }) => $passed ? 'var(--positive)' : 'var(--gold)'};
   flex-shrink: 0;
   font-size: 0.75rem;
 `;

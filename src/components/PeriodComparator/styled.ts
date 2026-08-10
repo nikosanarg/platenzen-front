@@ -14,7 +14,7 @@ export const TabsRow = styled.div`
 
 export const TabBtn = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => ($active ? 'var(--accent)' : 'var(--bg-card)')};
-  color: ${({ $active }) => ($active ? '#fff' : 'var(--text-secondary)')};
+  color: ${({ $active }) => ($active ? 'var(--text-on-accent)' : 'var(--text-secondary)')};
   border: none;
   padding: 0.5rem 1.25rem;
   font-size: 0.82rem;
@@ -25,7 +25,7 @@ export const TabBtn = styled.button<{ $active: boolean }>`
 
   &:hover {
     background: ${({ $active }) => ($active ? 'var(--accent-hover)' : 'var(--bg-card-hover)')};
-    color: ${({ $active }) => ($active ? '#fff' : 'var(--text-primary)')};
+    color: ${({ $active }) => ($active ? 'var(--text-on-accent)' : 'var(--text-primary)')};
   }
 `;
 
@@ -101,8 +101,8 @@ export const BeforeValue = styled.span<{ $positive: boolean | null }>`
     $positive === null
       ? 'var(--text-muted)'
       : $positive
-      ? 'rgba(74, 222, 128, 0.5)'
-      : 'rgba(245, 158, 11, 0.5)'};
+      ? 'rgba(var(--positive-rgb), 0.5)'
+      : 'rgba(var(--warning-rgb), 0.5)'};
 `;
 
 export const VsText = styled.span`
@@ -117,15 +117,15 @@ export const AfterValue = styled.span<{ $positive: boolean | null }>`
     $positive === null
       ? 'var(--text-primary)'
       : $positive
-      ? '#4ade80'
-      : '#f59e0b'};
+      ? 'var(--positive)'
+      : 'var(--warning)'};
 `;
 
 export const DeltaBadge = styled.div<{ $positive: boolean | null }>`
   font-size: 0.72rem;
   font-weight: 700;
   color: ${({ $positive }) =>
-    $positive === null ? 'var(--text-muted)' : $positive ? '#4ade80' : '#f59e0b'};
+    $positive === null ? 'var(--text-muted)' : $positive ? 'var(--positive)' : 'var(--warning)'};
   text-align: right;
 `;
 

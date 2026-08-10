@@ -84,7 +84,7 @@ export const MomentumBadge = styled.div<{ $state: 'subiendo' | 'sostenido' | 'ba
   font-size: 0.8rem;
   font-weight: 500;
   color: ${({ $state }) =>
-    $state === 'subiendo' ? '#4ade80' : $state === 'bajando' ? '#f59e0b' : 'var(--text-secondary)'};
+    $state === 'subiendo' ? 'var(--positive)' : $state === 'bajando' ? 'var(--warning)' : 'var(--text-secondary)'};
 `;
 
 export const StreakText = styled.div`
@@ -116,7 +116,7 @@ export const ProfileBadge = styled.div`
   gap: 0.375rem;
   padding: 0.3rem 0.75rem;
   background: var(--accent-muted);
-  border: 1px solid rgba(252, 76, 2, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 600;

@@ -13,7 +13,7 @@ export const HistoryGrid = styled.div`
 `;
 
 export const DistanceCard = styled.div`
-  background: #08080a;
+  background: var(--bg-deep);
   border-radius: var(--radius);
   box-shadow: 0 0 8px rgba(163, 230, 53, 0.12);
   padding: 1.25rem 1rem 1.25rem;
@@ -33,8 +33,8 @@ export const StravaBtn = styled.a`
   gap: 0.375rem;
   font-size: 0.72rem;
   font-weight: 500;
-  color: #fc4c02;
-  border: 1px solid rgba(252, 76, 2, 0.3);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 6px;
   padding: 0.3rem 0.625rem;
   transition: background 0.15s;
@@ -43,7 +43,7 @@ export const StravaBtn = styled.a`
   margin-top: 0.75rem;
 
   &:hover {
-    background: rgba(252, 76, 2, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
   }
 `;
 
@@ -52,7 +52,7 @@ export const DistanceLabel = styled.div`
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #4ade80;
+  color: var(--positive);
 `;
 
 export const TimeRow = styled.div`
@@ -82,7 +82,7 @@ export const ImprovementBadge = styled.div<{ $isFirst?: boolean }>`
   gap: 0.25rem;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #4ade80;
+  color: var(--positive);
   margin-top: 0.125rem;
 `;
 

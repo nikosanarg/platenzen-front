@@ -36,18 +36,18 @@ export const StateBadge = styled.div<{ $state: FormState }>`
   text-transform: uppercase;
   background: ${({ $state }) =>
     $state === 'ascenso'
-      ? 'rgba(34, 197, 94, 0.12)'
+      ? 'rgba(var(--success-rgb), 0.12)'
       : $state === 'descenso'
-      ? 'rgba(245, 158, 11, 0.12)'
-      : 'rgba(144, 144, 168, 0.1)'};
+      ? 'rgba(var(--warning-rgb), 0.12)'
+      : 'rgba(var(--text-secondary-rgb), 0.1)'};
   color: ${({ $state }) =>
-    $state === 'ascenso' ? '#4ade80' : $state === 'descenso' ? '#f59e0b' : 'var(--text-secondary)'};
+    $state === 'ascenso' ? 'var(--positive)' : $state === 'descenso' ? 'var(--warning)' : 'var(--text-secondary)'};
   border: 1px solid
     ${({ $state }) =>
       $state === 'ascenso'
-        ? 'rgba(34, 197, 94, 0.25)'
+        ? 'rgba(var(--success-rgb), 0.25)'
         : $state === 'descenso'
-        ? 'rgba(245, 158, 11, 0.25)'
+        ? 'rgba(var(--warning-rgb), 0.25)'
         : 'var(--border)'};
 `;
 
@@ -77,7 +77,7 @@ export const PillValue = styled.div<{ $positive?: boolean; $negative?: boolean }
   font-size: 1rem;
   font-weight: 700;
   color: ${({ $positive, $negative }) =>
-    $positive ? '#4ade80' : $negative ? '#f59e0b' : 'var(--text-secondary)'};
+    $positive ? 'var(--positive)' : $negative ? 'var(--warning)' : 'var(--text-secondary)'};
 `;
 
 export const PillLabel = styled.div`
@@ -115,7 +115,7 @@ export const SharpIncreaseNote = styled.div`
   font-size: 0.75rem;
   color: var(--warning);
   padding: 0.5rem 0.75rem;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: rgba(var(--warning-rgb), 0.08);
+  border: 1px solid rgba(var(--warning-rgb), 0.2);
   border-radius: var(--radius-sm);
 `;

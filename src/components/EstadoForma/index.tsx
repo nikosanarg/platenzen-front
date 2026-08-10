@@ -148,7 +148,7 @@ const EstadoForma: React.FC<EstadoFormaProps> = ({ activities, stats }) => {
                           key={i}
                           fill={
                             entry.isRecord
-                              ? '#4ade80'
+                              ? 'var(--positive)'
                               : entry.hasSharpIncrease
                               ? 'var(--warning)'
                               : 'var(--accent)'

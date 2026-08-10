@@ -89,7 +89,7 @@ const AttributeChip = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 0.125rem;
   padding: 0.375rem 0.25rem;
-  background: ${({ $active }) => $active ? 'rgba(252, 76, 2, 0.1)' : 'transparent'};
+  background: ${({ $active }) => $active ? 'rgba(var(--accent-rgb), 0.1)' : 'transparent'};
   border: 1px solid ${({ $active }) => $active ? 'var(--accent)' : 'var(--border)'};
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -97,7 +97,7 @@ const AttributeChip = styled.button<{ $active: boolean }>`
 
   &:hover {
     border-color: var(--accent);
-    background: rgba(252, 76, 2, 0.08);
+    background: rgba(var(--accent-rgb), 0.08);
   }
 `;
 
@@ -113,7 +113,7 @@ const AttributeValue = styled.div<{ $value: number }>`
   font-size: 0.85rem;
   font-weight: 700;
   color: ${({ $value }) =>
-    $value >= 70 ? '#4ade80' :
+    $value >= 70 ? 'var(--positive)' :
     $value >= 40 ? 'var(--accent)' :
     'var(--text-muted)'};
 `;

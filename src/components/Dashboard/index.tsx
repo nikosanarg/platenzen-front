@@ -78,7 +78,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <DashboardHeader>
         <HeaderLeft>
           <HeaderLogo>
-            <IconRun size={18} color="#fff" />
+            <IconRun size={18} color="var(--text-on-accent)" />
           </HeaderLogo>
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>

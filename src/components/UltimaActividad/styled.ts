@@ -135,7 +135,7 @@ export const XPHeadRow = styled.div`
 export const XPBig = styled.div`
   font-size: 1.25rem;
   font-weight: 800;
-  color: #f5c518;
+  color: var(--gold);
 `;
 
 export const XPDetails = styled.div`
@@ -174,9 +174,9 @@ export const DNAChip = styled.div<{ $positive: boolean }>`
   font-weight: 600;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid ${({ $positive }) => $positive ? 'rgba(74, 222, 128, 0.3)' : 'rgba(239, 68, 68, 0.3)'};
-  background: ${({ $positive }) => $positive ? 'rgba(74, 222, 128, 0.06)' : 'rgba(239, 68, 68, 0.06)'};
-  color: ${({ $positive }) => $positive ? '#4ade80' : '#ef4444'};
+  border: 1px solid ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.3)' : 'rgba(var(--error-rgb), 0.3)'};
+  background: ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.06)' : 'rgba(var(--error-rgb), 0.06)'};
+  color: ${({ $positive }) => $positive ? 'var(--positive)' : 'var(--error)'};
 `;
 
 export const LevelUpBadge = styled.div`
@@ -187,14 +187,14 @@ export const LevelUpBadge = styled.div`
   font-weight: 700;
   color: var(--accent);
   background: var(--accent-muted);
-  border: 1px solid rgba(252, 76, 2, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
 `;
 
 export const ComparisonRow = styled.div<{ $positive: boolean }>`
   font-size: 0.8rem;
-  color: ${({ $positive }) => $positive ? '#4ade80' : 'var(--text-muted)'};
+  color: ${({ $positive }) => $positive ? 'var(--positive)' : 'var(--text-muted)'};
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -211,9 +211,9 @@ export const AchievementChip = styled.div`
   font-weight: 600;
   padding: 0.2rem 0.625rem;
   border-radius: 4px;
-  border: 1px solid rgba(245, 197, 24, 0.4);
-  background: rgba(245, 197, 24, 0.08);
-  color: #f5c518;
+  border: 1px solid rgba(var(--gold-rgb), 0.4);
+  background: rgba(var(--gold-rgb), 0.08);
+  color: var(--gold);
 `;
 
 export const StravaLink = styled.a`
@@ -222,8 +222,8 @@ export const StravaLink = styled.a`
   gap: 0.375rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #fc4c02;
-  border: 1px solid rgba(252, 76, 2, 0.3);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
   transition: background 0.15s;
@@ -231,7 +231,7 @@ export const StravaLink = styled.a`
   align-self: flex-start;
 
   &:hover {
-    background: rgba(252, 76, 2, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
   }
 `;
 

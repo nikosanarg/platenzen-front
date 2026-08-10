@@ -54,7 +54,7 @@ export const OAuthButton = styled.a`
   gap: 0.625rem;
   width: 100%;
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
@@ -65,7 +65,7 @@ export const OAuthButton = styled.a`
   transition: box-shadow 0.2s;
 
   &:hover {
-    box-shadow: 0 0 0 4px rgba(252, 76, 2, 0.35);
+    box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.35);
   }
 `;
 

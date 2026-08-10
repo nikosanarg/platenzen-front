@@ -1,42 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { computePersonalRecords, formatProjectedTime, timeAgo } from '@/lib/personalRecords';
 import { secPerKmToString } from '@/utils/pace';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
-import styled from 'styled-components';
 import {
   RecordCard,
   RecordCategory,
   RecordValue,
-  RecordUnit,
   RecordSub,
   RecordDate,
   RecordActivity,
-  RecordEquiv,
 } from '@/components/PersonalRecords/styled';
-
-const DotSpan = styled.span<{ $isActive: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${props => props.$isActive ? 'var(--accent)' : 'var(--border)'};
-  cursor: pointer;
-  transition: background 0.3s;
-`;
-
-const CarouselContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const DotsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-`;
+import { useCarousel, CarouselDots, CarouselContainer } from '@/components/Carousel';
 
 interface RecordsCarouselProps {
   activities: StravaActivity[];
@@ -45,13 +22,6 @@ interface RecordsCarouselProps {
 
 const RecordsCarousel: React.FC<RecordsCarouselProps> = ({ activities, stats }) => {
   const records = computePersonalRecords(activities, stats.weekly);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsHydrated(true);
-  }, []);
 
   const recordsList = [
     records.best5k ? {
@@ -77,15 +47,9 @@ const RecordsCarousel: React.FC<RecordsCarouselProps> = ({ activities, stats }) 
     } : null,
   ].filter(Boolean);
 
-  useEffect(() => {
-    if (recordsList.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % recordsList.length);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [recordsList.length]);
+  const { currentIndex, setCurrentIndex, ready } = useCarousel(recordsList.length);
 
-  if (!isHydrated || recordsList.length === 0) return null;
+  if (!ready) return null;
 
   const current = recordsList[currentIndex]!;
 
@@ -98,15 +62,7 @@ const RecordsCarousel: React.FC<RecordsCarouselProps> = ({ activities, stats }) 
         {current.activity && <RecordActivity title={current.activity}>{current.activity}</RecordActivity>}
         {current.date && <RecordDate>{current.date}</RecordDate>}
       </RecordCard>
-      <DotsContainer>
-        {recordsList.map((_, index) => (
-          <DotSpan
-            key={index}
-            $isActive={index === currentIndex}
-            onClick={() => setCurrentIndex(index)}
-          />
-        ))}
-      </DotsContainer>
+      <CarouselDots count={recordsList.length} currentIndex={currentIndex} onSelect={setCurrentIndex} />
     </CarouselContainer>
   );
 };

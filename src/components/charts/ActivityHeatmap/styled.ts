@@ -102,7 +102,7 @@ export const HeatmapCell = styled.button<HeatmapCellProps>`
   }
 
   &:focus-visible {
-    outline: 1px solid #ff9c42;
+    outline: 1px solid ${ORANGE_SCALE[ORANGE_SCALE.length - 1]};
     outline-offset: 1px;
   }
 `;

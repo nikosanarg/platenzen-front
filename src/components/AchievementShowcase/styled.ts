@@ -16,14 +16,14 @@ const twinkle = keyframes`
 `;
 
 /* Dorado = desbloqueado hace menos de una semana; plata = menos de un mes y gira
-   más lento. El dorado reusa el #fbbf24 que ya marca XP y medalla en esta sección. */
+   más lento. El dorado reusa el var(--xp) que ya marca XP y medalla en esta sección. */
 const FRESHNESS_TIERS = {
   gold: {
-    core: 'rgba(251, 191, 36, 0.85)',
-    soft: 'rgba(251, 191, 36, 0.32)',
+    core: 'rgba(var(--xp-rgb), 0.85)',
+    soft: 'rgba(var(--xp-rgb), 0.32)',
     haloDuration: '1.9s',
     sparkDuration: '2.7s',
-    cardShadow: '0 0 0 1px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2)',
+    cardShadow: '0 0 0 1px rgba(var(--xp-rgb), 0.4), 0 0 20px rgba(var(--xp-rgb), 0.2)',
   },
   silver: {
     core: 'rgba(226, 232, 240, 0.78)',
@@ -110,7 +110,7 @@ export const ViewModeSwitch = styled.div`
 
 export const ViewModeButton = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
-  color: ${({ $active }) => ($active ? '#fff' : 'var(--text-secondary)')};
+  color: ${({ $active }) => ($active ? 'var(--text-on-accent)' : 'var(--text-secondary)')};
   border: none;
   border-radius: 8px;
   padding: 0.4rem 0.85rem;
@@ -120,7 +120,7 @@ export const ViewModeButton = styled.button<{ $active: boolean }>`
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    color: ${({ $active }) => ($active ? '#fff' : 'var(--text-primary)')};
+    color: ${({ $active }) => ($active ? 'var(--text-on-accent)' : 'var(--text-primary)')};
     background: ${({ $active }) => ($active ? 'var(--accent)' : 'var(--bg-card-hover)')};
   }
 `;
@@ -194,7 +194,7 @@ export const AchievementCard = styled.article<{
   $tier: 'gold' | 'silver' | null;
 }>`
   background: var(--bg-card);
-  border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(74, 222, 128, 0.35)' : 'var(--border)')};
+  border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(var(--positive-rgb), 0.35)' : 'var(--border)')};
   border-radius: var(--radius-sm);
   padding: ${({ $viewMode }) => ($viewMode === 'list' ? '0.55rem' : '0.72rem')};
   /* Tapa la parte interna del halo, que sólo debe verse por fuera del borde */
@@ -212,7 +212,7 @@ export const AchievementCard = styled.article<{
     $tier
       ? FRESHNESS_TIERS[$tier].cardShadow
       : $unlocked
-        ? '0 0 0 1px rgba(34, 197, 94, 0.22), 0 0 18px rgba(34, 197, 94, 0.16)'
+        ? '0 0 0 1px rgba(var(--success-rgb), 0.22), 0 0 18px rgba(var(--success-rgb), 0.16)'
         : 'none'};
   transition: border-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 
@@ -223,7 +223,7 @@ export const AchievementCard = styled.article<{
       $tier
         ? FRESHNESS_TIERS[$tier].cardShadow
         : $unlocked
-          ? '0 0 0 1px rgba(74, 222, 128, 0.32), 0 0 22px rgba(74, 222, 128, 0.22)'
+          ? '0 0 0 1px rgba(var(--positive-rgb), 0.32), 0 0 22px rgba(var(--positive-rgb), 0.22)'
           : 'none'};
   }
 
@@ -240,7 +240,7 @@ export const AchievementArtwork = styled.div<{ $viewMode: 'list' | 'grid'; $unlo
   aspect-ratio: ${({ $viewMode }) => ($viewMode === 'list' ? 'auto' : '1 / 1')};
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(74, 222, 128, 0.35), 0 0 14px rgba(74, 222, 128, 0.22)' : 'none')};
+  box-shadow: ${({ $unlocked }) => ($unlocked ? '0 0 0 1px rgba(var(--positive-rgb), 0.35), 0 0 14px rgba(var(--positive-rgb), 0.22)' : 'none')};
 
   @media (max-width: 600px) {
     width: ${({ $viewMode }) => ($viewMode === 'list' ? '60px' : '100%')};
@@ -302,14 +302,14 @@ export const AchievementStatValue = styled.span<{ $tone: 'xp' | 'unlocked' | 'mu
   font-weight: 600;
   line-height: 1.25;
   color: ${({ $tone }) =>
-    $tone === 'xp' ? '#fbbf24' : $tone === 'unlocked' ? '#4ade80' : 'var(--text-muted)'};
+    $tone === 'xp' ? 'var(--xp)' : $tone === 'unlocked' ? 'var(--positive)' : 'var(--text-muted)'};
 `;
 
 export const AchievementXP = styled.div<{ $unlocked: boolean }>`
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : 'var(--text-secondary)')};
+  color: ${({ $unlocked }) => ($unlocked ? 'var(--positive)' : 'var(--text-secondary)')};
   margin-bottom: 0.1rem;
 `;
 
@@ -341,6 +341,6 @@ export const AchievementDescription = styled.p<{ $viewMode: 'list' | 'grid' }>`
 export const AchievementMeta = styled.div<{ $unlocked: boolean }>`
   margin-top: auto;
   font-size: 0.78rem;
-  color: ${({ $unlocked }) => ($unlocked ? '#4ade80' : '#f59e0b')};
+  color: ${({ $unlocked }) => ($unlocked ? 'var(--positive)' : 'var(--warning)')};
   font-weight: 500;
 `;

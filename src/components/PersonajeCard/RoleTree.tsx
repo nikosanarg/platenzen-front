@@ -105,7 +105,7 @@ function getNodeStatus(currentLevel: number, roleLevel: number, isMax: boolean):
 }
 
 function edgeColor(s: NodeStatus) {
-  return s === 'achieved' ? '#22c55e' : s === 'current' ? '#f5c518' : '#2a2a35';
+  return s === 'achieved' ? 'var(--success)' : s === 'current' ? 'var(--gold)' : 'var(--border)';
 }
 
 // ── Branch definitions ─────────────────────────────────────────────────────
@@ -154,8 +154,8 @@ interface RoleCardProps {
 function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle, isAmateur }: RoleCardProps) {
   const isOpen = openId === cardId;
   const border = edgeColor(status);
-  const text = status === 'achieved' ? '#22c55e' : status === 'current' ? '#f5c518' : '#606078';
-  const bg = status === 'achieved' ? 'rgba(34,197,94,0.07)' : status === 'current' ? 'rgba(245,197,24,0.07)' : '#141417';
+  const text = status === 'achieved' ? 'var(--success)' : status === 'current' ? 'var(--gold)' : 'var(--text-muted)';
+  const bg = status === 'achieved' ? 'rgba(var(--success-rgb),0.07)' : status === 'current' ? 'rgba(var(--gold-rgb),0.07)' : 'var(--bg-secondary)';
   const hasTooltip = isAmateur || checklist.length > 0 || status === 'achieved';
 
   return (
@@ -183,7 +183,7 @@ function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle
           {label}
         </div>
         {status === 'current' && afinidad !== undefined && (
-          <div style={{ fontSize: 8, color: '#c9a42a', marginTop: 2 }}>({afinidad}%)</div>
+          <div style={{ fontSize: 8, color: 'var(--gold-muted)', marginTop: 2 }}>({afinidad}%)</div>
         )}
       </div>
 
@@ -194,8 +194,8 @@ function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle
             position: 'absolute',
             bottom: 'calc(100% + 6px)',
             left: 0,
-            background: '#1a1a1f',
-            border: '1px solid #2a2a35',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
             borderRadius: 8,
             padding: '7px 9px',
             minWidth: 160,
@@ -203,13 +203,13 @@ function RoleCard({ cardId, label, status, afinidad, checklist, openId, onToggle
             boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
           }}
         >
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#f0f0f5', marginBottom: 3 }}>{label}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{label}</div>
           {isAmateur
-            ? <div style={{ fontSize: 10, color: '#9090a8' }}>Estado inicial</div>
+            ? <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Estado inicial</div>
             : status === 'achieved'
-              ? <div style={{ fontSize: 10, color: '#22c55e' }}>✓ Desbloqueado</div>
+              ? <div style={{ fontSize: 10, color: 'var(--success)' }}>✓ Desbloqueado</div>
               : checklist.map((it, i) => (
-                <div key={i} style={{ fontSize: 10, color: it.passed ? '#22c55e' : '#9090a8', marginTop: 2 }}>
+                <div key={i} style={{ fontSize: 10, color: it.passed ? 'var(--success)' : 'var(--text-secondary)', marginTop: 2 }}>
                   {it.passed ? '✓' : '·'} {it.label}
                 </div>
               ))

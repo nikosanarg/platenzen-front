@@ -10,11 +10,30 @@
   --text-secondary: #9090a8;
   --text-muted: #606078;
   --accent: #fc4c02;
+  --accent-rgb: 252, 76, 2;
   --accent-hover: #ff6a2a;
-  --accent-muted: rgba(252, 76, 2, 0.15);
+  --accent-muted: rgba(var(--accent-rgb), 0.15);
   --success: #22c55e;
+  --success-rgb: 34, 197, 94;
   --warning: #f59e0b;
+  --warning-rgb: 245, 158, 11;
   --error: #ef4444;
+  --error-rgb: 239, 68, 68;
+  /* Verde de tendencia positiva / logro desbloqueado — distinto del verde de
+     --success, no lo reemplaza. */
+  --positive: #4ade80;
+  --positive-rgb: 74, 222, 128;
+  /* Dorado de récord y destaque legendario. */
+  --gold: #f5c518;
+  --gold-rgb: 245, 197, 24;
+  --gold-muted: #c9a42a;
+  /* Ámbar de XP y medalla en logros. */
+  --xp: #fbbf24;
+  --xp-rgb: 251, 191, 36;
+  --bg-deep: #08080a;
+  --text-on-accent: #fff;
+  --text-secondary-rgb: 144, 144, 168;
+  --role-gradient: linear-gradient(90deg, var(--accent) 0%, #f97316 28%, var(--gold) 58%, #7bd938 82%, var(--success) 100%);
   --chart-1: #fc4c02;
   --chart-2: #3b82f6;
   --chart-3: #22c55e;

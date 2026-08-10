@@ -17,9 +17,9 @@ export const SessionsGrid = styled.div`
 `;
 
 export const SessionCard = styled.div`
-  background: #08080a;
+  background: var(--bg-deep);
   border-radius: var(--radius);
-  box-shadow: 0 0 8px rgba(245, 197, 24, 0.14);
+  box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.14);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -29,7 +29,7 @@ export const SessionCard = styled.div`
   transition: box-shadow 0.2s;
 
   &:hover {
-    box-shadow: 0 0 8px rgba(245, 197, 24, 0.26);
+    box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.26);
   }
 `;
 
@@ -42,7 +42,7 @@ export const SessionHeader = styled.div`
 export const SessionName = styled.div`
   font-size: 0.9rem;
   font-weight: 700;
-  color: #f5c518;
+  color: var(--gold);
   line-height: 1.3;
 `;
 
@@ -88,9 +88,9 @@ export const ReasonBadge = styled.div`
   font-weight: 600;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid rgba(245, 197, 24, 0.35);
-  background: rgba(245, 197, 24, 0.07);
-  color: #c9a42a;
+  border: 1px solid rgba(var(--gold-rgb), 0.35);
+  background: rgba(var(--gold-rgb), 0.07);
+  color: var(--gold-muted);
 `;
 
 export const LegendaryIcon = styled.div`
@@ -104,8 +104,8 @@ export const StravaBtn = styled.a`
   gap: 0.375rem;
   font-size: 0.72rem;
   font-weight: 500;
-  color: #fc4c02;
-  border: 1px solid rgba(252, 76, 2, 0.3);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 6px;
   padding: 0.3rem 0.625rem;
   transition: background 0.15s;
@@ -113,7 +113,7 @@ export const StravaBtn = styled.a`
   align-self: flex-start;
 
   &:hover {
-    background: rgba(252, 76, 2, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
   }
 `;
 
