@@ -101,6 +101,17 @@ describe('computeStats: qué cuenta como running', () => {
     expect(stats.avgPace).toBe(300);
   });
 
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const stats = computeStats([
+      on('2026-07-01', { id: 1, sport_type: '', type: 'Run', distance: 10000, moving_time: 3000 }),
+    ]);
+
+    expect(stats.avgPace).toBe(300);
+    expect(stats.bestPace).toBe(300);
+    expect(stats.paceEvolution).toHaveLength(1);
+    expect(stats.sportDistribution).toEqual([{ sport: 'Run', count: 1, distance: 10 }]);
+  });
+
   it('la evolución de ritmo descarta las salidas de 1 km o menos', () => {
     const stats = computeStats([
       on('2026-07-01', { id: 1, distance: 900, moving_time: 300 }),

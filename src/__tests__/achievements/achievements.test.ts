@@ -185,6 +185,51 @@ describe('logros de velocidad', () => {
   });
 });
 
+describe('logros de exploración', () => {
+  it('cuenta como running las actividades con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [on('2026-03-25', { sport_type: '', type: 'Run', distance: 5000, moving_time: 1500 })];
+    expect(find(acts, 'first5k').unlocked).toBe(true);
+  });
+
+  it('detecta trail runs aunque sport_type venga vacío y fecha el primer escalón', () => {
+    const acts = Array.from({ length: 5 }, (_, i) =>
+      on(`2026-04-${String(i + 1).padStart(2, '0')}`, {
+        id: i + 1,
+        sport_type: '',
+        type: 'TrailRun',
+        distance: 8000,
+        moving_time: 2400,
+      }),
+    );
+    const logro = find(acts, 'trail5');
+
+    expect(logro.unlocked).toBe(true);
+    expect(logro.unlockedAt).toBe('2026-04-05');
+  });
+
+  it('sin salidas de trail el logro queda pendiente, sin fecha', () => {
+    const logro = find([on('2026-04-01', { distance: 5000, moving_time: 1500 })], 'trail5');
+
+    expect(logro.unlocked).toBe(false);
+    expect(logro.unlockedAt).toBeNull();
+  });
+
+  it('desbloquea el desnivel acumulado y fecha el logro en la salida que lo cruzó', () => {
+    const acts = [on('2026-05-01', { distance: 10000, moving_time: 3000, total_elevation_gain: 3200 })];
+    const logro = find(acts, 'alt3000');
+
+    expect(logro.unlocked).toBe(true);
+    expect(logro.unlockedAt).toBe('2026-05-01');
+  });
+
+  it('sin desnivel acumulado el logro de altura queda pendiente, sin fecha', () => {
+    const logro = find([on('2026-05-01', { distance: 5000, moving_time: 1500 })], 'alt3000');
+
+    expect(logro.unlocked).toBe(false);
+    expect(logro.unlockedAt).toBeNull();
+  });
+});
+
 describe('getUpcomingAchievements', () => {
   it('devuelve como máximo 6 logros', () => {
     const acts = [on('2026-07-07', { distance: 6000, moving_time: 1800 })];

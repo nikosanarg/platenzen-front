@@ -22,6 +22,11 @@ describe('computeLegendarySessions', () => {
     expect(computeLegendarySessions(acts)).toEqual([]);
   });
 
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [on('2026-01-01', { sport_type: '', type: 'Run', distance: 5000, moving_time: 1500 })];
+    expect(computeLegendarySessions(acts)).not.toEqual([]);
+  });
+
   it('con una sola corrida no repite: devuelve menos de cuatro tarjetas', () => {
     const sesiones = computeLegendarySessions([on('2026-01-01', { distance: 5000, moving_time: 1500 })]);
     const ids = sesiones.map((s) => s.activity.id);

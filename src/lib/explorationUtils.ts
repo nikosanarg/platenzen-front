@@ -34,15 +34,10 @@ export function countDistinctStartingPlaces(runs: StravaActivity[]): number {
   for (const run of runs) {
     const polyline = run.map?.summary_polyline;
     if (!polyline) continue;
-    try {
-      const coords = decodePolyline(polyline);
-      if (coords.length === 0) continue;
-      const [lat, lon] = coords[0];
-      const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= 0.5);
-      if (!isNear) places.push([lat, lon]);
-    } catch {
-      continue;
-    }
+    const coords = decodePolyline(polyline);
+    const [lat, lon] = coords[0];
+    const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= 0.5);
+    if (!isNear) places.push([lat, lon]);
   }
   return places.length;
 }

@@ -44,7 +44,6 @@ export function computeCoreRecord(activities: StravaActivity[]): CoreRecord | nu
     const projected = (core.meters / a.distance) * a.moving_time;
     if (projected < best) best = projected;
   }
-  if (best === Infinity) return null;
 
   return { label: core.label, distanceKm: core.km, timeSeconds: Math.round(best) };
 }

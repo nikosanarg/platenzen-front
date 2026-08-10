@@ -41,6 +41,13 @@ describe('computeRunnerDNA sin datos', () => {
     expect(dna.velocidad).toBe(0);
     expect(dna.consistencia).toBe(0);
   });
+
+  it('cuenta como running una salida con sport_type vacío, usando el type como respaldo', () => {
+    const dna = dnaOf([runDaysAgo(1, { sport_type: '', type: 'Run', distance: 5000, moving_time: 1500 })]);
+
+    expect(dna.resistencia).toBeGreaterThan(0);
+    expect(dna.consistencia).toBeGreaterThan(0);
+  });
 });
 
 describe('todos los atributos quedan acotados', () => {

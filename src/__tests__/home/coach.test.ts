@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 /** Una corrida de `km` ubicada `days` días antes de ahora. */
-function runDaysAgo(days: number, km: number, id = 1): StravaActivity {
+function runDaysAgo(days: number, km: number, id = 1, over: Partial<StravaActivity> = {}): StravaActivity {
   const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
   return activity({
     id,
@@ -33,6 +33,7 @@ function runDaysAgo(days: number, km: number, id = 1): StravaActivity {
     moving_time: Math.round(km * 300),
     start_date: iso,
     start_date_local: iso,
+    ...over,
   });
 }
 
@@ -69,6 +70,15 @@ describe('casos sin datos suficientes', () => {
     );
 
     expect(rec.loadState).toBe('sin datos');
+  });
+
+  it('cuenta como running una corrida con sport_type vacío, usando el type como respaldo', () => {
+    const rec = computeCoachRecommendation(
+      [runDaysAgo(1, 20, 1, { sport_type: '', type: 'Run' })],
+      statsWith(),
+    );
+
+    expect(rec.loadState).not.toBe('sin datos');
   });
 
   it('ignora corridas sin distancia o sin tiempo', () => {
@@ -180,6 +190,34 @@ describe('árbol de decisión por carga', () => {
     expect(rec.loadState).toBe('normal');
     expect(rec.motivo.length).toBeGreaterThan(0);
   });
+
+  it('carga equilibrada sin cambio porcentual relevante usa el motivo por defecto de la rama de ritmo', () => {
+    // 8 km hace 3 días sobre baseline 6 → carga 5.83, ratio 0.97: el cambio
+    // porcentual (-3%) no llega al 5% que dispara su propio motivo, así que
+    // esta rama depende de su mensaje por defecto.
+    const rec = computeCoachRecommendation(
+      [runDaysAgo(3, 8)],
+      statsWith({ weekly: weeksOf(6), weeklyAvgDistance: 35 }),
+    );
+
+    expect(rec.type).toBe('tempo');
+    expect(rec.motivo).toContain('Carga equilibrada y cuerpo descansado.');
+  });
+
+  it('carga equilibrada sin volumen alto ni cambio relevante usa el motivo por defecto genérico', () => {
+    // 8 km ayer (carga ponderada 7.2) sobre baseline 7.2 → ratio 1.0 exacto:
+    // sin cambio porcentual ni salida larga que generen motivo propio, y a
+    // menos de 2 días no entra en la rama de ritmo. Sólo el motivo genérico
+    // final la cubre.
+    const rec = computeCoachRecommendation(
+      [runDaysAgo(1, 8)],
+      statsWith({ weekly: weeksOf(7.2) }),
+    );
+
+    expect(rec.type).toBe('normal');
+    expect(rec.loadState).toBe('normal');
+    expect(rec.motivo).toContain('Carga de entrenamiento dentro del rango habitual.');
+  });
 });
 
 describe('carga ponderada', () => {
@@ -265,6 +303,10 @@ describe('motivo', () => {
     expect(
       computeCoachRecommendation([runDaysAgo(0.25, 15)], statsWith()).motivo.join(' '),
     ).toContain('horas');
+
+    expect(
+      computeCoachRecommendation([runDaysAgo(0.05, 15)], statsWith()).motivo.join(' '),
+    ).toContain('hace menos de 2 horas');
   });
 
   it('siempre devuelve al menos un motivo', () => {

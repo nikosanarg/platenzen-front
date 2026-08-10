@@ -38,6 +38,18 @@ describe('buildPersonaDescription', () => {
     expect(texto).toContain('miércoless');
   });
 
+  it('con salidas en varios días, elige el de más actividades como dominante', () => {
+    const stats = computeStats([
+      activity({ id: 1, start_date_local: '2026-07-13T12:00:00Z' }), // lunes
+      activity({ id: 2, start_date_local: '2026-07-13T13:00:00Z' }), // lunes
+      activity({ id: 3, start_date_local: '2026-07-14T12:00:00Z' }), // martes
+    ]);
+    const texto = buildPersonaDescription(branch('fondista'), stats, 80);
+
+    expect(texto).toContain('luness');
+    expect(texto).not.toContain('martess');
+  });
+
   it('omite el día si no hay ninguna salida', () => {
     const texto = buildPersonaDescription(branch('amateur'), computeStats([]), 20);
     expect(texto).not.toContain('corre principalmente');

@@ -153,12 +153,10 @@ export function computeCoachRecommendation(
 
   // Decision tree based on load ratio
   if (ratio > 1.5) {
-    if (motivo.length === 0) motivo.push(`Carga acumulada en las últimas ${Math.ceil(ratio * 7)} días elevada.`);
     return make('descanso', 'alta', motivo);
   }
 
   if (ratio > 1.2) {
-    if (motivo.length === 0) motivo.push('Carga de entrenamiento por encima del bloque de referencia.');
     return make('regenerativa', 'moderada', motivo);
   }
 
@@ -168,7 +166,6 @@ export function computeCoachRecommendation(
   }
 
   if (ratio < 0.6 && daysSinceLast >= 2) {
-    if (motivo.length === 0) motivo.push('Carga baja en los últimos días.');
     const avgWeekly = stats.weeklyAvgDistance;
     return avgWeekly >= 25
       ? make('larga', 'baja', motivo)

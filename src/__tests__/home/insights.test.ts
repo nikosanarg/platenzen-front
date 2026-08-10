@@ -196,6 +196,15 @@ describe('mejora de ritmo', () => {
     expect(textOf(stats, 'pace_improved')).toContain('1 min');
   });
 
+  it('omite los segundos sueltos cuando la mejora es en minutos exactos', () => {
+    const stats = statsWith({
+      paceEvolution: paces(400, 400, 400, 400, 400, 340, 340, 340, 340, 340),
+    });
+
+    expect(textOf(stats, 'pace_improved')).toContain('1 min');
+    expect(textOf(stats, 'pace_improved')).not.toContain('seg');
+  });
+
   it('no reporta mejoras menores a 15 segundos', () => {
     const stats = statsWith({
       paceEvolution: paces(400, 400, 400, 400, 400, 395, 395, 395, 395, 395),

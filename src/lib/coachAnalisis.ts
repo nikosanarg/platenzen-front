@@ -84,7 +84,6 @@ function formatClock(seconds: number): string {
 }
 
 function formatPace(secPerKm: number): string {
-  if (secPerKm <= 0) return '—';
   const { minutes, seconds } = splitPace(secPerKm);
   return `${minutes}:${seconds}/km`;
 }
@@ -268,14 +267,14 @@ function buildAgenda(activities: StravaActivity[], stats: ProcessedStats): DayPl
   yesterday.setDate(now.getDate() - 1);
 
   // ── Next 72h (3 upcoming days) ──
-  const template = PLAN_TEMPLATES[rec.type] ?? PLAN_TEMPLATES.normal;
+  const template = PLAN_TEMPLATES[rec.type];
   const upcoming: DayPlan[] = template.map((code, i) => {
     const d = new Date(now);
     d.setDate(now.getDate() + i + 1);
     const dayName = i === 0 ? 'Mañana' : WEEKDAYS[d.getDay()];
     return {
       day: dayName,
-      label: PLAN_LABELS[code] ?? PLAN_LABELS.run,
+      label: PLAN_LABELS[code],
       kind: code === 'rest' ? 'rest' : 'run',
     };
   });

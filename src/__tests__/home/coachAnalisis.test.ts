@@ -51,6 +51,11 @@ describe('cuándo devuelve null', () => {
     const acts = [runDaysAgo(1, { sport_type: 'Ride', type: 'Ride' })];
     expect(analisisOf(acts)).toBeNull();
   });
+
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [runDaysAgo(1, { sport_type: '', type: 'Run' })];
+    expect(analisisOf(acts)).not.toBeNull();
+  });
 });
 
 describe('cabecera de la actividad', () => {
@@ -123,6 +128,67 @@ describe('observaciones', () => {
     ].join(' ');
 
     expect(todoElTexto).not.toMatch(/[!¡]/);
+  });
+
+  it('señala un ritmo más rápido que el promedio comparable, y su lugar en el ranking', () => {
+    const acts = [
+      runDaysAgo(1, { distance: 10000, moving_time: 2400 }, 1), // 4:00/km, la más reciente
+      runDaysAgo(3, { distance: 10000, moving_time: 3000 }, 2), // 5:00/km
+      runDaysAgo(5, { distance: 10000, moving_time: 3000 }, 3),
+      runDaysAgo(7, { distance: 10000, moving_time: 3000 }, 4),
+    ];
+    const insights = analisisOf(acts)!.insights;
+
+    expect(insights.some((i) => i.text.includes('más rápido que tu promedio'))).toBe(true);
+    expect(insights.some((i) => /^Top \d+ por ritmo/.test(i.text))).toBe(true);
+  });
+
+  it('señala un ritmo más lento que el promedio comparable, sin juzgarlo', () => {
+    const acts = [
+      runDaysAgo(1, { distance: 10000, moving_time: 4000 }, 1), // 6:40/km, la más reciente
+      runDaysAgo(3, { distance: 10000, moving_time: 3000 }, 2), // 5:00/km
+      runDaysAgo(5, { distance: 10000, moving_time: 3000 }, 3),
+      runDaysAgo(7, { distance: 10000, moving_time: 3000 }, 4),
+    ];
+    const insights = analisisOf(acts)!.insights;
+
+    expect(insights.some((i) => i.text.includes('más lento que tu promedio') && i.text.includes('rodaje'))).toBe(true);
+  });
+
+  it('ubica la salida entre las más largas cuando no es la única en el tope', () => {
+    const acts = [
+      runDaysAgo(1, { distance: 8000, moving_time: 2400 }, 1), // 8 km, la más reciente
+      runDaysAgo(3, { distance: 9000, moving_time: 2700 }, 2),
+      runDaysAgo(5, { distance: 9000, moving_time: 2700 }, 3),
+      runDaysAgo(7, { distance: 7000, moving_time: 2100 }, 4),
+      runDaysAgo(9, { distance: 7000, moving_time: 2100 }, 5),
+      runDaysAgo(11, { distance: 7000, moving_time: 2100 }, 6),
+    ];
+    const insights = analisisOf(acts)!.insights;
+
+    expect(insights.some((i) => i.text === 'Entre tus 3 salidas más largas hasta hoy.')).toBe(true);
+  });
+
+  it('marca como exigente una salida con mucho desnivel por km', () => {
+    const acts = [runDaysAgo(1, { distance: 10000, moving_time: 3000, total_elevation_gain: 150 })];
+    const insights = analisisOf(acts)!.insights;
+    const exigente = insights.find((i) => i.text.startsWith('Salida exigente'));
+
+    expect(exigente).toBeDefined();
+    expect(exigente!.tone).toBe('warning');
+  });
+
+  it('con poco desnivel aclara que no afectó el rendimiento', () => {
+    const acts = [runDaysAgo(1, { distance: 10000, moving_time: 3000, total_elevation_gain: 50 })];
+    const insights = analisisOf(acts)!.insights;
+
+    expect(insights.some((i) => i.text === 'El desnivel fue bajo y no afectó tu rendimiento.')).toBe(true);
+  });
+
+  it('sin distancia registrada, el desnivel por km no divide por cero', () => {
+    const acts = [runDaysAgo(1, { distance: 0, moving_time: 0, average_speed: 0 })];
+    expect(() => analisisOf(acts)).not.toThrow();
+    expect(analisisOf(acts)).not.toBeNull();
   });
 });
 
@@ -306,5 +372,49 @@ describe('computeEnrichedLastActivity', () => {
   it('sin historial previo no hay comparación posible', () => {
     const acts = [runDaysAgo(1)];
     expect(computeEnrichedLastActivity(acts, computeStats(acts))!.comparison).toBeNull();
+  });
+
+  it('una diferencia de ritmo menor a un minuto se expresa en segundos por km, más rápido', () => {
+    const acts = [
+      runDaysAgo(3, { distance: 10000, moving_time: 3100 }, 1), // 310 s/km
+      runDaysAgo(1, { distance: 10000, moving_time: 3000 }, 2), // 300 s/km, la más reciente
+    ];
+    const comparison = computeEnrichedLastActivity(acts, computeStats(acts))!.comparison!;
+
+    expect(comparison.label).toBe('10s/km más rápido que tu última actividad similar');
+    expect(comparison.positive).toBe(true);
+  });
+
+  it('una diferencia de ritmo menor a un minuto se expresa en segundos por km, más lento', () => {
+    const acts = [
+      runDaysAgo(3, { distance: 10000, moving_time: 3000 }, 1), // 300 s/km
+      runDaysAgo(1, { distance: 10000, moving_time: 3100 }, 2), // 310 s/km, la más reciente
+    ];
+    const comparison = computeEnrichedLastActivity(acts, computeStats(acts))!.comparison!;
+
+    expect(comparison.label).toBe('10s/km más lento que tu última actividad similar');
+    expect(comparison.positive).toBe(false);
+  });
+
+  it('una diferencia de minutos exactos, sin segundos sueltos, también se informa cuando es más lenta', () => {
+    const acts = [
+      runDaysAgo(3, { distance: 10000, moving_time: 3000 }, 1), // 300 s/km
+      runDaysAgo(1, { distance: 10000, moving_time: 4200 }, 2), // 420 s/km, la más reciente
+    ];
+    const comparison = computeEnrichedLastActivity(acts, computeStats(acts))!.comparison!;
+
+    expect(comparison.label).toBe('2m más lento que tu última actividad similar');
+    expect(comparison.positive).toBe(false);
+  });
+
+  it('completar la tercera salida de la semana suma XP por semana consistente', () => {
+    const acts = [
+      runDaysAgo(2, { distance: 5000, moving_time: 1500 }, 1),
+      runDaysAgo(1, { distance: 5000, moving_time: 1500 }, 2),
+      runDaysAgo(0, { distance: 5000, moving_time: 1500 }, 3), // la más reciente, cierra la semana
+    ];
+    const enriched = computeEnrichedLastActivity(acts, computeStats(acts))!;
+
+    expect(enriched.xpDetails.some((d) => d.label === 'semana consistente')).toBe(true);
   });
 });

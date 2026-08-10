@@ -101,7 +101,6 @@ function computeLogros(
   const achievementMap = computeAchievements(activities, stats);
   const all = Object.values(achievementMap).flat();
   const totalCount = all.length;
-  if (totalCount === 0) return 0;
   const unlockedCount = all.filter(a => a.unlocked).length;
   // Normalize: 0 = 0, totalCount achievements unlocked = 100
   return clamp100((unlockedCount / totalCount) * 100);

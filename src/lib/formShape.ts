@@ -43,7 +43,6 @@ export function computeFormShape(
 
   const recent4 = stats.weekly.slice(-4);
   const prev4 = stats.weekly.slice(-8, -4);
-  if (prev4.length === 0) return null;
 
   const recentAvg = recent4.reduce((s, w) => s + w.distance, 0) / recent4.length;
   const prevAvg = prev4.reduce((s, w) => s + w.distance, 0) / prev4.length;

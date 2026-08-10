@@ -64,6 +64,12 @@ describe('computeCoreRecord', () => {
     expect(record?.label).toBe('5K');
   });
 
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const record = computeCoreRecord([activity({ sport_type: '', type: 'Run', distance: 5000, moving_time: 1500 })]);
+
+    expect(record?.label).toBe('5K');
+  });
+
   it('cuenta trail y cinta como running', () => {
     expect(
       computeCoreRecord([

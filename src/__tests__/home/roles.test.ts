@@ -49,6 +49,21 @@ const runs = (count: number, km: number, sport = 'Run'): StravaActivity[] =>
 const branchOf = (acts: StravaActivity[], stats: ProcessedStats, branch: string) =>
   computeRoles(acts, stats).branches.find((b) => b.branch === branch)!;
 
+/** Polyline de un solo punto en el lat/lon dado, para fijar el arranque. */
+function polylineAt(lat: number, lon: number): string {
+  const encode = (value: number) => {
+    let v = Math.round(value * 1e5) << 1;
+    if (v < 0) v = ~v;
+    let out = '';
+    while (v >= 0x20) {
+      out += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
+      v >>= 5;
+    }
+    return out + String.fromCharCode(v + 63);
+  };
+  return encode(lat) + encode(lon);
+}
+
 describe('definiciones de roles', () => {
   it('cada rama tiene sus roles con niveles crecientes desde 0', () => {
     for (const roles of Object.values(BRANCH_ROLES)) {
@@ -79,6 +94,12 @@ describe('rama de distancia', () => {
 
   it('también sube a Fondista con una sola salida de 15 km', () => {
     const b = branchOf(runs(1, 15), statsWith({ weeklyAvgDistance: 5 }), 'distance');
+    expect(b.currentRole.id).toBe('fondista');
+  });
+
+  it('cuenta como running una salida con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [{ ...runs(1, 15)[0], sport_type: '', type: 'Run' }];
+    const b = branchOf(acts, statsWith({ weeklyAvgDistance: 5 }), 'distance');
     expect(b.currentRole.id).toBe('fondista');
   });
 
@@ -157,6 +178,22 @@ describe('rama de exploración', () => {
     expect(b.currentRole.id).toBe('trotamundos');
   });
 
+  it('sin proporción de trail, el motivo usa mayúscula inicial en vez de la frase de trail', () => {
+    const b = branchOf(runs(10, 30), statsWith({ totalDistance: 300 }), 'exploration');
+    expect(b.whyCurrentRole).toContain('Tenés');
+    expect(b.whyCurrentRole).not.toContain('trail y t');
+  });
+
+  it('cuenta como trail una salida con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [
+      ...runs(2, 10, 'TrailRun').map((a) => ({ ...a, sport_type: '' })),
+      ...runs(8, 10).map((a, i) => ({ ...a, id: 100 + i })),
+    ];
+    const b = branchOf(acts, statsWith({ totalDistance: 100 }), 'exploration');
+
+    expect(b.currentRole.id).toBe('trotamundos');
+  });
+
   it('Trotamundos por proporción de trail', () => {
     const acts = [...runs(2, 10, 'TrailRun'), ...runs(8, 10).map((a, i) => ({ ...a, id: 100 + i }))];
     const b = branchOf(acts, statsWith({ totalDistance: 100 }), 'exploration');
@@ -176,6 +213,13 @@ describe('rama de exploración', () => {
   it('concuerda el singular y el plural de "lugares distintos"', () => {
     const b = branchOf([], statsWith(), 'exploration');
     expect(b.whyCurrentRole).toContain('0 lugares distintos');
+  });
+
+  it('usa singular cuando hay exactamente un lugar distinto de arranque', () => {
+    const acts = [{ ...runs(1, 5)[0], map: { summary_polyline: polylineAt(-34.9214, -57.9544) } }];
+    const b = branchOf(acts, statsWith(), 'exploration');
+
+    expect(b.whyCurrentRole).toContain('1 lugar distinto con');
   });
 });
 
@@ -306,6 +350,17 @@ describe('computeAdnScores', () => {
     const weekly = [...weeks(6, 20), ...weeks(6, 0)];
     expect(computeAdnScores([], statsWith({ weekly })).consistencia).toBe(50);
   });
+
+  it('exploración cuenta el trail aunque sport_type venga vacío, usando el type como respaldo', () => {
+    const conSportType = computeAdnScores(runs(5, 10, 'TrailRun'), statsWith({ totalDistance: 50 })).exploracion;
+    const sinSportType = computeAdnScores(
+      runs(5, 10, 'TrailRun').map((a) => ({ ...a, sport_type: '' })),
+      statsWith({ totalDistance: 50 }),
+    ).exploracion;
+
+    expect(sinSportType).toBe(conSportType);
+    expect(sinSportType).toBeGreaterThan(0);
+  });
 });
 
 describe('computeObjectiveAfinidad', () => {
@@ -366,5 +421,13 @@ describe('computeObjectiveChecklist', () => {
   it('las etiquetas de ritmo se escriben como umbral', () => {
     const items = computeObjectiveChecklist('velocista', [], statsWith());
     expect(items[0].label).toBe('<5:00/km');
+  });
+
+  it('cuenta el trail del objetivo conquistador aunque sport_type venga vacío', () => {
+    const acts = runs(5, 10, 'TrailRun').map((a) => ({ ...a, sport_type: '' }));
+    const items = computeObjectiveChecklist('conquistador', acts, statsWith());
+    const trailItem = items.find((i) => i.label.startsWith('Trail'))!;
+
+    expect(trailItem.passed).toBe(true);
   });
 });

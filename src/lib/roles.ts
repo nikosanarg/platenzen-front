@@ -156,7 +156,7 @@ function computeDistanceBranch(runs: StravaActivity[], stats: ProcessedStats): B
     currentRole: role,
     nextRole,
     afinidad,
-    whyCurrentRole: whyMap[role.id] ?? '',
+    whyCurrentRole: whyMap[role.id],
     howToProgress: howMap[role.id] ?? null,
   };
 }
@@ -214,7 +214,7 @@ function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): Bran
     currentRole: role,
     nextRole,
     afinidad,
-    whyCurrentRole: whyMap[role.id] ?? '',
+    whyCurrentRole: whyMap[role.id],
     howToProgress: howMap[role.id] ?? null,
   };
 }
@@ -274,7 +274,7 @@ function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats)
     currentRole: role,
     nextRole,
     afinidad,
-    whyCurrentRole: whyMap[role.id] ?? '',
+    whyCurrentRole: whyMap[role.id],
     howToProgress: howMap[role.id] ?? null,
   };
 }
@@ -336,7 +336,7 @@ function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats)
     currentRole: role,
     nextRole,
     afinidad,
-    whyCurrentRole: whyMap[role.id] ?? '',
+    whyCurrentRole: whyMap[role.id],
     howToProgress: howMap[role.id] ?? null,
   };
 }
@@ -361,8 +361,8 @@ export function computeRoles(activities: StravaActivity[], stats: ProcessedStats
   return {
     branches,
     primary: sorted[0],
-    secondary: sorted[1] ?? null,
-    tertiary: sorted[2] ?? null,
+    secondary: sorted[1],
+    tertiary: sorted[2],
   };
 }
 
@@ -421,8 +421,8 @@ export function computeObjectiveAfinidad(
   roles: RolesResult
 ): { afinidad: number } {
   const branch = OBJECTIVE_TO_BRANCH[objective];
-  const br = roles.branches.find(b => b.branch === branch);
-  return { afinidad: br?.afinidad ?? 0 };
+  const br = roles.branches.find(b => b.branch === branch)!;
+  return { afinidad: br.afinidad };
 }
 
 // ── Objective checklist ────────────────────────────────────────────────────

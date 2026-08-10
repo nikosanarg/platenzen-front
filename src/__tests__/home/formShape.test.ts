@@ -56,6 +56,17 @@ describe('clasificación del estado', () => {
     expect(computeFormShape([], bloque(100, 100))?.state).toBe('estable');
   });
 
+  it('descenso también cuando el volumen baja poco pero la constancia cae fuerte', () => {
+    // Volumen -5% (no alcanza solo), pero de 4 semanas activas a 1 sola.
+    const weekly = [
+      ...weeks(4, 20),
+      ...weeks(1, 76),
+      ...weeks(3, 0, false),
+    ];
+
+    expect(computeFormShape([], statsWith(weekly))?.state).toBe('descenso');
+  });
+
   it('un aumento chico con más constancia también es ascenso', () => {
     // Volumen +5% (no alcanza solo), pero pasa de 2 a 4 semanas activas.
     const weekly = [
@@ -82,6 +93,11 @@ describe('métricas reportadas', () => {
   it('informa la proporción de semanas activas recientes', () => {
     const weekly = [...weeks(8, 100), ...weeks(2, 100), ...weeks(2, 100, false)];
     expect(computeFormShape([], statsWith(weekly))?.recentActivePct).toBe(0.5);
+  });
+
+  it('sin semanas activas en el bloque anterior, el cambio de constancia es 0, no infinito', () => {
+    const weekly = [...weeks(4, 20, false), ...weeks(4, 20)];
+    expect(computeFormShape([], statsWith(weekly))?.consistencyChangePct).toBe(0);
   });
 
   it('sin suficientes salidas no calcula cambio de ritmo', () => {
@@ -123,6 +139,11 @@ describe('cambio de ritmo', () => {
   it('ignora lo que no es running', () => {
     const bici = runs(400, 380).map((a) => ({ ...a, sport_type: 'Ride', type: 'Ride' }));
     expect(computeFormShape(bici, bloque(100, 100))?.paceChangeSec).toBe(0);
+  });
+
+  it('cuenta como running una salida con sport_type vacío, usando el type como respaldo', () => {
+    const acts = runs(400, 380).map((a) => ({ ...a, sport_type: '', type: 'Run' }));
+    expect(computeFormShape(acts, bloque(100, 100))?.paceChangeSec).toBe(20);
   });
 });
 

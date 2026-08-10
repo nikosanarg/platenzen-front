@@ -84,6 +84,27 @@ describe('computeXPBreakdown: tarifas', () => {
     expect(breakdown.fromKm).toBe(0);
   });
 
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const breakdown = breakdownOf([
+      on('2026-07-01', { sport_type: '', type: 'Run', distance: 10000, moving_time: 3000 }),
+    ]);
+
+    expect(breakdown.fromKm).toBe(50);
+  });
+
+  it('paga 50 XP por mes con las 4 o más semanas completas', () => {
+    const meses = ['02', '09', '16', '23'];
+    const acts = meses.flatMap((dia, semana) => [
+      on(`2026-03-${dia}`, { id: semana * 3 + 1, distance: 5000, moving_time: 1500 }),
+      on(`2026-03-${String(Number(dia) + 1).padStart(2, '0')}`, { id: semana * 3 + 2, distance: 5000, moving_time: 1500 }),
+      on(`2026-03-${String(Number(dia) + 2).padStart(2, '0')}`, { id: semana * 3 + 3, distance: 5000, moving_time: 1500 }),
+    ]);
+    const breakdown = breakdownOf(acts);
+
+    expect(breakdown.completeMonths).toBe(1);
+    expect(breakdown.fromCompleteMonths).toBe(50);
+  });
+
   it('paga 10 XP por hito de distancia, contando cada hito una sola vez', () => {
     const dos = breakdownOf([
       on('2026-07-01', { id: 1, distance: 10500, moving_time: 3000 }),

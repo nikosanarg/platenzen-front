@@ -259,9 +259,9 @@ export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats
   idx = Math.min(idx, LEVEL_NAMES.length - 1);
 
   const currentThreshold = LEVEL_THRESHOLDS[idx];
-  const nextThreshold = idx < LEVEL_THRESHOLDS.length - 1 ? LEVEL_THRESHOLDS[idx + 1] : null;
-  const rangeSize = nextThreshold ? nextThreshold - currentThreshold : 1;
-  const progress = nextThreshold ? Math.min((xp - currentThreshold) / rangeSize, 1) : 1;
+  const nextThreshold = LEVEL_THRESHOLDS[idx + 1];
+  const rangeSize = nextThreshold - currentThreshold;
+  const progress = Math.min((xp - currentThreshold) / rangeSize, 1);
 
   return {
     level: idx + 1,
@@ -270,7 +270,7 @@ export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats
     currentThreshold,
     nextThreshold,
     progress,
-    xpToNext: nextThreshold ? nextThreshold - xp : null,
+    xpToNext: nextThreshold - xp,
     breakdown,
   };
 }

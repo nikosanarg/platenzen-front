@@ -120,6 +120,11 @@ describe('buildHistory: elegibilidad', () => {
     expect(forLabel(acts, '5K').history).toHaveLength(0);
   });
 
+  it('cuenta como running una actividad con sport_type vacío, usando el type como respaldo', () => {
+    const acts = [on('2026-01-01', { sport_type: '', type: 'Run', distance: 5000, moving_time: 1500 })];
+    expect(forLabel(acts, '5K').history).toHaveLength(1);
+  });
+
   it('ignora las salidas sin tiempo o sin velocidad', () => {
     expect(forLabel([on('2026-01-01', { distance: 5000, moving_time: 0 })], '5K').history).toHaveLength(0);
     expect(forLabel([on('2026-01-01', { distance: 5000, moving_time: 1500, average_speed: 0 })], '5K').history)

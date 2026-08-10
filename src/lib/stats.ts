@@ -88,7 +88,7 @@ function computeWeeklyAvg(activities: StravaActivity[]): number {
   if (activities.length === 0) return 0;
   const weekly = groupByWeek(activities);
   const totalKm = weekly.reduce((s, w) => s + w.distance, 0);
-  return weekly.length > 0 ? totalKm / weekly.length : 0;
+  return totalKm / weekly.length;
 }
 
 export function computeStats(activities: StravaActivity[]): ProcessedStats {

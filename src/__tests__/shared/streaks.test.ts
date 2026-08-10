@@ -98,6 +98,11 @@ describe('computeWeeklyStreak', () => {
   it('una semana vacía en el medio corta la racha', () => {
     expect(computeWeeklyStreak(weeks('2026-06-22', '2026-07-06', '2026-07-13'))).toBe(2);
   });
+
+  it('un domingo pertenece a la semana que arrancó el lunes anterior', () => {
+    jest.setSystemTime(new Date('2026-07-19T12:00:00Z')); // domingo
+    expect(computeWeeklyStreak(weeks('2026-07-06', '2026-07-13'))).toBe(2);
+  });
 });
 
 describe('computeLongestWeeklyStreak', () => {

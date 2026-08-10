@@ -193,7 +193,7 @@ function computeNewAchievements(
   for (const [category, achievements] of Object.entries(withMap)) {
     const withoutList = withoutMap[category as keyof typeof withoutMap];
     for (const ach of achievements) {
-      const wasUnlocked = withoutList.find(a => a.id === ach.id)?.unlocked ?? false;
+      const wasUnlocked = withoutList.find(a => a.id === ach.id)!.unlocked;
       if (ach.unlocked && !wasUnlocked) {
         newOnes.push({ name: ach.name, category });
       }
