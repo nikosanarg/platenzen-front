@@ -1,14 +1,23 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
-export const PredictorRoot = styled.section``;
+export const PredictorRoot = styled(Panel)`
+  padding: 1.75rem 1.5rem;
 
-/* ── Same shell as CompareTable ──────────────────────────────── */
+  @media (max-width: 600px) {
+    padding: 1.25rem 1rem;
+  }
+`;
+
+/* ── Table region: full-bleed within the card's own padding, same as CompareTable ── */
 
 export const PredictorTable = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  margin: 1rem -1.5rem 0;
+  border-top: 1px solid var(--border);
+
+  @media (max-width: 500px) {
+    margin: 1rem -1rem 0;
+  }
 `;
 
 const GRID = '1.2fr 1fr 1fr';
@@ -97,7 +106,7 @@ export const PredictedValue = styled.div`
 export const PredictorNote = styled.div`
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border-light);
   border-radius: var(--radius-sm);

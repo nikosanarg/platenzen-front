@@ -1,6 +1,13 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
-export const ComparatorRoot = styled.section``;
+export const ComparatorRoot = styled(Panel)`
+  padding: 1.75rem 1.5rem;
+
+  @media (max-width: 600px) {
+    padding: 1.25rem 1rem;
+  }
+`;
 
 export const TabsRow = styled.div`
   display: flex;
@@ -29,13 +36,15 @@ export const TabBtn = styled.button<{ $active: boolean }>`
   }
 `;
 
-/* ── Shared table shell ───────────────────────────────────────── */
+/* ── Table region: full-bleed within the card's own padding ─────── */
 
 export const CompareTable = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  margin: 1rem -1.5rem 0;
+  border-top: 1px solid var(--border);
+
+  @media (max-width: 600px) {
+    margin: 1rem -1rem 0;
+  }
 `;
 
 const GRID = '1.2fr 2fr 72px';
@@ -132,7 +141,7 @@ export const DeltaBadge = styled.div<{ $positive: boolean | null }>`
 export const ConclusionBox = styled.div`
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border-light);
   border-radius: var(--radius-sm);
