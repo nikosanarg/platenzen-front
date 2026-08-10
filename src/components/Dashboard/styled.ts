@@ -60,7 +60,7 @@ export const CacheInfo = styled.span`
 
 export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary'; $mobileRed?: boolean }>`
   background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent)' : 'var(--bg-card)')};
-  color: ${({ $variant }) => ($variant === 'primary' ? '#fff' : 'var(--text-secondary)')};
+  color: ${({ $variant }) => ($variant === 'primary' ? 'var(--text-on-accent)' : 'var(--text-secondary)')};
   border: 1px solid ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border)')};
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
@@ -76,7 +76,7 @@ export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary'; $mob
   &:hover {
     background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent-hover)' : 'var(--bg-card-hover)')};
     border-color: ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border-light)')};
-    color: ${({ $variant }) => ($variant === 'primary' ? '#fff' : 'var(--text-primary)')};
+    color: ${({ $variant }) => ($variant === 'primary' ? 'var(--text-on-accent)' : 'var(--text-primary)')};
   }
 
   @media (max-width: 640px) {
@@ -111,9 +111,10 @@ export const HomeTabsInner = styled.div`
 `;
 
 export const HomeTabLink = styled(Link)<{ $active: boolean }>`
-  background: none;
+  background: ${({ $active }) => ($active ? 'var(--accent-muted)' : 'none')};
   border: none;
   border-bottom: 2px solid ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
+  border-radius: ${({ $active }) => ($active ? '6px 6px 0 0' : '0')};
   padding: 0.875rem 1.5rem;
   font-size: 0.9rem;
   font-weight: ${({ $active }) => ($active ? '700' : '400')};
@@ -121,7 +122,7 @@ export const HomeTabLink = styled(Link)<{ $active: boolean }>`
   cursor: pointer;
   margin-bottom: -1px;
   letter-spacing: 0.01em;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
   white-space: nowrap;
   text-decoration: none;
 

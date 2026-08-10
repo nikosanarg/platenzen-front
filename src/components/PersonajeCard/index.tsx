@@ -4,7 +4,7 @@ import React from 'react';
 import { StravaActivity } from '@/types/strava';
 import { ProcessedStats } from '@/types/stats';
 import { getLevelInfo } from '@/lib/xpSystem';
-import { computeRoles, computeAdnScores } from '@/lib/roles';
+import { computeRoles, computeAdnScores, BRANCH_ROLES } from '@/lib/roles';
 import { computeLongestWeeklyStreak } from '@/utils/streaks';
 import { computeCoreRecord } from '@/lib/coreRecord';
 import { formatRecordTime } from '@/lib/recordHistory';
@@ -12,7 +12,6 @@ import { buildPersonaDescription } from '@/lib/runnerPersona';
 import { IconRoute, IconCalendar, IconFlame, IconHourglass } from '@/components/Icon';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import SpiderChart from './SpiderChart';
-import RoleTree from './RoleTree';
 import {
   Card,
   TopRow,
@@ -22,13 +21,16 @@ import {
   RoleHeading,
   RoleNamePrimary,
   LevelBadge,
+  XpHeadRow,
+  XpBigValue,
+  XpMeta,
   LevelBarRow,
   LevelTrack,
   LevelFill,
   LevelEndpoint,
   LevelEndpointDot,
   LevelEndpointLabel,
-  XpLabel,
+  XpToNext,
   PersonaText,
   StatsGrid,
   StatCard,
@@ -36,8 +38,21 @@ import {
   StatBody,
   StatValue,
   StatLabel,
+  VisualColTitle,
+  RankBlock,
+  RankCurrentRow,
+  RankCurrentName,
+  RankPct,
+  RankNextName,
+  RankProgressTrack,
+  RankProgressFill,
+  RankStepsRow,
+  RankStep,
+  RankStepArrow,
+  RankMaxNote,
   ActivitySection,
   ActivityTitle,
+  ActivitySubtitle,
 } from './styled';
 
 interface PersonajeCardProps {
@@ -60,21 +75,32 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
 
   const persona = buildPersonaDescription(primary, stats, adn.consistencia);
 
-  const xpLabel = levelInfo.nextThreshold
-    ? `${levelInfo.xp.toLocaleString('es-AR')} / ${levelInfo.nextThreshold.toLocaleString('es-AR')} XP`
-    : `${levelInfo.xp.toLocaleString('es-AR')} XP`;
-
   const nextLevelLabel = levelInfo.nextThreshold ? `Nivel ${levelInfo.level + 1}` : 'MÁX';
+
+  const xpMeta = levelInfo.nextThreshold
+    ? `/ ${levelInfo.nextThreshold.toLocaleString('es-AR')} XP`
+    : 'XP';
+
+  const xpToNextLabel = levelInfo.nextThreshold
+    ? `Faltan ${levelInfo.xpToNext!.toLocaleString('es-AR')} XP para ${nextLevelLabel}`
+    : 'Nivel máximo alcanzado';
+
+  const rankSteps = BRANCH_ROLES[primary.branch];
 
   return (
     <Card>
       <TopRow>
-        {/* ── Identity ── */}
+        {/* ── Identidad + XP + estadísticas ── */}
         <IdentityCol>
           <RoleHeading>
             <RoleNamePrimary>{primary.currentRole.name}</RoleNamePrimary>
             <LevelBadge>(Nivel {levelInfo.level})</LevelBadge>
           </RoleHeading>
+
+          <XpHeadRow>
+            <XpBigValue>{levelInfo.xp.toLocaleString('es-AR')}</XpBigValue>
+            <XpMeta>{xpMeta}</XpMeta>
+          </XpHeadRow>
 
           <LevelBarRow>
             <LevelTrack>
@@ -85,7 +111,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
               <LevelEndpointLabel>{nextLevelLabel}</LevelEndpointLabel>
             </LevelEndpoint>
           </LevelBarRow>
-          <XpLabel>{xpLabel}</XpLabel>
+          <XpToNext>{xpToNextLabel}</XpToNext>
 
           <PersonaText>{persona}</PersonaText>
 
@@ -107,39 +133,79 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             </StatCard>
 
             <StatCard>
-              <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
+              <StatIcon $emphasis><IconFlame size={18} color="currentColor" /></StatIcon>
               <StatBody>
-                <StatValue>{longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}</StatValue>
+                <StatValue $emphasis>{longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}</StatValue>
                 <StatLabel>Mejor racha</StatLabel>
               </StatBody>
             </StatCard>
 
             <StatCard>
-              <StatIcon><IconHourglass size={18} color="currentColor" /></StatIcon>
+              <StatIcon $emphasis><IconHourglass size={18} color="currentColor" /></StatIcon>
               <StatBody>
-                <StatValue>{coreRecord ? formatRecordTime(coreRecord.timeSeconds) : '—'}</StatValue>
+                <StatValue $emphasis>{coreRecord ? formatRecordTime(coreRecord.timeSeconds) : '—'}</StatValue>
                 <StatLabel>{coreRecord ? `Récord ${coreRecord.label}` : 'Récord'}</StatLabel>
               </StatBody>
             </StatCard>
           </StatsGrid>
         </IdentityCol>
 
-        {/* ── Spider chart ── */}
+        {/* ── Radar: perfil de corredor ── */}
         <VisualCol>
+          <VisualColTitle>Perfil de corredor</VisualColTitle>
           <AdnChartWrapper>
             <SpiderChart scores={adn} />
           </AdnChartWrapper>
         </VisualCol>
 
-        {/* ── Role tree ── */}
+        {/* ── Rango actual + próximo objetivo (rama dominante) ── */}
         <VisualCol>
-          <RoleTree branches={roles.branches} activities={activities} stats={stats} />
+          <VisualColTitle>Rango</VisualColTitle>
+          <RankBlock>
+            <RankCurrentRow>
+              <RankCurrentName>{primary.currentRole.name}</RankCurrentName>
+              {primary.nextRole && (
+                <>
+                  <RankPct>{primary.afinidad}%</RankPct>
+                  <RankNextName>&rarr; {primary.nextRole.name}</RankNextName>
+                </>
+              )}
+            </RankCurrentRow>
+
+            {primary.nextRole ? (
+              <RankProgressTrack>
+                <RankProgressFill $pct={primary.afinidad} />
+              </RankProgressTrack>
+            ) : (
+              <RankMaxNote>Rango máximo de esta rama</RankMaxNote>
+            )}
+
+            <RankStepsRow>
+              {rankSteps.map((step, i) => {
+                const state =
+                  step.level < primary.currentRole.level
+                    ? 'done'
+                    : step.level === primary.currentRole.level
+                    ? 'current'
+                    : 'upcoming';
+                return (
+                  <React.Fragment key={step.id}>
+                    {i > 0 && <RankStepArrow>&rarr;</RankStepArrow>}
+                    <RankStep $state={state}>{step.name}</RankStep>
+                  </React.Fragment>
+                );
+              })}
+            </RankStepsRow>
+          </RankBlock>
         </VisualCol>
       </TopRow>
 
-      {/* ── Activity heatmap (full width) ── */}
+      {/* ── Consistencia anual: el heatmap como evidencia, no decoración ── */}
       <ActivitySection>
         <ActivityTitle>Tu año en actividad</ActivityTitle>
+        <ActivitySubtitle>
+          {longestStreak} {longestStreak === 1 ? 'semana activa' : 'semanas activas'} · {stats.totalActivities.toLocaleString('es-AR')} actividades · {Math.round(stats.totalDistance).toLocaleString('es-AR')} km
+        </ActivitySubtitle>
         <ActivityHeatmap data={stats.daily} />
       </ActivitySection>
     </Card>

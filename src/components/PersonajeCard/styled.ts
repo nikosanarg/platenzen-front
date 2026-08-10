@@ -86,7 +86,7 @@ export const StreakBadge = styled.span`
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-muted);
-  border: 1px solid rgba(252, 76, 2, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
 `;
@@ -114,7 +114,7 @@ export const LevelFill = styled.div<{ $pct: number }>`
   width: ${({ $pct }) => Math.max(2, $pct * 100).toFixed(1)}%;
   /* The gradient spans the full track width so the fill reveals the
      chromatic scale up to the current progress point. */
-  background-image: linear-gradient(90deg, #fc4c02 0%, #f97316 28%, #f5c518 58%, #7bd938 82%, #22c55e 100%);
+  background-image: var(--role-gradient);
   background-size: ${({ $pct }) => (100 / Math.max(0.02, $pct)).toFixed(1)}% 100%;
   background-position: left center;
   background-repeat: no-repeat;
@@ -144,18 +144,45 @@ export const LevelEndpointLabel = styled.div`
   letter-spacing: 0.02em;
 `;
 
-export const XpLabel = styled.div`
-  font-size: 0.72rem;
+/* ── XP headline: el número de XP es el dato central de la progresión ── */
+
+export const XpHeadRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+`;
+
+export const XpBigValue = styled.span`
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+
+  @media (max-width: 600px) {
+    font-size: 1.3rem;
+  }
+`;
+
+export const XpMeta = styled.span`
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
-  margin-top: 0.35rem;
+`;
+
+export const XpToNext = styled.div`
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
 `;
 
 /* ── Persona description ──────────────────────────────────────────── */
 
 export const PersonaText = styled.p`
-  font-size: 0.83rem;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  color: var(--text-muted);
   line-height: 1.5;
   margin-top: 0.85rem;
 `;
@@ -180,15 +207,15 @@ export const StatCard = styled.div`
   min-width: 0;
 `;
 
-export const StatIcon = styled.div`
+export const StatIcon = styled.div<{ $emphasis?: boolean }>`
   width: 34px;
   height: 34px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-muted);
-  color: var(--accent);
+  background: ${({ $emphasis }) => ($emphasis ? 'var(--accent)' : 'var(--accent-muted)')};
+  color: ${({ $emphasis }) => ($emphasis ? 'var(--text-on-accent)' : 'var(--accent)')};
   flex-shrink: 0;
 `;
 
@@ -199,9 +226,9 @@ export const StatBody = styled.div`
   min-width: 0;
 `;
 
-export const StatValue = styled.div`
-  font-size: 0.98rem;
-  font-weight: 700;
+export const StatValue = styled.div<{ $emphasis?: boolean }>`
+  font-size: ${({ $emphasis }) => ($emphasis ? '1.15rem' : '0.98rem')};
+  font-weight: ${({ $emphasis }) => ($emphasis ? '800' : '700')};
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -214,6 +241,106 @@ export const StatLabel = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+`;
+
+/* ── Rango: progreso dentro de la rama dominante ─────────────────── */
+
+export const VisualColTitle = styled.h3`
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 0.75rem;
+`;
+
+export const RankBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding-top: 0.5rem;
+`;
+
+export const RankCurrentRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+`;
+
+export const RankCurrentName = styled.div`
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+`;
+
+export const RankPct = styled.span`
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+`;
+
+export const RankNextName = styled.span`
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+`;
+
+export const RankProgressTrack = styled.div`
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 220px;
+`;
+
+export const RankProgressFill = styled.div<{ $pct: number }>`
+  height: 100%;
+  width: ${({ $pct }) => Math.max(2, Math.min(100, $pct)).toFixed(1)}%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+`;
+
+export const RankStepsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+`;
+
+export const RankStep = styled.span<{ $state: 'done' | 'current' | 'upcoming' }>`
+  font-size: 0.64rem;
+  font-weight: ${({ $state }) => ($state === 'current' ? '700' : '500')};
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: ${({ $state }) =>
+    $state === 'current'
+      ? 'var(--accent)'
+      : $state === 'done'
+      ? 'var(--text-secondary)'
+      : 'var(--text-muted)'};
+`;
+
+export const RankStepArrow = styled.span`
+  font-size: 0.64rem;
+  color: var(--text-muted);
+`;
+
+export const RankMaxNote = styled.div`
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
 `;
 
 /* ── Activity heatmap (full-width, bottom) ───────────────────────── */
@@ -230,5 +357,11 @@ export const ActivityTitle = styled.h3`
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.3rem;
+`;
+
+export const ActivitySubtitle = styled.div`
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
 `;
