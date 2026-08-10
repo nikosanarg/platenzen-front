@@ -1,12 +1,10 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 import { FormState } from '@/lib/formShape';
 
 export const CoachRoot = styled.section``;
 
-export const UnifiedCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const UnifiedCard = styled(Panel)`
   display: flex;
   flex-direction: column;
   overflow: hidden;

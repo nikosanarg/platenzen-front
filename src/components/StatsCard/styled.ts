@@ -1,9 +1,7 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
-export const CardRoot = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const CardRoot = styled(Panel)`
   padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;

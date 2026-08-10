@@ -1,9 +1,7 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
-export const MissionCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const MissionCard = styled(Panel)`
   padding: 2rem;
 
   @media (max-width: 600px) {

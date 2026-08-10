@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const TokenContainer = styled.div`
   min-height: 100vh;
@@ -9,10 +10,7 @@ export const TokenContainer = styled.div`
   padding: 2rem;
 `;
 
-export const TokenCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const TokenCard = styled(Panel)`
   padding: 3rem;
   width: 100%;
   max-width: 440px;

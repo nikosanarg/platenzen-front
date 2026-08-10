@@ -1,12 +1,10 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 import { FormState } from '@/lib/formShape';
 
 export const FormaRoot = styled.section``;
 
-export const FormaCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const FormaCard = styled(Panel)`
   padding: 1.75rem 1.5rem;
   display: flex;
   flex-direction: column;

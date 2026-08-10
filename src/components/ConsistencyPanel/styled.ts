@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const ConsistencyRoot = styled.section``;
 
@@ -12,10 +13,7 @@ export const StatsGrid = styled.div`
   }
 `;
 
-export const StatCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const StatCard = styled(Panel)`
   padding: 1.125rem 1rem;
   display: flex;
   flex-direction: column;

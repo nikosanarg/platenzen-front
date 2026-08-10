@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const GoalsRoot = styled.section``;
 
@@ -8,10 +9,7 @@ export const GoalsList = styled.div`
   gap: 0.75rem;
 `;
 
-export const GoalCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const GoalCard = styled(Panel)`
   padding: 1.125rem 1.25rem;
   display: flex;
   flex-direction: column;

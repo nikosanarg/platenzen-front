@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const PredictionsRoot = styled.section``;
 
@@ -12,10 +13,7 @@ export const PredictionsGrid = styled.div`
   }
 `;
 
-export const PredictionCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const PredictionCard = styled(Panel)`
   padding: 1.25rem 1.125rem;
   display: flex;
   flex-direction: column;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const Root = styled.div`
   display: flex;
@@ -6,10 +7,7 @@ export const Root = styled.div`
   gap: 1rem;
 `;
 
-export const Card = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const Card = styled(Panel)`
   padding: 1.5rem;
   display: flex;
   flex-direction: column;

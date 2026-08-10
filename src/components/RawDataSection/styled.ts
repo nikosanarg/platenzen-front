@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const RawRoot = styled.section``;
 
@@ -31,11 +32,8 @@ export const Chevron = styled.span<{ $open: boolean }>`
   line-height: 1;
 `;
 
-export const StatsPanel = styled.div`
+export const StatsPanel = styled(Panel)`
   margin-top: 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 1.5rem;
 `;
 

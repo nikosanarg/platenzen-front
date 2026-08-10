@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const Root = styled.div`
   display: flex;
@@ -117,12 +118,9 @@ export const StravaBtn = styled.a`
   }
 `;
 
-export const EmptyState = styled.div`
+export const EmptyState = styled(Panel)`
   padding: 2rem;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.875rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 `;

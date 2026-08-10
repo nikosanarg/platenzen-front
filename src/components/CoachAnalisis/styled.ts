@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 import { InsightTone, DayKind } from '@/lib/coachAnalisis';
 
 function toneColor(tone: InsightTone): string {
@@ -15,10 +16,7 @@ export const Root = styled.section`
   gap: 1rem;
 `;
 
-export const Card = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const Card = styled(Panel)`
   overflow: hidden;
 `;
 

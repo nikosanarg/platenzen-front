@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 const pulse = keyframes`
   0%, 100% { opacity: 0.4; }
@@ -229,10 +230,7 @@ export const SecretGrid = styled.div`
   }
 `;
 
-export const SecretCard = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const SecretCard = styled(Panel)`
   padding: 1rem;
   display: flex;
   flex-direction: column;

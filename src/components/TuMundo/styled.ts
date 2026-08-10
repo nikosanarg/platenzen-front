@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
 export const Root = styled.div`
   display: flex;
@@ -16,10 +17,7 @@ export const Layout = styled.div`
   }
 `;
 
-export const HeatmapContainer = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const HeatmapContainer = styled(Panel)`
   overflow: hidden;
   position: relative;
 `;
@@ -104,10 +102,7 @@ export const ZoneVisits = styled.div`
   white-space: nowrap;
 `;
 
-export const DetailPanel = styled.div`
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+export const DetailPanel = styled(Panel)`
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -166,14 +161,11 @@ export const ActivityRow = styled.div`
   }
 `;
 
-export const EmptyState = styled.div`
+export const EmptyState = styled(Panel)`
   padding: 3rem 2rem;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.875rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 `;
 
 export const SubTitle = styled.div`
