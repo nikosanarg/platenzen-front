@@ -10,6 +10,13 @@ import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import CollapsibleSection from '@/components/CollapsibleSection';
+import HeroSection from '@/components/HeroSection';
+import ActiveMission from '@/components/ActiveMission';
+import GamificationPanel from '@/components/GamificationPanel';
+import MilestonesSection from '@/components/MilestonesSection';
+import PersonalGoals from '@/components/PersonalGoals';
+import ConsistencyPanel from '@/components/ConsistencyPanel';
+import TuMundo from '@/components/TuMundo';
 import { LegendaryGroup, PatternsGrid } from '@/components/Dashboard/styled';
 
 export default function ProgresoPage() {
@@ -20,6 +27,22 @@ export default function ProgresoPage() {
       <PersonajeCard activities={activities} stats={stats} />
 
       <CoachAnalisis activities={activities} stats={stats} />
+
+      <CollapsibleSection
+        title="Progresión (sistema alternativo)"
+        subtitle="otro cálculo de nivel/XP, en paralelo al de arriba — para comparar"
+        defaultOpen
+      >
+        <LegendaryGroup>
+          <HeroSection activities={activities} stats={stats} />
+          <ActiveMission stats={stats} />
+          <GamificationPanel stats={stats} />
+          <MilestonesSection activities={activities} stats={stats} />
+          <PersonalGoals activities={activities} stats={stats} />
+          <ConsistencyPanel activities={activities} stats={stats} />
+          <TuMundo activities={activities} />
+        </LegendaryGroup>
+      </CollapsibleSection>
 
       <LegendaryGroup>
         <RecordHistorySection activities={activities} />
