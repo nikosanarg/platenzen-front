@@ -1,8 +1,7 @@
 import { Activity } from '@/types/activity';
 import { decodePolyline } from '@/lib/polylineDecoder';
 import { splitPace } from '@/utils/pace';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface ZoneActivity {
   activityId: number;
@@ -55,7 +54,7 @@ function formatDate(isoStr: string): string {
 
 export function computeWorldMap(activities: Activity[]): WorldMapData | null {
   const runs = activities.filter(a =>
-    RUNNING_SPORTS.has(a.sport_type || a.type) && a.map?.summary_polyline
+    isRunning(a) && a.map?.summary_polyline
   );
 
   if (runs.length === 0) return null;

@@ -1,4 +1,5 @@
 import { Activity } from '@/types/activity';
+import { isRunning } from '@/lib/sports';
 
 export type PeriodType = '30d' | '90d' | 'year';
 
@@ -17,8 +18,6 @@ export interface PeriodComparison {
   current: PeriodData;
   previous: PeriodData;
 }
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
 function filterByDateRange(
   activities: Activity[],
@@ -46,7 +45,7 @@ function computePeriodData(acts: Activity[]): PeriodData {
   const distanceKm = acts.reduce((s, a) => s + a.distance / 1000, 0);
   const totalTimeSec = acts.reduce((s, a) => s + a.moving_time, 0);
 
-  const runs = acts.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0);
+  const runs = acts.filter(a => isRunning(a) && a.average_speed > 0);
   const avgPaceSec =
     runs.length > 0
       ? runs.reduce((s, a) => s + 1000 / a.average_speed, 0) / runs.length

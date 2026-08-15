@@ -1,7 +1,6 @@
 import { Activity } from '@/types/activity';
 import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 // Riegel formula: T2 = T1 × (D2 / D1)^1.06
 const RIEGEL_EXP = 1.06;
@@ -34,7 +33,7 @@ function get12MonthRuns(activities: Activity[]): Activity[] {
   const cutoffMs = cutoff.getTime();
   return activities.filter(a => {
     const d = new Date(a.start_date_local).getTime();
-    return d >= cutoffMs && RUNNING_SPORTS.has(a.sport_type || a.type) && a.moving_time > 0 && a.distance > 0;
+    return d >= cutoffMs && isRunning(a) && a.moving_time > 0 && a.distance > 0;
   });
 }
 

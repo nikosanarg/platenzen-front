@@ -1,8 +1,7 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { splitPace } from '@/utils/pace';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 // Minimum distance for a pace to be considered representative (avoids a 400m
 // sprint winning "ritmo más rápido").
@@ -35,7 +34,7 @@ const MILESTONES: { m: number; badge: string }[] = [
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function isRun(a: Activity): boolean {
-  return RUNNING_SPORTS.has(a.sport_type || a.type);
+  return isRunning(a);
 }
 
 function paceSecPerKm(a: Activity): number {

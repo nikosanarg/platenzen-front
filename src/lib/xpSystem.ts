@@ -2,8 +2,7 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 // Fibonacci-based level thresholds, scaled by 200 XP per fib unit
 // fib: 1,1,2,3,5,8,13,21,34,55,89,144,233,377,610
@@ -78,7 +77,7 @@ function get12MonthRuns(activities: Activity[]): Activity[] {
   const cutoffMs = cutoff.getTime();
   return activities.filter(a => {
     const d = new Date(a.start_date_local).getTime();
-    return d >= cutoffMs && RUNNING_SPORTS.has(a.sport_type || a.type);
+    return d >= cutoffMs && isRunning(a);
   });
 }
 

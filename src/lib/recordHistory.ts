@@ -1,8 +1,7 @@
 import { Activity } from '@/types/activity';
 import { mpsToSecPerKm, splitPace } from '@/utils/pace';
 import { HALF_MARATHON_KM, HALF_MARATHON_M } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface RecordEntry {
   date: string;
@@ -30,7 +29,7 @@ function buildHistory(
   const eligible = activities
     .filter(
       a =>
-        RUNNING_SPORTS.has(a.sport_type || a.type) &&
+        isRunning(a) &&
         a.distance >= minM &&
         a.moving_time > 0 &&
         a.average_speed > 0

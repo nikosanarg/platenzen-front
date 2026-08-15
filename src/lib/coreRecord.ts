@@ -1,7 +1,6 @@
 import { Activity } from '@/types/activity';
 import { CORE_DISTANCES } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface CoreRecord {
   /** Short label of the core distance, e.g. "21K". */
@@ -22,7 +21,7 @@ export interface CoreRecord {
 export function computeCoreRecord(activities: Activity[]): CoreRecord | null {
   const runs = activities.filter(
     (a) =>
-      RUNNING_SPORTS.has(a.sport_type || a.type) &&
+      isRunning(a) &&
       a.moving_time > 0 &&
       a.distance > 0
   );

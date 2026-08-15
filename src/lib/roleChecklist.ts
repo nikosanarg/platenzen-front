@@ -10,8 +10,7 @@ import {
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { HALF_MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 export interface NodeChecklistItem {
   label: string;
@@ -23,7 +22,7 @@ export interface RoleNodeChecklist {
 }
 
 function getRuns(activities: Activity[]): Activity[] {
-  return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+  return activities.filter(a => isRunning(a));
 }
 
 function milestonesReached(runs: Activity[]): Set<number> {
@@ -59,7 +58,7 @@ export function computeNodeChecklist(
   const maxKm = runs.reduce((m, a) => Math.max(m, a.distance / 1000), 0);
   const avgWeeklyKm = stats.weeklyAvgDistance;
   const bestPaceSec = stats.bestPace;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalKm = stats.totalDistance;
   const totalActivities = stats.totalActivities;

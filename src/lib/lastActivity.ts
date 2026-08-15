@@ -4,8 +4,7 @@ import { computeXPBreakdown, getLevelInfo } from '@/lib/xpSystem';
 import { computeRunnerDNA } from '@/lib/runnerDNA';
 import { computeAchievements } from '@/lib/achievements';
 import { splitPace } from '@/utils/pace';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 const SIMILAR_ACTIVITY_THRESHOLD_KM = 5;
 const MIN_PACE_DIFF_SECONDS = 1;
@@ -54,7 +53,7 @@ export interface EnrichedLastActivity {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function isRun(a: Activity): boolean {
-  return RUNNING_SPORTS.has(a.sport_type || a.type);
+  return isRunning(a);
 }
 
 function formatPace(secPerKm: number): string {

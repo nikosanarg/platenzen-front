@@ -1,5 +1,6 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 export interface RunnerProfile {
   id: string;
@@ -7,13 +8,11 @@ export interface RunnerProfile {
   subtitle: string;
 }
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
-
 export function computeRunnerProfile(
   activities: Activity[],
   stats: ProcessedStats
 ): RunnerProfile | null {
-  const runs = activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+  const runs = activities.filter(a => isRunning(a));
   if (runs.length < 5) return null;
 
   let weekendRuns = 0;
@@ -27,7 +26,7 @@ export function computeRunnerProfile(
   const longRuns = runs.filter(a => a.distance >= 15000).length;
   const longRatio = longRuns / runs.length;
 
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun').length;
+  const trailRuns = runs.filter(a => isTrailRun(a)).length;
   const trailRatio = trailRuns / runs.length;
 
   const recent12 = stats.weekly.slice(-12);

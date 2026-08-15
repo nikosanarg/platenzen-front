@@ -9,8 +9,7 @@ import {
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { HALF_MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 // ── Role definitions ───────────────────────────────────────────────────────
 
@@ -85,7 +84,7 @@ export interface RolesResult {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function getRuns(activities: Activity[]): Activity[] {
-  return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+  return activities.filter(a => isRunning(a));
 }
 
 function milestonesReached(runs: Activity[]): Set<number> {
@@ -227,7 +226,7 @@ function computeExplorationBranch(runs: Activity[], stats: ProcessedStats): Bran
   const { maxPts_trailRatio, maxPts_totalKm, reference_total_km, maxPts_elevation, reference_elevation } = EXPLORATION_AFINIDAD;
 
   const totalKm = stats.totalDistance;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalElevation = runs.reduce((s, a) => s + a.total_elevation_gain, 0);
   const distinctPlaces = countDistinctStartingPlaces(runs);
@@ -398,7 +397,7 @@ export function computeAdnScores(
   const consistencia = recent12.length > 0 ? Math.round(activeW / recent12.length * 100) : 0;
 
   // EXPLORACIÓN: trail ratio + cumulative km
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const exploracion = Math.min(100, Math.round(
     Math.min(trailRatio * 150, 75) +
@@ -441,7 +440,7 @@ export function computeObjectiveChecklist(
   const maxKm = runs.reduce((m, a) => Math.max(m, a.distance / 1000), 0);
   const avgWeeklyKm = stats.weeklyAvgDistance;
   const bestPaceSec = stats.bestPace;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalKm = stats.totalDistance;
   const totalActivities = stats.totalActivities;

@@ -4,8 +4,7 @@ import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { computeFormShape } from '@/lib/formShape';
 import { computeCoachRecommendation } from '@/lib/coach';
 import { splitPace } from '@/utils/pace';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 // ── Public shapes ────────────────────────────────────────────────────────────
 
@@ -56,7 +55,7 @@ const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', '
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 function isRun(a: Activity): boolean {
-  return RUNNING_SPORTS.has(a.sport_type || a.type);
+  return isRunning(a);
 }
 
 function paceSecPerKm(a: Activity): number {

@@ -3,8 +3,7 @@ import { WeeklyStats } from '@/types/stats';
 import { metersToKm } from '@/utils/units';
 import { mpsToSecPerKm } from '@/utils/pace';
 import { HALF_MARATHON_M } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface PersonalRecordEntry {
   distanceKm: number;
@@ -38,7 +37,7 @@ function findBestProjected(
 ): PersonalRecordEntry | null {
   const eligible = activities.filter(
     (a) =>
-      RUNNING_SPORTS.has(a.sport_type || a.type) &&
+      isRunning(a) &&
       a.distance >= minDistanceM &&
       a.moving_time > 0 &&
       a.average_speed > 0
@@ -73,7 +72,7 @@ export function computePersonalRecords(
   activities: Activity[],
   weekly: WeeklyStats[]
 ): PersonalRecords {
-  const running = activities.filter((a) => RUNNING_SPORTS.has(a.sport_type || a.type));
+  const running = activities.filter((a) => isRunning(a));
 
   let longest: PersonalRecordEntry | null = null;
   if (running.length > 0) {

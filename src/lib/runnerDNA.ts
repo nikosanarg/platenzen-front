@@ -3,8 +3,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface RunnerDNA {
   resistencia: number;  // 0–100
@@ -33,7 +32,7 @@ function getRuns12mo(activities: Activity[]): Activity[] {
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const ms = cutoff.getTime();
   return activities.filter(a =>
-    RUNNING_SPORTS.has(a.sport_type || a.type) &&
+    isRunning(a) &&
     new Date(a.start_date_local).getTime() >= ms
   );
 }
@@ -43,7 +42,7 @@ function getRuns30d(activities: Activity[]): Activity[] {
   cutoff.setDate(cutoff.getDate() - 30);
   const ms = cutoff.getTime();
   return activities.filter(a =>
-    RUNNING_SPORTS.has(a.sport_type || a.type) &&
+    isRunning(a) &&
     new Date(a.start_date_local).getTime() >= ms
   );
 }

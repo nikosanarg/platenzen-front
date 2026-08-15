@@ -1,14 +1,13 @@
 import { Activity } from '@/types/activity';
 import { MonthlyRecap, AnnualRecap } from '@/types/recap';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export function computeMonthlyRecap(
   activities: Activity[],
   month: string
 ): MonthlyRecap | null {
   const filtered = activities.filter(
-    (a) => a.start_date_local.startsWith(month) && RUNNING_SPORTS.has(a.sport_type)
+    (a) => a.start_date_local.startsWith(month) && isRunning(a)
   );
   if (filtered.length === 0) return null;
 
@@ -45,7 +44,7 @@ export function computeAnnualRecap(
 ): AnnualRecap | null {
   const yearStr = String(year);
   const filtered = activities.filter(
-    (a) => a.start_date_local.startsWith(yearStr) && RUNNING_SPORTS.has(a.sport_type)
+    (a) => a.start_date_local.startsWith(yearStr) && isRunning(a)
   );
   if (filtered.length === 0) return null;
 

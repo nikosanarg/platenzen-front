@@ -1,7 +1,7 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
+import { isRunning } from '@/lib/sports';
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 const DECAY = 0.9; // per day — 21 km today vs 19.1 km "effective" yesterday
 
 export type LoadState = 'alta' | 'moderada' | 'normal' | 'baja' | 'sin datos';
@@ -41,7 +41,7 @@ const LOAD_LABELS: Record<LoadState, string> = {
 };
 
 function getRuns(activities: Activity[]): Activity[] {
-  return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type) && a.distance > 0 && a.moving_time > 0);
+  return activities.filter(a => isRunning(a) && a.distance > 0 && a.moving_time > 0);
 }
 
 function computeWeightedLoad(runs: Activity[]): {

@@ -11,8 +11,8 @@ import { metersToKm } from '@/utils/units';
 import { mpsToSecPerKm } from '@/utils/pace';
 import { groupByMonth, groupByWeek, groupByDay } from '@/utils/grouping';
 import { getCurrentStreak, getLongestStreak } from '@/utils/streaks';
+import { isRunning } from '@/lib/sports';
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Lun → Sáb → Dom
 
@@ -75,7 +75,7 @@ function computeCumulativeDistance(activities: Activity[]): CumulativePoint[] {
 
 function computePaceEvolution(activities: Activity[]): PacePoint[] {
   const running = activities
-    .filter((a) => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0 && a.distance > 1000)
+    .filter((a) => isRunning(a) && a.average_speed > 0 && a.distance > 1000)
     .sort((a, b) => a.start_date_local.localeCompare(b.start_date_local));
   return running.map((act) => ({
     date: act.start_date_local.slice(0, 10),
@@ -97,7 +97,7 @@ export function computeStats(activities: Activity[]): ProcessedStats {
   const totalActivities = activities.length;
 
   const runningActivities = activities.filter(
-    (a) => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0
+    (a) => isRunning(a) && a.average_speed > 0
   );
   const avgPace =
     runningActivities.length > 0
