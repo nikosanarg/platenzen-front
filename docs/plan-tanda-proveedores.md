@@ -51,3 +51,20 @@ Los frentes **no escriben tests de su propio código nuevo**: cada uno corre ais
 podría testear contra su suposición de cómo van a quedar los otros. Dejan **inventario** en
 su feedback. La cobertura se escribe una sola vez, sobre el resultado ya integrado, en la
 pasada de consolidación.
+
+## Cerrada
+
+Los cuatro frentes se integraron de a uno, verificando después de cada merge. La
+consolidación sumó **74 tests** (556 → 630, 31 → 38 suites), priorizando las costuras entre
+frentes — sobre todo `src/__tests__/providers/paridadProveedores.test.ts`, que comprueba que
+la misma corrida entrando por Strava y por Garmin sea indistinguible para el dominio real.
+
+Lo durable de los cuatro feedbacks quedó volcado en `AGENTS.md` (reglas de dominio),
+`project-profile.md` (comandos, arquitectura y deuda conocida) y
+`docs/revision-manual-pendiente.md` (lo que necesita un navegador y credenciales). Los
+feedbacks se borraron, que es lo que corresponde a un documento de trabajo ya consumido.
+
+Un hallazgo apareció en los **cuatro** feedbacks de forma independiente, sin que nadie los
+coordinara: `project-profile.md` afirmaba que no había suite de tests cuando había 31
+suites y 556 casos. Esa convergencia es evidencia de que importaba, no la opinión de una
+sesión. Ya está corregido.

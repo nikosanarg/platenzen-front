@@ -12,6 +12,7 @@ import {
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
 import { HALF_MARATHON_KM } from '@/lib/distances';
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -23,8 +24,7 @@ interface ChecklistItem { label: string; passed: boolean; }
 // ── Checklist builders ─────────────────────────────────────────────────────
 
 function countMilestones(activities: Activity[]): number {
-  const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
-  const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
+  const runs = activities.filter(isRunning);
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -34,10 +34,9 @@ function countMilestones(activities: Activity[]): number {
 }
 
 function calcTrailRatio(activities: Activity[]): number {
-  const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
-  const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
+  const runs = activities.filter(isRunning);
   if (!runs.length) return 0;
-  return runs.filter(a => (a.sport_type || a.type) === 'TrailRun').length / runs.length;
+  return runs.filter(isTrailRun).length / runs.length;
 }
 
 function buildChecklist(

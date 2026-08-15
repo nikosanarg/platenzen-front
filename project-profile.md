@@ -24,13 +24,22 @@ breves y objetivas, sin lenguaje motivacional.
 ## Arquitectura
 
 ```
-src/app/api/strava/callback/   OAuth de Strava
-src/app/api/strava/refresh/    refresco de token
-src/                           páginas y componentes
+src/app/api/strava/callback/     OAuth de Strava
+src/app/api/strava/refresh/      refresco de token (lee la cookie httpOnly)
+src/app/api/strava/disconnect/   cierre de sesión (borra las cookies)
+src/services/providers/<x>/      un adapter por proveedor: payload crudo → Activity
+src/types/activity.ts            el contrato canónico que consume todo el dominio
+src/lib/                         cálculo: nivel, XP, logros, récords, predicciones
+src/                             páginas y componentes
 ```
 
-El acceso a Strava pasa siempre por las rutas de servidor. No hay backend propio más allá
-de eso.
+El acceso a Strava pasa siempre por las rutas de servidor. **No hay backend propio ni base
+de datos**: los tokens viven en cookies del dispositivo y el historial de actividades en
+`localStorage`. Es una restricción de producto, no una etapa pendiente — la pantalla de
+conexión promete que nada se guarda en servidores.
+
+La PWA (`public/sw.js` + `src/app/manifest.ts`) es una capa de distribución: **el service
+worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 
 ---
 
@@ -40,11 +49,16 @@ de eso.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | no hay suite configurada |
-| Suite de verificación antes de cerrar | `npm run lint && npm run build` |
+| Tests | `npx jest` (38 suites, 630 tests) |
+| Cobertura | `npm run test:coverage` |
+| Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
 
 Requiere credenciales de la API de Strava en variables de entorno.
+
+**`npm ci` falla**: el `package-lock.json` está desincronizado con `package.json` en
+dependencias transitorias opcionales (`@emnapi/*`). Usá `npm install`. Regenerar el lock
+es un cambio aparte, no algo a colar en otra tarea.
 
 ## Convenciones propias
 
@@ -64,6 +78,17 @@ Requiere credenciales de la API de Strava en variables de entorno.
 - Tokens de Strava: credenciales de terceros. Nunca al repo ni al cliente.
 - Límites de la API de Strava: el historial completo se procesa una vez, no en cada render.
 
+## Deuda conocida (vista al pasar, no urgente)
+
+- `package-lock.json` desincronizado: `npm ci` falla, hay que usar `npm install`.
+- ESLint incluye `coverage/` en su análisis, así que un reporte generado agrega un warning
+  fantasma. Debería ir a los ignores.
+- Faltan íconos 192/512 con variante `maskable` para la PWA: hoy se declara el logo de
+  412×411, que alcanza para instalar pero Android lo recorta contra su máscara circular.
+  Necesita un asset de diseño, no código.
+- `src/__mocks__/activitiesMock.ts` es un volcado real de la API de Strava sin ningún
+  consumidor. Sirve como fixture realista si alguien la necesita; hoy es peso muerto.
+
 ---
 
 ## Interfaz
@@ -74,9 +99,21 @@ Requiere credenciales de la API de Strava en variables de entorno.
 
 ## Tests
 
-No hay framework de testing configurado. Dado que el producto es esencialmente cálculo
-sobre datos, una suite para las fórmulas tendría alto valor — pero introducirla es una
-decisión previa, no algo a colar en otra tarea.
+Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **38
+suites, 630 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+`comparative/`, `achievements/`, `providers/`, `api/`, `shared/`), con una factory de
+actividades en `helpers/activity.ts`.
+
+El coverage se mide sólo sobre la capa de cálculo (`src/lib`, `src/utils`, `src/hooks`),
+con un piso acordado de 90% de líneas y 80% de ramas. Es un piso, no una meta: no se
+escriben tests para mover el número.
+
+Las rutas de servidor (`src/__tests__/api/`) corren en entorno `node` vía docblock
+`@jest-environment node`; `next/server` no funciona en jsdom.
+
+**Lo que la suite no puede cubrir** y por lo tanto se verifica a mano: el flujo OAuth real
+contra Strava, y todo lo que necesita un service worker vivo o un navegador (instalación de
+la PWA, comportamiento sin conexión, ciclo de actualización).
 
 ## Control de versiones
 

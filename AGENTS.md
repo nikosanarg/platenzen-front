@@ -39,7 +39,67 @@ terminado.
    alcanzarlas. No exponerlas en listados, respuestas de API ni código de cliente
    accesible.
 4. Los tokens de Strava son credenciales de terceros: van por las rutas de
-   `src/app/api/strava/*`, nunca al cliente ni al repo.
+   `src/app/api/strava/*`, nunca al cliente ni al repo. **El refresh token vive sólo en la
+   cookie `httpOnly` `strava_refresh`**, que el servidor escribe, lee y rota; el cliente
+   nunca lo ve. El access token sí puede estar en `localStorage`: dura 6 horas y se
+   renueva. Si algo te empuja a devolver el refresh token en una respuesta, es la señal de
+   que estás por deshacer el arreglo, no de que falte un caso.
 5. Respetar los límites de la API de Strava. El historial completo se procesa una vez, no
    en cada render.
 6. `npm run build` tiene que pasar limpio antes de considerar terminada cualquier tarea.
+
+## Varias fuentes de actividades
+
+Platenzen lee actividades de más de un proveedor. La regla que ordena todo lo demás:
+**los proveedores son un detalle de integración; el dominio trabaja con una sola
+estructura.** Un adapter traduce hacia adentro, y ni la UI ni los cálculos saben de dónde
+vino el dato.
+
+- **El contrato canónico es `src/types/activity.ts`.** Su vocabulario (`distance` en
+  metros, `moving_time` en segundos, `average_speed` en m/s) es el que el dominio ya
+  hablaba cuando Strava era el único proveedor. No se renombra: `moving_time` no es peor
+  que `movingTimeSeconds`, sólo distinto, y cambiarlo cuesta 30 archivos a cambio de nada.
+- **La identidad de una actividad es `provider + externalId`, nunca `id`.** Dos proveedores
+  pueden emitir el mismo número. `mergeActivities` deduplica por ese par, y por eso
+  sincronizar dos veces es seguro. Un `Activity` sólo se construye desde un adapter
+  (`src/services/providers/*`): sin esa vía obligada se cuela una actividad sin origen y la
+  deduplicación deja de ser confiable justo cuando hay dos proveedores conectados.
+- **`start_date_local` lleva sufijo `Z` pero es hora local de pared.** Una salida de las
+  18:13 en Buenos Aires es `2026-05-25T18:13:24Z`. No es un error heredado: el dominio la
+  lee cortando el string (`stats.ts`) y con `new Date()` (`utils/grouping.ts`), y las dos
+  formas dan la hora correcta sólo gracias a esa mentira. Un adapter que emita el offset
+  real (`-03:00`) corre las actividades tres horas en el mapa de calor y en la distribución
+  horaria, en silencio y sólo para ese proveedor.
+- **El vocabulario de deportes vive en `src/lib/sports.ts` y en ningún otro lado.** Estuvo
+  copiado en 21 archivos, donde que todos coincidieran era suerte y no diseño. Es el
+  vocabulario de Strava a propósito, y los demás proveedores traducen hacia él.
+- **Un dato que el proveedor no mandó queda `undefined`, nunca en 0.** Garmin omite el
+  campo cuando el dispositivo no lo midió. Un `0` de relleno entra a los promedios como si
+  fuera un pulso real; un `undefined` es la verdad.
+- **El GPS entra como polyline codificada.** Si un proveedor entrega coordenadas sueltas,
+  el adapter las codifica (`src/lib/polylineEncoder.ts`). Los cinco consumidores de
+  `map.summary_polyline` no aprenden un segundo formato.
+- **Al contrato canónico no se le agrega lo que el producto no usa.** Cadencia, calorías,
+  laps y streams existen en los dos proveedores y quedan afuera hasta que algo los muestre.
+  Están inventariados en `docs/matriz-proveedores.md`.
+- **Garmin está escrito pero no conectado, y no es un olvido.** Su programa de
+  desarrolladores es sólo para empresas y con aprobación, y entrega por push a una callback
+  pública que necesita un backend con persistencia que Platenzen no tiene. El mapper y la
+  matriz están; el resto no se puede hacer todavía. Ver `docs/matriz-proveedores.md`.
+
+## PWA
+
+Es una capa de distribución del frontend, no una excusa para mover credenciales al cliente
+ni para volver la app offline-first.
+
+- **El service worker no intercepta `/api`. Nunca.** Es la primera guarda de su handler de
+  `fetch`. Ahí viven el intercambio y el refresco de credenciales de Strava, y una
+  respuesta de esas servida desde caché es un token viejo aplicado a una sesión nueva.
+- Tampoco toca nada que no sea `GET`, y no hay cola de escrituras ni Background Sync.
+- Las navegaciones van **a la red primero**, no stale-while-revalidate: con SWR el
+  dashboard mostraría los números de la sesión anterior como si fueran los de ahora, y eso
+  choca de frente con la regla 1. El offline de datos ya está resuelto en otra capa
+  (`localStorage`, `src/lib/cache.ts`); el worker sólo cachea el shell y los assets.
+- El registro corre **sólo en producción y sobre contexto seguro**: en `next dev` un
+  service worker sirve chunks de una compilación anterior y se pierde una tarde buscando el
+  bug donde no está.
