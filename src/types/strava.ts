@@ -1,3 +1,9 @@
+/**
+ * El payload crudo tal como lo devuelve la API de Strava. NO es el contrato
+ * canónico del dominio — ese es `Activity` (`@/types/activity.ts`). Sólo el
+ * cliente de Strava (`@/services/providers/strava/api.ts`) y su adapter
+ * (`@/services/providers/strava/adapter.ts`) deberían importar esto.
+ */
 export interface StravaActivity {
   id: number;
   name: string;

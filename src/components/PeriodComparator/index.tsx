@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import {
   computePeriodComparisons,
   PeriodType,
@@ -28,7 +28,7 @@ import {
 } from './styled';
 
 interface PeriodComparatorProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
 interface MetricRow {

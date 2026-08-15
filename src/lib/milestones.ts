@@ -1,6 +1,7 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
+import { isRunning } from '@/lib/sports';
 
 export interface Milestone {
   id: string;
@@ -13,8 +14,6 @@ export interface Milestone {
   progressLabel?: string;
 }
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
-
 function shortDate(date: string): string {
   const [yr, mo, da] = date.split('-');
   const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -22,10 +21,10 @@ function shortDate(date: string): string {
 }
 
 export function computeMilestones(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): Milestone[] {
-  const runs = activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+  const runs = activities.filter(a => isRunning(a));
   const sorted = [...activities].sort((a, b) => a.start_date_local.localeCompare(b.start_date_local));
 
   function firstDateWithDistance(minKm: number): string | undefined {

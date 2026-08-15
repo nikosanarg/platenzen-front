@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { computeWorldMap, MapZone, formatPaceStr } from '@/lib/worldMap';
 import { getTilesForBounds } from '@/lib/osmTiles';
 import { SectionTitle } from '@/components/Dashboard/styled';
@@ -41,7 +41,7 @@ interface TooltipState {
 }
 
 interface TuMundoProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
 const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {

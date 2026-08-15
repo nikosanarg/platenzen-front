@@ -3,7 +3,7 @@
 import React from 'react';
 import { computePersonalRecords, formatProjectedTime, timeAgo } from '@/lib/personalRecords';
 import { secPerKmToString } from '@/utils/pace';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import {
   RecordCard,
@@ -16,7 +16,7 @@ import {
 import { useCarousel, CarouselDots, CarouselContainer } from '@/components/Carousel';
 
 interface RecordsCarouselProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

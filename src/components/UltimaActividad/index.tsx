@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { decodePolyline } from '@/lib/polylineDecoder';
@@ -132,7 +132,7 @@ const MiniMap: React.FC<MiniMapProps> = ({ polyline }) => {
 // ── Main component ─────────────────────────────────────────────────────────
 
 interface UltimaActividadProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

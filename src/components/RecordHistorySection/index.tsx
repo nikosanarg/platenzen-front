@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { computeRecordHistories, formatRecordTime, formatImprovement, fullDate, formatPace } from '@/lib/recordHistory';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
@@ -19,7 +19,7 @@ import {
 } from './styled';
 
 interface RecordHistorySectionProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
 const RecordHistorySection: React.FC<RecordHistorySectionProps> = ({ activities }) => {

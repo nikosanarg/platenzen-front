@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import {
   ProcessedStats,
   SportCount,
@@ -11,12 +11,12 @@ import { metersToKm } from '@/utils/units';
 import { mpsToSecPerKm } from '@/utils/pace';
 import { groupByMonth, groupByWeek, groupByDay } from '@/utils/grouping';
 import { getCurrentStreak, getLongestStreak } from '@/utils/streaks';
+import { isRunning } from '@/lib/sports';
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Lun → Sáb → Dom
 
-function computeSportDistribution(activities: StravaActivity[]): SportCount[] {
+function computeSportDistribution(activities: Activity[]): SportCount[] {
   const map = new Map<string, SportCount>();
   for (const act of activities) {
     const sport = act.sport_type || act.type;
@@ -28,7 +28,7 @@ function computeSportDistribution(activities: StravaActivity[]): SportCount[] {
   return Array.from(map.values()).sort((a, b) => b.count - a.count);
 }
 
-function computeHourlyDistribution(activities: StravaActivity[]): HourCount[] {
+function computeHourlyDistribution(activities: Activity[]): HourCount[] {
   const counts: number[] = new Array<number>(24).fill(0);
   for (const act of activities) {
     // Parse hour directly from the local date string to avoid JS timezone conversion.
@@ -43,7 +43,7 @@ function computeHourlyDistribution(activities: StravaActivity[]): HourCount[] {
   }));
 }
 
-function computeWeekdayDistribution(activities: StravaActivity[]): WeekdayCount[] {
+function computeWeekdayDistribution(activities: Activity[]): WeekdayCount[] {
   const counts: number[] = new Array<number>(7).fill(0);
   for (const act of activities) {
     // Construct date from the local date string components to avoid timezone shift.
@@ -59,7 +59,7 @@ function computeWeekdayDistribution(activities: StravaActivity[]): WeekdayCount[
   }));
 }
 
-function computeCumulativeDistance(activities: StravaActivity[]): CumulativePoint[] {
+function computeCumulativeDistance(activities: Activity[]): CumulativePoint[] {
   const sorted = [...activities].sort((a, b) =>
     a.start_date_local.localeCompare(b.start_date_local)
   );
@@ -73,9 +73,9 @@ function computeCumulativeDistance(activities: StravaActivity[]): CumulativePoin
   });
 }
 
-function computePaceEvolution(activities: StravaActivity[]): PacePoint[] {
+function computePaceEvolution(activities: Activity[]): PacePoint[] {
   const running = activities
-    .filter((a) => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0 && a.distance > 1000)
+    .filter((a) => isRunning(a) && a.average_speed > 0 && a.distance > 1000)
     .sort((a, b) => a.start_date_local.localeCompare(b.start_date_local));
   return running.map((act) => ({
     date: act.start_date_local.slice(0, 10),
@@ -84,20 +84,20 @@ function computePaceEvolution(activities: StravaActivity[]): PacePoint[] {
   }));
 }
 
-function computeWeeklyAvg(activities: StravaActivity[]): number {
+function computeWeeklyAvg(activities: Activity[]): number {
   if (activities.length === 0) return 0;
   const weekly = groupByWeek(activities);
   const totalKm = weekly.reduce((s, w) => s + w.distance, 0);
   return totalKm / weekly.length;
 }
 
-export function computeStats(activities: StravaActivity[]): ProcessedStats {
+export function computeStats(activities: Activity[]): ProcessedStats {
   const totalDistance = activities.reduce((s, a) => s + metersToKm(a.distance), 0);
   const totalTime = activities.reduce((s, a) => s + a.moving_time, 0);
   const totalActivities = activities.length;
 
   const runningActivities = activities.filter(
-    (a) => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0
+    (a) => isRunning(a) && a.average_speed > 0
   );
   const avgPace =
     runningActivities.length > 0

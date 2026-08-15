@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { secondsToHMS } from '@/utils/units';
 import { StatsPanel, StatsGroup, GroupTitle, StatsRow, StatItem, StatValue, StatLabel } from '@/components/RawDataSection/styled';
 import { useCarousel, CarouselDots, CarouselContainer } from '@/components/Carousel';
 
 interface AccumulatedCarouselProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

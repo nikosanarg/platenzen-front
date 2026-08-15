@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { StravaActivity } from '@/types/strava';
-import { fetchAllActivities, StravaError } from '@/services/strava';
+import { Activity } from '@/types/activity';
+import { fetchAllActivities, StravaError } from '@/services/providers/strava/api';
+import { toActivity } from '@/services/providers/strava/adapter';
 import { saveCache, loadCache, isCacheFresh, clearCache } from '@/lib/cache';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 interface UseActivitiesResult {
-  activities: StravaActivity[];
+  activities: Activity[];
   status: Status;
   error: string | null;
   loadingCount: number;
@@ -19,7 +20,7 @@ interface UseActivitiesResult {
 }
 
 export function useActivities(): UseActivitiesResult {
-  const [activities, setActivities] = useState<StravaActivity[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [loadingCount, setLoadingCount] = useState(0);
@@ -53,9 +54,10 @@ export function useActivities(): UseActivitiesResult {
     }
 
     try {
-      const result = await fetchAllActivities(token, (count) => {
+      const raw = await fetchAllActivities(token, (count) => {
         setLoadingCount(count);
       });
+      const result = raw.map(toActivity);
       saveCache(result);
       setActivities(result);
       setStatus('success');

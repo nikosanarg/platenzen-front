@@ -6,12 +6,12 @@
  */
 import { act, renderHook } from '@testing-library/react';
 import { useActivities } from '@/hooks/useActivities';
-import { fetchAllActivities, StravaError } from '@/services/strava';
+import { fetchAllActivities, StravaError } from '@/services/providers/strava/api';
 import { saveCache, loadCache, isCacheFresh, clearCache } from '@/lib/cache';
 import { activity } from '@/__tests__/helpers/activity';
 
-jest.mock('@/services/strava', () => {
-  const actual = jest.requireActual('@/services/strava');
+jest.mock('@/services/providers/strava/api', () => {
+  const actual = jest.requireActual('@/services/providers/strava/api');
   return { ...actual, fetchAllActivities: jest.fn() };
 });
 jest.mock('@/lib/cache');

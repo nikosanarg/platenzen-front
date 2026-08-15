@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import {
   DISTANCE_THRESHOLDS,
@@ -10,8 +10,7 @@ import {
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { HALF_MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 export interface NodeChecklistItem {
   label: string;
@@ -22,11 +21,11 @@ export interface RoleNodeChecklist {
   items: NodeChecklistItem[];
 }
 
-function getRuns(activities: StravaActivity[]): StravaActivity[] {
-  return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+function getRuns(activities: Activity[]): Activity[] {
+  return activities.filter(a => isRunning(a));
 }
 
-function milestonesReached(runs: StravaActivity[]): Set<number> {
+function milestonesReached(runs: Activity[]): Set<number> {
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -52,14 +51,14 @@ export type RoleNodeId =
 
 export function computeNodeChecklist(
   nodeId: RoleNodeId,
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): RoleNodeChecklist {
   const runs = getRuns(activities);
   const maxKm = runs.reduce((m, a) => Math.max(m, a.distance / 1000), 0);
   const avgWeeklyKm = stats.weeklyAvgDistance;
   const bestPaceSec = stats.bestPace;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalKm = stats.totalDistance;
   const totalActivities = stats.totalActivities;

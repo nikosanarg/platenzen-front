@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import {
   DISTANCE_THRESHOLDS, DISTANCE_AFINIDAD,
@@ -9,8 +9,7 @@ import {
 } from '@/lib/roleThresholds';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { HALF_MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 // ── Role definitions ───────────────────────────────────────────────────────
 
@@ -84,11 +83,11 @@ export interface RolesResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function getRuns(activities: StravaActivity[]): StravaActivity[] {
-  return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
+function getRuns(activities: Activity[]): Activity[] {
+  return activities.filter(a => isRunning(a));
 }
 
-function milestonesReached(runs: StravaActivity[]): Set<number> {
+function milestonesReached(runs: Activity[]): Set<number> {
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -109,7 +108,7 @@ function clamp(v: number): number {
 
 // ── Distance branch ────────────────────────────────────────────────────────
 
-function computeDistanceBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeDistanceBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { fondista_weekly_km, fondista_longest_km, ultrafondista_weekly_km,
     ultrafondista_longest_km, maratonista_longest_km } = DISTANCE_THRESHOLDS;
   const { maxPts_weekly, reference_weekly_km, maxPts_longest, reference_long_km, maxPts_longRatio } = DISTANCE_AFINIDAD;
@@ -163,7 +162,7 @@ function computeDistanceBranch(runs: StravaActivity[], stats: ProcessedStats): B
 
 // ── Speed branch ───────────────────────────────────────────────────────────
 
-function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeSpeedBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { pasadista_pace_sec, velocista_pace_sec } = SPEED_THRESHOLDS;
   const { maxPts_pace, reference_worst_pace, reference_best_pace, maxPts_frequency, reference_weekly_activities } = SPEED_AFINIDAD;
 
@@ -221,13 +220,13 @@ function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): Bran
 
 // ── Exploration branch ─────────────────────────────────────────────────────
 
-function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeExplorationBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { trotamundos_trail_ratio, trotamundos_total_km, conquistador_trail_ratio, conquistador_total_km } = EXPLORATION_THRESHOLDS;
   const { explorador_min_places, trotamundos_min_places, conquistador_min_places } = EXPLORATION_DISTINCT_PLACES;
   const { maxPts_trailRatio, maxPts_totalKm, reference_total_km, maxPts_elevation, reference_elevation } = EXPLORATION_AFINIDAD;
 
   const totalKm = stats.totalDistance;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalElevation = runs.reduce((s, a) => s + a.total_elevation_gain, 0);
   const distinctPlaces = countDistinctStartingPlaces(runs);
@@ -281,7 +280,7 @@ function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats)
 
 // ── Achievement branch ─────────────────────────────────────────────────────
 
-function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeAchievementBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { competidor_min_activities, coleccionador_min_activities, coleccionador_min_milestones,
     coleccionador_min_total_km, medallista_min_activities, medallista_min_milestones,
     medallista_min_total_km } = ACHIEVEMENT_THRESHOLDS;
@@ -343,7 +342,7 @@ function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats)
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export function computeRoles(activities: StravaActivity[], stats: ProcessedStats): RolesResult {
+export function computeRoles(activities: Activity[], stats: ProcessedStats): RolesResult {
   const runs = getRuns(activities);
 
   const branches: BranchResult[] = [
@@ -377,7 +376,7 @@ export interface AdnScores {
 }
 
 export function computeAdnScores(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): AdnScores {
   const runs = getRuns(activities);
@@ -398,7 +397,7 @@ export function computeAdnScores(
   const consistencia = recent12.length > 0 ? Math.round(activeW / recent12.length * 100) : 0;
 
   // EXPLORACIÓN: trail ratio + cumulative km
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const exploracion = Math.min(100, Math.round(
     Math.min(trailRatio * 150, 75) +
@@ -434,14 +433,14 @@ export interface ChecklistItem {
 
 export function computeObjectiveChecklist(
   objective: RoleObjective,
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): ChecklistItem[] {
   const runs = getRuns(activities);
   const maxKm = runs.reduce((m, a) => Math.max(m, a.distance / 1000), 0);
   const avgWeeklyKm = stats.weeklyAvgDistance;
   const bestPaceSec = stats.bestPace;
-  const trailRuns = runs.filter(a => (a.sport_type || a.type) === 'TrailRun');
+  const trailRuns = runs.filter(a => isTrailRun(a));
   const trailRatio = runs.length > 0 ? trailRuns.length / runs.length : 0;
   const totalKm = stats.totalDistance;
   const totalActivities = stats.totalActivities;

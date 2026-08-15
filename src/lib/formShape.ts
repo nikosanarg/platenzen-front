@@ -1,5 +1,6 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
+import { isRunning } from '@/lib/sports';
 
 export type FormState = 'ascenso' | 'estable' | 'descenso';
 
@@ -20,8 +21,6 @@ export interface FormShapeData {
   weeklyChart: WeekChartPoint[];
 }
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
-
 function weekLabel(isoWeek: string): string {
   // "2025-W04" → derive short label from week number
   const [yearStr, wPart] = isoWeek.split('-W');
@@ -36,7 +35,7 @@ function weekLabel(isoWeek: string): string {
 }
 
 export function computeFormShape(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): FormShapeData | null {
   if (stats.weekly.length < 5) return null;
@@ -59,7 +58,7 @@ export function computeFormShape(
     : 0;
 
   const recentRuns = activities
-    .filter(a => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0 && a.distance >= 3000)
+    .filter(a => isRunning(a) && a.average_speed > 0 && a.distance >= 3000)
     .sort((a, b) => b.start_date_local.localeCompare(a.start_date_local));
 
   let paceChangeSec = 0;

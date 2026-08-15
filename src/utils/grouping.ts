@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { MonthlyStats, WeeklyStats, DayStats } from '@/types/stats';
 import { metersToKm } from './units';
 
@@ -20,7 +20,7 @@ export function getWeekKey(date: Date): string {
   return `${year}-W${weekNum.toString().padStart(2, '0')}`;
 }
 
-export function groupByMonth(activities: StravaActivity[]): MonthlyStats[] {
+export function groupByMonth(activities: Activity[]): MonthlyStats[] {
   const map = new Map<string, MonthlyStats>();
   for (const act of activities) {
     const d = new Date(act.start_date_local);
@@ -35,7 +35,7 @@ export function groupByMonth(activities: StravaActivity[]): MonthlyStats[] {
   return Array.from(map.values()).sort((a, b) => a.month.localeCompare(b.month));
 }
 
-export function groupByWeek(activities: StravaActivity[]): WeeklyStats[] {
+export function groupByWeek(activities: Activity[]): WeeklyStats[] {
   const map = new Map<string, WeeklyStats>();
   for (const act of activities) {
     const d = new Date(act.start_date_local);
@@ -48,7 +48,7 @@ export function groupByWeek(activities: StravaActivity[]): WeeklyStats[] {
   return Array.from(map.values()).sort((a, b) => a.week.localeCompare(b.week));
 }
 
-export function groupByDay(activities: StravaActivity[]): DayStats[] {
+export function groupByDay(activities: Activity[]): DayStats[] {
   const map = new Map<string, DayStats>();
   for (const act of activities) {
     const d = new Date(act.start_date_local);

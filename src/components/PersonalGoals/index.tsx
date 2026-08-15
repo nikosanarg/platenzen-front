@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computePersonalGoals } from '@/lib/personalGoals';
 import { SectionTitle } from '@/components/Dashboard/styled';
@@ -18,7 +18,7 @@ import {
 } from './styled';
 
 interface PersonalGoalsProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

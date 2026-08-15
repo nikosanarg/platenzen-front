@@ -1,10 +1,9 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { WeeklyStats } from '@/types/stats';
 import { metersToKm } from '@/utils/units';
 import { mpsToSecPerKm } from '@/utils/pace';
 import { HALF_MARATHON_M } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface PersonalRecordEntry {
   distanceKm: number;
@@ -32,20 +31,20 @@ export interface PersonalRecords {
 }
 
 function findBestProjected(
-  activities: StravaActivity[],
+  activities: Activity[],
   minDistanceM: number,
   targetDistanceM: number
 ): PersonalRecordEntry | null {
   const eligible = activities.filter(
     (a) =>
-      RUNNING_SPORTS.has(a.sport_type || a.type) &&
+      isRunning(a) &&
       a.distance >= minDistanceM &&
       a.moving_time > 0 &&
       a.average_speed > 0
   );
   if (eligible.length === 0) return null;
 
-  let best: StravaActivity | null = null;
+  let best: Activity | null = null;
   let bestProjected = Infinity;
 
   for (const act of eligible) {
@@ -70,10 +69,10 @@ function findBestProjected(
 }
 
 export function computePersonalRecords(
-  activities: StravaActivity[],
+  activities: Activity[],
   weekly: WeeklyStats[]
 ): PersonalRecords {
-  const running = activities.filter((a) => RUNNING_SPORTS.has(a.sport_type || a.type));
+  const running = activities.filter((a) => isRunning(a));
 
   let longest: PersonalRecordEntry | null = null;
   if (running.length > 0) {
