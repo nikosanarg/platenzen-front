@@ -71,7 +71,7 @@ export function generateSmartInsights(
   }
 
   // 5. Weekly consistency streak
-  let recentQuantity = 32; // look at last 32 weeks
+  const recentQuantity = 32; // look at last 32 weeks
   const recent = stats.weekly.slice(-recentQuantity);
   const active = recent.filter(w => w.count > 0).length;
   if (active >= recentQuantity / 2) {
