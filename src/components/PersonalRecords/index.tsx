@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computePersonalRecords, formatProjectedTime, timeAgo } from '@/lib/personalRecords';
 import { secPerKmToString } from '@/utils/pace';
@@ -21,7 +21,7 @@ import {
 } from './styled';
 
 interface PersonalRecordsProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

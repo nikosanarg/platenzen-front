@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
@@ -28,7 +28,7 @@ export interface RacePredictionRow {
   predictedSeconds: number | null; // Riegel prediction from best reference
 }
 
-function get12MonthRuns(activities: StravaActivity[]): StravaActivity[] {
+function get12MonthRuns(activities: Activity[]): Activity[] {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const cutoffMs = cutoff.getTime();
@@ -40,7 +40,7 @@ function get12MonthRuns(activities: StravaActivity[]): StravaActivity[] {
 
 // For a target distance, find the run that gives the best (fastest) projected time
 function findBestProjected(
-  runs: StravaActivity[],
+  runs: Activity[],
   targetKm: number,
   minKm: number
 ): { seconds: number; date: string } | null {
@@ -70,7 +70,7 @@ interface ReferencePerformance {
   timeSeconds: number;
 }
 
-function findBestReference(runs: StravaActivity[]): ReferencePerformance | null {
+function findBestReference(runs: Activity[]): ReferencePerformance | null {
   if (runs.length === 0) return null;
 
   // Pick the run with the best average pace (most speed data), at least 5 km
@@ -79,7 +79,7 @@ function findBestReference(runs: StravaActivity[]): ReferencePerformance | null 
 
   // Use the fastest pace run as the reference (gives most optimistic predictions)
   // Use the best projected 10km time from all runs as anchor
-  let bestPaceRun: StravaActivity | null = null;
+  let bestPaceRun: Activity | null = null;
   let bestPace = 0;
   for (const a of eligible) {
     if (a.average_speed > bestPace) {
@@ -102,7 +102,7 @@ function riegelPredict(ref: ReferencePerformance, targetKm: number): number {
   return ref.timeSeconds * Math.pow(targetKm / ref.distanceKm, RIEGEL_EXP);
 }
 
-export function computeRacePredictions(activities: StravaActivity[]): RacePredictionRow[] {
+export function computeRacePredictions(activities: Activity[]): RacePredictionRow[] {
   const runs = get12MonthRuns(activities);
   const ref = findBestReference(runs);
 

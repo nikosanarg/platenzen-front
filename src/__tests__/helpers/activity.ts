@@ -1,20 +1,27 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 /**
- * Factory de actividades para los tests. `StravaActivity` tiene 15 campos
+ * Factory de actividades para los tests. `Activity` tiene muchos campos
  * obligatorios y casi ningún test le importa más de tres, así que se declaran
  * sólo los relevantes y el resto sale de valores neutros.
  *
  * `average_speed` se deriva de distancia/tiempo si no se pasa explícito: son el
  * mismo dato en la API de Strava, y una fixture donde no coinciden produce
  * resultados que no se corresponden con ninguna actividad real.
+ *
+ * `externalId` deriva de `id` si no se pasa explícito, y `provider` por
+ * defecto es `'strava'` — sigue siendo el único proveedor con datos reales
+ * en los tests existentes.
  */
-export function activity(overrides: Partial<StravaActivity> = {}): StravaActivity {
+export function activity(overrides: Partial<Activity> = {}): Activity {
   const distance = overrides.distance ?? 10000;
   const movingTime = overrides.moving_time ?? 3000;
+  const id = overrides.id ?? 1;
 
   return {
-    id: 1,
+    id,
+    provider: 'strava',
+    externalId: String(id),
     name: 'Salida',
     type: 'Run',
     sport_type: 'Run',
@@ -39,8 +46,8 @@ export function activity(overrides: Partial<StravaActivity> = {}): StravaActivit
 export function runsEndingAt(
   endDate: string,
   count: number,
-  overrides: Partial<StravaActivity> = {},
-): StravaActivity[] {
+  overrides: Partial<Activity> = {},
+): Activity[] {
   const end = new Date(`${endDate}T12:00:00Z`).getTime();
   const dayMs = 24 * 60 * 60 * 1000;
 

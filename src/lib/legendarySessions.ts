@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { splitPace } from '@/utils/pace';
 
@@ -12,7 +12,7 @@ const MIN_LONG_DISTANCE_M = 15000;
 export type LegendaryCategory = 'distancia' | 'ritmo' | 'hito' | 'ritmo_largo';
 
 export interface LegendarySession {
-  activity: StravaActivity;
+  activity: Activity;
   category: LegendaryCategory;
   icon: string;        // emoji shown in the card header
   reason: string;      // badge text, e.g. "Distancia más larga"
@@ -34,15 +34,15 @@ const MILESTONES: { m: number; badge: string }[] = [
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function isRun(a: StravaActivity): boolean {
+function isRun(a: Activity): boolean {
   return RUNNING_SPORTS.has(a.sport_type || a.type);
 }
 
-function paceSecPerKm(a: StravaActivity): number {
+function paceSecPerKm(a: Activity): number {
   return a.average_speed > 0 ? 1000 / a.average_speed : 0;
 }
 
-function byDateAsc(a: StravaActivity, b: StravaActivity): number {
+function byDateAsc(a: Activity, b: Activity): number {
   return new Date(a.start_date_local).getTime() - new Date(b.start_date_local).getTime();
 }
 
@@ -66,27 +66,27 @@ function formatDate(isoStr: string): string {
 // Each returns an ordered list (best first) of candidates for one category.
 
 interface Candidate {
-  activity: StravaActivity;
+  activity: Activity;
   category: LegendaryCategory;
   icon: string;
   reason: string;
 }
 
-function longestCandidates(runs: StravaActivity[]): Candidate[] {
+function longestCandidates(runs: Activity[]): Candidate[] {
   return [...runs]
     .filter(a => a.distance > 0)
     .sort((a, b) => b.distance - a.distance)
     .map(a => ({ activity: a, category: 'distancia' as const, icon: '🥇', reason: 'Distancia más larga' }));
 }
 
-function fastestCandidates(runs: StravaActivity[]): Candidate[] {
+function fastestCandidates(runs: Activity[]): Candidate[] {
   return runs
     .filter(a => a.distance >= MIN_PACE_DISTANCE_M && a.average_speed > 0)
     .sort((a, b) => paceSecPerKm(a) - paceSecPerKm(b))
     .map(a => ({ activity: a, category: 'ritmo' as const, icon: '⚡', reason: 'Ritmo más rápido' }));
 }
 
-function milestoneCandidates(runs: StravaActivity[]): Candidate[] {
+function milestoneCandidates(runs: Activity[]): Candidate[] {
   const out: Candidate[] = [];
   for (const ms of MILESTONES) {
     // First (earliest) run to reach this exact fixed distance.
@@ -96,7 +96,7 @@ function milestoneCandidates(runs: StravaActivity[]): Candidate[] {
   return out; // already highest → lowest milestone
 }
 
-function fastestLongCandidates(runs: StravaActivity[]): Candidate[] {
+function fastestLongCandidates(runs: Activity[]): Candidate[] {
   return runs
     .filter(a => a.distance >= MIN_LONG_DISTANCE_M && a.average_speed > 0)
     .sort((a, b) => paceSecPerKm(a) - paceSecPerKm(b))
@@ -106,7 +106,7 @@ function fastestLongCandidates(runs: StravaActivity[]): Candidate[] {
 // ── Main export ─────────────────────────────────────────────────────────────
 
 export function computeLegendarySessions(
-  activities: StravaActivity[],
+  activities: Activity[],
   // stats kept for signature compatibility with callers; not needed today.
   _stats?: ProcessedStats
 ): LegendarySession[] {

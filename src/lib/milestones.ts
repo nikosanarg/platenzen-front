@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
 
@@ -22,7 +22,7 @@ function shortDate(date: string): string {
 }
 
 export function computeMilestones(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): Milestone[] {
   const runs = activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));

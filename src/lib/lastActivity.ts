@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeXPBreakdown, getLevelInfo } from '@/lib/xpSystem';
 import { computeRunnerDNA } from '@/lib/runnerDNA';
@@ -31,7 +31,7 @@ export interface NewAchievement {
 }
 
 export interface EnrichedLastActivity {
-  activity: StravaActivity;
+  activity: Activity;
   distanceKm: string;
   pace: string;      // mm:ss/km
   durationLabel: string;
@@ -53,7 +53,7 @@ export interface EnrichedLastActivity {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function isRun(a: StravaActivity): boolean {
+function isRun(a: Activity): boolean {
   return RUNNING_SPORTS.has(a.sport_type || a.type);
 }
 
@@ -79,7 +79,7 @@ function formatDate(isoStr: string): string {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function computeXPForActivity(activity: StravaActivity, allActivities: StravaActivity[], stats: ProcessedStats): {
+function computeXPForActivity(activity: Activity, allActivities: Activity[], stats: ProcessedStats): {
   total: number;
   details: XPDetail[];
 } {
@@ -113,7 +113,7 @@ function computeXPForActivity(activity: StravaActivity, allActivities: StravaAct
   return { total, details };
 }
 
-function computeDNAImpact(activity: StravaActivity, allActivities: StravaActivity[], stats: ProcessedStats): DNAImpact[] {
+function computeDNAImpact(activity: Activity, allActivities: Activity[], stats: ProcessedStats): DNAImpact[] {
   const withDNA = computeRunnerDNA(allActivities, stats);
   const withoutDNA = computeRunnerDNA(allActivities.filter(a => a.id !== activity.id), stats);
 
@@ -137,8 +137,8 @@ function computeDNAImpact(activity: StravaActivity, allActivities: StravaActivit
 }
 
 function computeSimilarComparison(
-  activity: StravaActivity,
-  allActivities: StravaActivity[]
+  activity: Activity,
+  allActivities: Activity[]
 ): SimilarActivityComparison | null {
   if (activity.distance < 1000 || activity.moving_time <= 0) return null;
 
@@ -182,8 +182,8 @@ function computeSimilarComparison(
 }
 
 function computeNewAchievements(
-  activity: StravaActivity,
-  allActivities: StravaActivity[],
+  activity: Activity,
+  allActivities: Activity[],
   stats: ProcessedStats
 ): NewAchievement[] {
   const withMap = computeAchievements(allActivities, stats);
@@ -205,7 +205,7 @@ function computeNewAchievements(
 // ── Main export ────────────────────────────────────────────────────────────
 
 export function computeEnrichedLastActivity(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): EnrichedLastActivity | null {
   const runs = activities.filter(isRun);

@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 
 export interface RunnerProfile {
@@ -10,7 +10,7 @@ export interface RunnerProfile {
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
 export function computeRunnerProfile(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): RunnerProfile | null {
   const runs = activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));

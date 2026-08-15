@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { CORE_DISTANCES } from '@/lib/distances';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
@@ -19,7 +19,7 @@ export interface CoreRecord {
  * Reaching a distance means completing a single activity of at least that
  * exact distance (marathon = 42.195 km, half = 21.0975 km).
  */
-export function computeCoreRecord(activities: StravaActivity[]): CoreRecord | null {
+export function computeCoreRecord(activities: Activity[]): CoreRecord | null {
   const runs = activities.filter(
     (a) =>
       RUNNING_SPORTS.has(a.sport_type || a.type) &&

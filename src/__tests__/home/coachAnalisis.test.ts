@@ -11,7 +11,7 @@ import { computeCoachAnalisis } from '@/lib/coachAnalisis';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { computeStats } from '@/lib/stats';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -24,7 +24,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-function runDaysAgo(days: number, over: Partial<StravaActivity> = {}, id = 1): StravaActivity {
+function runDaysAgo(days: number, over: Partial<Activity> = {}, id = 1): Activity {
   const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
   return activity({
     id,
@@ -37,10 +37,10 @@ function runDaysAgo(days: number, over: Partial<StravaActivity> = {}, id = 1): S
 }
 
 /** Historial de `count` corridas, una cada dos días hacia atrás. */
-const historial = (count: number, over: Partial<StravaActivity> = {}): StravaActivity[] =>
+const historial = (count: number, over: Partial<Activity> = {}): Activity[] =>
   Array.from({ length: count }, (_, i) => runDaysAgo(i * 2, over, i + 1));
 
-const analisisOf = (acts: StravaActivity[]) => computeCoachAnalisis(acts, computeStats(acts));
+const analisisOf = (acts: Activity[]) => computeCoachAnalisis(acts, computeStats(acts));
 
 describe('cuándo devuelve null', () => {
   it('sin actividades', () => {

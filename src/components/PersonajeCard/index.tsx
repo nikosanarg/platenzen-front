@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { getLevelInfo } from '@/lib/xpSystem';
 import { computeRoles, computeAdnScores, BRANCH_ROLES } from '@/lib/roles';
@@ -56,7 +56,7 @@ import {
 } from './styled';
 
 interface PersonajeCardProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

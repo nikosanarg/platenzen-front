@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeXP, getLevelInfo } from '@/lib/levels';
 import { computeMomentum, momentumLabel } from '@/lib/momentum';
@@ -25,7 +25,7 @@ import {
 } from './styled';
 
 interface HeroSectionProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

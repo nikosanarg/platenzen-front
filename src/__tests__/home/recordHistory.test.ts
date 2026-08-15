@@ -13,12 +13,12 @@ import {
 } from '@/lib/recordHistory';
 import { HALF_MARATHON_KM } from '@/lib/distances';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
-const on = (date: string, over: Partial<StravaActivity> = {}) =>
+const on = (date: string, over: Partial<Activity> = {}) =>
   activity({ start_date_local: `${date}T12:00:00Z`, start_date: `${date}T12:00:00Z`, ...over });
 
-const forLabel = (acts: StravaActivity[], label: string) =>
+const forLabel = (acts: Activity[], label: string) =>
   computeRecordHistories(acts).find((d) => d.label === label)!;
 
 describe('computeRecordHistories: estructura', () => {

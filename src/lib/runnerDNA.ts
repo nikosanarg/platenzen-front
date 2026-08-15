@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
@@ -28,7 +28,7 @@ function clamp100(v: number): number {
   return Math.max(0, Math.min(100, Math.round(v)));
 }
 
-function getRuns12mo(activities: StravaActivity[]): StravaActivity[] {
+function getRuns12mo(activities: Activity[]): Activity[] {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const ms = cutoff.getTime();
@@ -38,7 +38,7 @@ function getRuns12mo(activities: StravaActivity[]): StravaActivity[] {
   );
 }
 
-function getRuns30d(activities: StravaActivity[]): StravaActivity[] {
+function getRuns30d(activities: Activity[]): Activity[] {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
   const ms = cutoff.getTime();
@@ -50,7 +50,7 @@ function getRuns30d(activities: StravaActivity[]): StravaActivity[] {
 
 // ── Attribute calculations ─────────────────────────────────────────────────
 
-function computeResistencia(runs12mo: StravaActivity[]): number {
+function computeResistencia(runs12mo: Activity[]): number {
   if (runs12mo.length === 0) return 0;
 
   const distancesKm = runs12mo.map(a => a.distance / 1000);
@@ -62,7 +62,7 @@ function computeResistencia(runs12mo: StravaActivity[]): number {
   return clamp100((rawScore / MARATHON_KM) * 100);
 }
 
-function computeVelocidad(runs12mo: StravaActivity[]): number {
+function computeVelocidad(runs12mo: Activity[]): number {
   const validRuns = runs12mo.filter(a => a.distance >= 1000 && a.average_speed > 0);
   if (validRuns.length === 0) return 0;
 
@@ -81,13 +81,13 @@ function computeVelocidad(runs12mo: StravaActivity[]): number {
   return clamp100(normalized);
 }
 
-function computeConsistencia(runs30d: StravaActivity[]): number {
+function computeConsistencia(runs30d: Activity[]): number {
   // Distinct days with activity in the last 30 days
   const days = new Set(runs30d.map(a => a.start_date_local.slice(0, 10)));
   return clamp100((days.size / 30) * 100);
 }
 
-function computeExploracion(runs12mo: StravaActivity[]): number {
+function computeExploracion(runs12mo: Activity[]): number {
   // Distinct starting places (tolerance ≤ 500 m) in the last 12 months
   const places = countDistinctStartingPlaces(runs12mo);
   // 0 places = 0, 25+ places = 100 (aligns with conquistador_min_places)
@@ -95,7 +95,7 @@ function computeExploracion(runs12mo: StravaActivity[]): number {
 }
 
 function computeLogros(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): number {
   const achievementMap = computeAchievements(activities, stats);
@@ -109,7 +109,7 @@ function computeLogros(
 // ── Main export ────────────────────────────────────────────────────────────
 
 export function computeRunnerDNA(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): RunnerDNA {
   const runs12mo = getRuns12mo(activities);

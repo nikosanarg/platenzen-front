@@ -1,17 +1,17 @@
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import ActivityCard from '@/components/ActivityCard';
 import { SectionRoot, SectionTitle, TopGrid } from './styled';
 
 interface TopActivitiesProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
-function getTop(activities: StravaActivity[]): Array<{ activity: StravaActivity; highlight: string }> {
+function getTop(activities: Activity[]): Array<{ activity: Activity; highlight: string }> {
   if (activities.length === 0) return [];
-  const results: Array<{ activity: StravaActivity; highlight: string }> = [];
+  const results: Array<{ activity: Activity; highlight: string }> = [];
 
   const byDistance = [...activities].sort((a, b) => b.distance - a.distance)[0];
   if (byDistance) results.push({ activity: byDistance, highlight: 'Mayor distancia' });

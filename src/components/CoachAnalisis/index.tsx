@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeCoachAnalisis, DayKind } from '@/lib/coachAnalisis';
 import { decodePolyline } from '@/lib/polylineDecoder';
@@ -125,7 +125,7 @@ function dayIcon(kind: DayKind) {
 // ── Main component ───────────────────────────────────────────────────────────
 
 interface Props {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

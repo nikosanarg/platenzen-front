@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeEnrichedLastActivity } from '@/lib/lastActivity';
 import { computeFormShape } from '@/lib/formShape';
@@ -55,11 +55,11 @@ export interface CoachAnalisis {
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-function isRun(a: StravaActivity): boolean {
+function isRun(a: Activity): boolean {
   return RUNNING_SPORTS.has(a.sport_type || a.type);
 }
 
-function paceSecPerKm(a: StravaActivity): number {
+function paceSecPerKm(a: Activity): number {
   return a.average_speed > 0 ? 1000 / a.average_speed : 0;
 }
 
@@ -97,7 +97,7 @@ function ordinal(n: number): string {
 }
 
 /** Kilómetros corridos en un día concreto (varias salidas suman). */
-function kmOnDay(runs: StravaActivity[], day: Date): number {
+function kmOnDay(runs: Activity[], day: Date): number {
   const target = day.toDateString();
   return runs
     .filter(a => new Date(a.start_date_local).toDateString() === target)
@@ -105,7 +105,7 @@ function kmOnDay(runs: StravaActivity[], day: Date): number {
 }
 
 /** Suma de km en una ventana móvil de `days` días, empezando `offsetDays` atrás. */
-function kmInTrailingDays(runs: StravaActivity[], now: Date, days: number, offsetDays: number): number {
+function kmInTrailingDays(runs: Activity[], now: Date, days: number, offsetDays: number): number {
   let total = 0;
   for (let i = offsetDays; i < offsetDays + days; i++) {
     const d = new Date(now);
@@ -117,7 +117,7 @@ function kmInTrailingDays(runs: StravaActivity[], now: Date, days: number, offse
 
 // ── Insight generation ───────────────────────────────────────────────────────
 
-function buildInsights(activity: StravaActivity, allRuns: StravaActivity[]): Insight[] {
+function buildInsights(activity: Activity, allRuns: Activity[]): Insight[] {
   const insights: Insight[] = [];
   const km = activity.distance / 1000;
   const thisPace = paceSecPerKm(activity);
@@ -178,8 +178,8 @@ function buildInsights(activity: StravaActivity, allRuns: StravaActivity[]): Ins
 // la semana caiga hoy), y por último el contexto del bloque de 4 semanas.
 
 function buildHighlights(
-  activity: StravaActivity,
-  allRuns: StravaActivity[],
+  activity: Activity,
+  allRuns: Activity[],
   recentWeeklyAvgKm: number
 ): HighlightCard[] {
   const cards: HighlightCard[] = [];
@@ -250,7 +250,7 @@ const PLAN_TEMPLATES: Record<string, string[]> = {
   velocidad: ['velocidad', 'rest', 'easy'],
 };
 
-function buildAgenda(activities: StravaActivity[], stats: ProcessedStats): DayPlan[] {
+function buildAgenda(activities: Activity[], stats: ProcessedStats): DayPlan[] {
   const rec = computeCoachRecommendation(activities, stats);
   const now = new Date();
   const runs = activities.filter(isRun);
@@ -289,7 +289,7 @@ function buildAgenda(activities: StravaActivity[], stats: ProcessedStats): DayPl
 // ── Main export ──────────────────────────────────────────────────────────────
 
 export function computeCoachAnalisis(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): CoachAnalisis | null {
   const enriched = computeEnrichedLastActivity(activities, stats);

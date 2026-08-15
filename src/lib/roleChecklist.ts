@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import {
   DISTANCE_THRESHOLDS,
@@ -22,11 +22,11 @@ export interface RoleNodeChecklist {
   items: NodeChecklistItem[];
 }
 
-function getRuns(activities: StravaActivity[]): StravaActivity[] {
+function getRuns(activities: Activity[]): Activity[] {
   return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
 }
 
-function milestonesReached(runs: StravaActivity[]): Set<number> {
+function milestonesReached(runs: Activity[]): Set<number> {
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -52,7 +52,7 @@ export type RoleNodeId =
 
 export function computeNodeChecklist(
   nodeId: RoleNodeId,
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): RoleNodeChecklist {
   const runs = getRuns(activities);

@@ -11,7 +11,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import RacePredictorTable from '@/components/RacePredictorTable';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -24,7 +24,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-function runDaysAgo(days: number, over: Partial<StravaActivity> = {}, id = 1): StravaActivity {
+function runDaysAgo(days: number, over: Partial<Activity> = {}, id = 1): Activity {
   const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
   return activity({
     id,

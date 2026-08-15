@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { getRecentAvgKm } from '@/lib/momentum';
 import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
@@ -17,7 +17,7 @@ function formatPace(sec: number): string {
 }
 
 export function computePersonalGoals(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): PersonalGoal[] {
   const goals: PersonalGoal[] = [];

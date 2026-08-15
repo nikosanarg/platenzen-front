@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 export type PeriodType = '30d' | '90d' | 'year';
 
@@ -21,17 +21,17 @@ export interface PeriodComparison {
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
 function filterByDateRange(
-  activities: StravaActivity[],
+  activities: Activity[],
   fromMs: number,
   toMs: number
-): StravaActivity[] {
+): Activity[] {
   return activities.filter(a => {
     const t = new Date(a.start_date_local.slice(0, 10)).getTime();
     return t >= fromMs && t < toMs;
   });
 }
 
-function computePeriodData(acts: StravaActivity[]): PeriodData {
+function computePeriodData(acts: Activity[]): PeriodData {
   if (acts.length === 0) {
     return {
       distanceKm: 0,
@@ -64,7 +64,7 @@ function computePeriodData(acts: StravaActivity[]): PeriodData {
   };
 }
 
-export function computePeriodComparisons(activities: StravaActivity[]): PeriodComparison[] {
+export function computePeriodComparisons(activities: Activity[]): PeriodComparison[] {
   const now = Date.now();
   const DAY = 86400000;
 

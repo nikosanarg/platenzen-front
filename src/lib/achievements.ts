@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 
@@ -23,11 +23,11 @@ export type AchievementMap = Record<AchievementCategory, Achievement[]>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function runs(activities: StravaActivity[]): StravaActivity[] {
+function runs(activities: Activity[]): Activity[] {
   return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
 }
 
-function sortedAsc(acts: StravaActivity[]): StravaActivity[] {
+function sortedAsc(acts: Activity[]): Activity[] {
   return [...acts].sort(
     (a, b) => new Date(a.start_date_local).getTime() - new Date(b.start_date_local).getTime()
   );
@@ -50,7 +50,7 @@ function progressText(current: number, target: number, unit: string): string {
 
 // ── Distance achievements ──────────────────────────────────────────────────
 
-function computeDistanceAchievements(allRuns: StravaActivity[]): Achievement[] {
+function computeDistanceAchievements(allRuns: Activity[]): Achievement[] {
   const sorted = sortedAsc(allRuns);
 
   const milestones: Array<{ id: string; name: string; km: number; xp: number; desc: string }> = [
@@ -85,7 +85,7 @@ function computeDistanceAchievements(allRuns: StravaActivity[]): Achievement[] {
 
 // ── Volume achievements ────────────────────────────────────────────────────
 
-function computeVolumeAchievements(allRuns: StravaActivity[]): Achievement[] {
+function computeVolumeAchievements(allRuns: Activity[]): Achievement[] {
   const sorted = sortedAsc(allRuns);
   const targets = [
     { id: 'vol100', name: '100 km acumulados', target: 100, xp: 150 },
@@ -133,7 +133,7 @@ interface WeekGroup {
   count: number;
 }
 
-function groupByWeek(acts: StravaActivity[]): WeekGroup[] {
+function groupByWeek(acts: Activity[]): WeekGroup[] {
   const map = new Map<string, number>();
   for (const a of acts) {
     const d = new Date(a.start_date_local);
@@ -148,7 +148,7 @@ function groupByWeek(acts: StravaActivity[]): WeekGroup[] {
     .sort((a, b) => a.week.localeCompare(b.week));
 }
 
-function computeConsistencyAchievements(allRuns: StravaActivity[], stats: ProcessedStats): Achievement[] {
+function computeConsistencyAchievements(allRuns: Activity[], stats: ProcessedStats): Achievement[] {
   const sorted = sortedAsc(allRuns);
   const totalActivities = sorted.length;
   const weeks = groupByWeek(sorted);
@@ -253,7 +253,7 @@ function computeConsistencyAchievements(allRuns: StravaActivity[], stats: Proces
 
 // ── Speed achievements ─────────────────────────────────────────────────────
 
-function computeSpeedAchievements(allRuns: StravaActivity[]): Achievement[] {
+function computeSpeedAchievements(allRuns: Activity[]): Achievement[] {
   const targets = [
     { id: 'pace600', name: 'Ritmo menor a 6:00/km', threshold: 360, xp: 100 },
     { id: 'pace530', name: 'Ritmo menor a 5:30/km', threshold: 330, xp: 150 },
@@ -297,7 +297,7 @@ function computeSpeedAchievements(allRuns: StravaActivity[]): Achievement[] {
 
 // ── Exploration achievements ───────────────────────────────────────────────
 
-function computeExplorationAchievements(allRuns: StravaActivity[]): Achievement[] {
+function computeExplorationAchievements(allRuns: Activity[]): Achievement[] {
   const sorted = sortedAsc(allRuns);
   const trailRuns = sorted.filter(a => (a.sport_type || a.type) === 'TrailRun');
 
@@ -367,7 +367,7 @@ function computeExplorationAchievements(allRuns: StravaActivity[]): Achievement[
 // ── Main export ────────────────────────────────────────────────────────────
 
 export function computeAchievements(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): AchievementMap {
   const allRuns = runs(activities);

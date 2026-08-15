@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 
 export type FormState = 'ascenso' | 'estable' | 'descenso';
@@ -36,7 +36,7 @@ function weekLabel(isoWeek: string): string {
 }
 
 export function computeFormShape(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): FormShapeData | null {
   if (stats.weekly.length < 5) return null;

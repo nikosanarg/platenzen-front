@@ -1,7 +1,7 @@
-import { StravaActivity } from './strava';
+import { Activity } from './activity';
 
 export interface CacheData {
-  activities: StravaActivity[];
+  activities: Activity[];
   timestamp: number;
   version: number;
 }

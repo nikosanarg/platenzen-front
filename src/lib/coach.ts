@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
@@ -40,11 +40,11 @@ const LOAD_LABELS: Record<LoadState, string> = {
   'sin datos': 'Sin datos suficientes',
 };
 
-function getRuns(activities: StravaActivity[]): StravaActivity[] {
+function getRuns(activities: Activity[]): Activity[] {
   return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type) && a.distance > 0 && a.moving_time > 0);
 }
 
-function computeWeightedLoad(runs: StravaActivity[]): {
+function computeWeightedLoad(runs: Activity[]): {
   load: number;
   biggestKm: number;
   biggestDaysAgo: number;
@@ -93,7 +93,7 @@ function fmtDaysAgo(daysAgo: number): string {
 }
 
 export function computeCoachRecommendation(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): CoachRecommendation {
   const runs = getRuns(activities);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import type { StravaActivity } from '@/types/strava';
+import type { Activity } from '@/types/activity';
 import type { ProcessedStats } from '@/types/stats';
 import type { BranchResult } from '@/lib/roles';
 import {
@@ -22,7 +22,7 @@ interface ChecklistItem { label: string; passed: boolean; }
 
 // ── Checklist builders ─────────────────────────────────────────────────────
 
-function countMilestones(activities: StravaActivity[]): number {
+function countMilestones(activities: Activity[]): number {
   const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
   const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
   const reached = new Set<number>();
@@ -33,7 +33,7 @@ function countMilestones(activities: StravaActivity[]): number {
   return reached.size;
 }
 
-function calcTrailRatio(activities: StravaActivity[]): number {
+function calcTrailRatio(activities: Activity[]): number {
   const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
   const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
   if (!runs.length) return 0;
@@ -42,7 +42,7 @@ function calcTrailRatio(activities: StravaActivity[]): number {
 
 function buildChecklist(
   branch: Branch, level: number,
-  activities: StravaActivity[], stats: ProcessedStats
+  activities: Activity[], stats: ProcessedStats
 ): ChecklistItem[] {
   const avgW = stats.weeklyAvgDistance;
   const maxKm = stats.longestActivity;
@@ -237,7 +237,7 @@ function Arrow({ status }: { status: NodeStatus }) {
 
 interface RoleTreeProps {
   branches: BranchResult[];
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

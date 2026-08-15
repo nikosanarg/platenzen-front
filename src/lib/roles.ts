@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import {
   DISTANCE_THRESHOLDS, DISTANCE_AFINIDAD,
@@ -84,11 +84,11 @@ export interface RolesResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function getRuns(activities: StravaActivity[]): StravaActivity[] {
+function getRuns(activities: Activity[]): Activity[] {
   return activities.filter(a => RUNNING_SPORTS.has(a.sport_type || a.type));
 }
 
-function milestonesReached(runs: StravaActivity[]): Set<number> {
+function milestonesReached(runs: Activity[]): Set<number> {
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -109,7 +109,7 @@ function clamp(v: number): number {
 
 // ── Distance branch ────────────────────────────────────────────────────────
 
-function computeDistanceBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeDistanceBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { fondista_weekly_km, fondista_longest_km, ultrafondista_weekly_km,
     ultrafondista_longest_km, maratonista_longest_km } = DISTANCE_THRESHOLDS;
   const { maxPts_weekly, reference_weekly_km, maxPts_longest, reference_long_km, maxPts_longRatio } = DISTANCE_AFINIDAD;
@@ -163,7 +163,7 @@ function computeDistanceBranch(runs: StravaActivity[], stats: ProcessedStats): B
 
 // ── Speed branch ───────────────────────────────────────────────────────────
 
-function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeSpeedBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { pasadista_pace_sec, velocista_pace_sec } = SPEED_THRESHOLDS;
   const { maxPts_pace, reference_worst_pace, reference_best_pace, maxPts_frequency, reference_weekly_activities } = SPEED_AFINIDAD;
 
@@ -221,7 +221,7 @@ function computeSpeedBranch(runs: StravaActivity[], stats: ProcessedStats): Bran
 
 // ── Exploration branch ─────────────────────────────────────────────────────
 
-function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeExplorationBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { trotamundos_trail_ratio, trotamundos_total_km, conquistador_trail_ratio, conquistador_total_km } = EXPLORATION_THRESHOLDS;
   const { explorador_min_places, trotamundos_min_places, conquistador_min_places } = EXPLORATION_DISTINCT_PLACES;
   const { maxPts_trailRatio, maxPts_totalKm, reference_total_km, maxPts_elevation, reference_elevation } = EXPLORATION_AFINIDAD;
@@ -281,7 +281,7 @@ function computeExplorationBranch(runs: StravaActivity[], stats: ProcessedStats)
 
 // ── Achievement branch ─────────────────────────────────────────────────────
 
-function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats): BranchResult {
+function computeAchievementBranch(runs: Activity[], stats: ProcessedStats): BranchResult {
   const { competidor_min_activities, coleccionador_min_activities, coleccionador_min_milestones,
     coleccionador_min_total_km, medallista_min_activities, medallista_min_milestones,
     medallista_min_total_km } = ACHIEVEMENT_THRESHOLDS;
@@ -343,7 +343,7 @@ function computeAchievementBranch(runs: StravaActivity[], stats: ProcessedStats)
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export function computeRoles(activities: StravaActivity[], stats: ProcessedStats): RolesResult {
+export function computeRoles(activities: Activity[], stats: ProcessedStats): RolesResult {
   const runs = getRuns(activities);
 
   const branches: BranchResult[] = [
@@ -377,7 +377,7 @@ export interface AdnScores {
 }
 
 export function computeAdnScores(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): AdnScores {
   const runs = getRuns(activities);
@@ -434,7 +434,7 @@ export interface ChecklistItem {
 
 export function computeObjectiveChecklist(
   objective: RoleObjective,
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): ChecklistItem[] {
   const runs = getRuns(activities);

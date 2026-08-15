@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { decodePolyline } from '@/lib/polylineDecoder';
 import { splitPace } from '@/utils/pace';
 
@@ -53,7 +53,7 @@ function formatDate(isoStr: string): string {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-export function computeWorldMap(activities: StravaActivity[]): WorldMapData | null {
+export function computeWorldMap(activities: Activity[]): WorldMapData | null {
   const runs = activities.filter(a =>
     RUNNING_SPORTS.has(a.sport_type || a.type) && a.map?.summary_polyline
   );

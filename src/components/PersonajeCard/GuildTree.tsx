@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { BranchResult, RoleBranchId } from '@/lib/roles';
 import { computeNodeChecklist, RoleNodeId } from '@/lib/roleChecklist';
@@ -203,7 +203,7 @@ const BRANCHES: BranchConfig[] = [
 
 interface GuildTreeProps {
   branches: BranchResult[];
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

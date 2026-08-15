@@ -1,5 +1,5 @@
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { formatDistance, secondsToHMS, formatElevation } from '@/utils/units';
 import { secPerKmToString, mpsToSecPerKm } from '@/utils/pace';
 import {
@@ -14,7 +14,7 @@ import {
 } from './styled';
 
 interface ActivityCardProps {
-  activity: StravaActivity;
+  activity: Activity;
   highlight?: string;
 }
 

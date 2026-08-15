@@ -19,7 +19,7 @@ import {
 import { computeStats } from '@/lib/stats';
 import { ProcessedStats, WeeklyStats } from '@/types/stats';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 const weeks = (count: number, km: number, activityCount = 3): WeeklyStats[] =>
   Array.from({ length: count }, (_, i) => ({
@@ -35,7 +35,7 @@ const statsWith = (over: Partial<ProcessedStats> = {}): ProcessedStats => ({
 });
 
 /** `count` corridas de `km`, del tipo indicado. */
-const runs = (count: number, km: number, sport = 'Run'): StravaActivity[] =>
+const runs = (count: number, km: number, sport = 'Run'): Activity[] =>
   Array.from({ length: count }, (_, i) =>
     activity({
       id: i + 1,
@@ -46,7 +46,7 @@ const runs = (count: number, km: number, sport = 'Run'): StravaActivity[] =>
     }),
   );
 
-const branchOf = (acts: StravaActivity[], stats: ProcessedStats, branch: string) =>
+const branchOf = (acts: Activity[], stats: ProcessedStats, branch: string) =>
   computeRoles(acts, stats).branches.find((b) => b.branch === branch)!;
 
 /** Polyline de un solo punto en el lat/lon dado, para fijar el arranque. */
@@ -261,7 +261,7 @@ describe('rama de logros', () => {
 
 describe('afinidad', () => {
   it('está siempre entre 0 y 100 en todas las ramas', () => {
-    const escenarios: Array<[StravaActivity[], ProcessedStats]> = [
+    const escenarios: Array<[Activity[], ProcessedStats]> = [
       [[], statsWith()],
       [runs(100, 42.195), statsWith({ weeklyAvgDistance: 200, bestPace: 180, totalDistance: 9000, totalActivities: 500 })],
       [runs(5, 5), statsWith({ weeklyAvgDistance: 10, bestPace: 400, totalDistance: 50, totalActivities: 5 })],

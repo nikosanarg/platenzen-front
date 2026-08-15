@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
 
@@ -10,7 +10,7 @@ export interface SmartInsight {
 }
 
 export function generateSmartInsights(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): SmartInsight[] {
   const insights: SmartInsight[] = [];

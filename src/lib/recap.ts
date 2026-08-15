@@ -1,10 +1,10 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { MonthlyRecap, AnnualRecap } from '@/types/recap';
 
 const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
 
 export function computeMonthlyRecap(
-  activities: StravaActivity[],
+  activities: Activity[],
   month: string
 ): MonthlyRecap | null {
   const filtered = activities.filter(
@@ -40,7 +40,7 @@ export function computeMonthlyRecap(
 }
 
 export function computeAnnualRecap(
-  activities: StravaActivity[],
+  activities: Activity[],
   year: number
 ): AnnualRecap | null {
   const yearStr = String(year);

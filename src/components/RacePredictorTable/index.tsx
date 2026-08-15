@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { computeRacePredictions, formatRaceTime, formatRaceDate } from '@/lib/racePredictor';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
@@ -20,7 +20,7 @@ import {
 } from './styled';
 
 interface RacePredictorTableProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
 const RacePredictorTable: React.FC<RacePredictorTableProps> = ({ activities }) => {

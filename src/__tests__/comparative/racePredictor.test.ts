@@ -15,12 +15,12 @@ import {
 } from '@/lib/racePredictor';
 import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
-const on = (date: string, over: Partial<StravaActivity> = {}) =>
+const on = (date: string, over: Partial<Activity> = {}) =>
   activity({ start_date_local: `${date}T12:00:00Z`, start_date: `${date}T12:00:00Z`, ...over });
 
-const rowFor = (acts: StravaActivity[], km: number) =>
+const rowFor = (acts: Activity[], km: number) =>
   computeRacePredictions(acts).find((r) => r.distanceKm === km)!;
 
 beforeEach(() => {

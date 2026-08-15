@@ -7,7 +7,7 @@
 import { computeRunnerDNA, getRunnerDNATooltips } from '@/lib/runnerDNA';
 import { computeStats } from '@/lib/stats';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -20,12 +20,12 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-function runDaysAgo(days: number, over: Partial<StravaActivity> = {}, id = 1): StravaActivity {
+function runDaysAgo(days: number, over: Partial<Activity> = {}, id = 1): Activity {
   const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
   return activity({ id, start_date: iso, start_date_local: iso, ...over });
 }
 
-const dnaOf = (acts: StravaActivity[]) => computeRunnerDNA(acts, computeStats(acts));
+const dnaOf = (acts: Activity[]) => computeRunnerDNA(acts, computeStats(acts));
 
 describe('computeRunnerDNA sin datos', () => {
   it('devuelve los cinco atributos en 0', () => {

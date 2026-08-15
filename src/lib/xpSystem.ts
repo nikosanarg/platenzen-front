@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
@@ -72,7 +72,7 @@ export interface LevelInfo {
   breakdown: XPBreakdown;
 }
 
-function get12MonthRuns(activities: StravaActivity[]): StravaActivity[] {
+function get12MonthRuns(activities: Activity[]): Activity[] {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const cutoffMs = cutoff.getTime();
@@ -82,7 +82,7 @@ function get12MonthRuns(activities: StravaActivity[]): StravaActivity[] {
   });
 }
 
-function countMilestones(activities: StravaActivity[]): number {
+function countMilestones(activities: Activity[]): number {
   const reached = new Set<number>();
   for (const a of activities) {
     const km = a.distance / 1000;
@@ -93,7 +93,7 @@ function countMilestones(activities: StravaActivity[]): number {
   return reached.size;
 }
 
-function countPRs(activities: StravaActivity[]): number {
+function countPRs(activities: Activity[]): number {
   const sorted = [...activities].sort(
     (a, b) => new Date(a.start_date_local).getTime() - new Date(b.start_date_local).getTime()
   );
@@ -122,7 +122,7 @@ interface WeekGroup {
   count: number;
 }
 
-function groupByWeek(activities: StravaActivity[]): WeekGroup[] {
+function groupByWeek(activities: Activity[]): WeekGroup[] {
   const map = new Map<string, WeekGroup>();
   for (const a of activities) {
     const d = new Date(a.start_date_local);
@@ -207,7 +207,7 @@ function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total' |
   return `Tu mayor fuente de XP: ${top.label} (${b(top.value)} XP). También sumaron ${second.label} (${b(second.value)} XP).`;
 }
 
-export function computeXPBreakdown(activities: StravaActivity[], stats: ProcessedStats): XPBreakdown {
+export function computeXPBreakdown(activities: Activity[], stats: ProcessedStats): XPBreakdown {
   const recent = get12MonthRuns(activities);
   const totalKm12mo = recent.reduce((s, a) => s + a.distance / 1000, 0);
   const fromKm = Math.round(totalKm12mo * 5);
@@ -248,7 +248,7 @@ export function computeXPBreakdown(activities: StravaActivity[], stats: Processe
   };
 }
 
-export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats): LevelInfo {
+export function getLevelInfo(activities: Activity[], stats: ProcessedStats): LevelInfo {
   const breakdown = computeXPBreakdown(activities, stats);
   const xp = breakdown.total;
 
