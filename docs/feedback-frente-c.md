@@ -183,4 +183,34 @@ de conseguir uno sin la cuenta aprobada), y no prueba nada con tests automatizad
 porque este frente no escribe tests.** El único chequeo funcional real que hice es
 el round trip manual del encoder contra el decoder existente, documentado arriba.
 
-(pendiente: se completa al correr los cuatro comandos)
+```
+$ npx tsc --noEmit
+(sin salida, exit 0)
+
+$ npm run lint
+✖ 5 problems (0 errors, 5 warnings)
+```
+Los 5 warnings son preexistentes y ninguno cae en archivos de este frente
+(`CoachPersonalizado/index.tsx`, `Dashboard/index.tsx` ×2, `achievements.ts`,
+`roles.ts`). El plan mencionaba 6 warnings preexistentes; salieron 5 — no investigué
+la diferencia porque no toqué ninguno de esos archivos y no es mi territorio.
+
+```
+$ npx jest
+Test Suites: 31 passed, 31 total
+Tests:       556 passed, 556 total
+```
+Coincide exactamente con el piso heredado que describe el plan. Ninguna de mis
+funciones nuevas tiene test propio (a propósito, ver el inventario arriba), así
+que esta corrida sólo certifica que no rompí nada existente.
+
+```
+$ npm run build
+✓ Compiled successfully
+Route (app): /, /_not-found, /achievements, /api/strava/callback,
+/api/strava/refresh, /comparative
+```
+Build limpio. Ninguna de las rutas listadas importa código de
+`src/services/providers/garmin/` ni de `src/lib/polylineEncoder.ts` — el build
+verde certifica "compila y no rompe nada", no "el mapper funciona", porque
+todavía no hay ningún consumidor que lo ejercite.
