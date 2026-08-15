@@ -1,9 +1,12 @@
 /**
- * Manejo del token de Strava. Son credenciales de terceros, así que lo que se
- * verifica es el ciclo completo: que el token viva en sessionStorage y no
- * sobreviva a la pestaña, que se refresque antes de vencer, que los refrescos
- * concurrentes no disparen dos llamadas a la API, y que un formato viejo se
- * descarte en lugar de usarse a medias.
+ * Manejo del token de Strava. El refresh token es una credencial de larga
+ * vida y ya no pasa por el cliente: vive en una cookie httpOnly que sólo
+ * leen las rutas de servidor. Lo que se verifica acá es la mitad que sí es
+ * del cliente: que el access token viva en localStorage (sobrevive el cierre
+ * de la pestaña, a diferencia del refresh token de antes), que se refresque
+ * antes de vencer contra /api/strava/refresh sin mandar nada en el body, que
+ * los refrescos concurrentes no disparen dos llamadas, y que un valor
+ * guardado en el formato viejo (con refreshToken) se descarte.
  *
  * Todos los valores de token son ficticios.
  */
@@ -16,12 +19,12 @@ const AHORA_SEC = 1_800_000_000;
 /** Token ficticio que vence `enSegundos` después de ahora. */
 const fakeToken = (enSegundos: number, sufijo = 'a'): StoredToken => ({
   accessToken: `acceso-falso-${sufijo}`,
-  refreshToken: `refresco-falso-${sufijo}`,
   expiresAt: AHORA_SEC + enSegundos,
   createdAt: AHORA_SEC * 1000,
 });
 
 beforeEach(() => {
+  localStorage.clear();
   sessionStorage.clear();
   jest.useFakeTimers();
   jest.setSystemTime(AHORA_SEC * 1000);
@@ -44,33 +47,33 @@ describe('lectura inicial', () => {
   });
 
   it('recupera un token válido ya guardado', () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(3600)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(3600)));
     const { result } = renderHook(() => useToken());
 
     expect(result.current.hasToken).toBe(true);
     expect(result.current.token).toBe('acceso-falso-a');
   });
 
-  it('descarta y limpia un token del formato viejo sin refreshToken', () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ accessToken: 'viejo' }));
+  it('descarta y limpia un token del formato viejo, con refreshToken', () => {
+    localStorage.setItem(
+      TOKEN_KEY,
+      JSON.stringify({ accessToken: 'viejo', refreshToken: 'refresco-viejo', expiresAt: AHORA_SEC + 3600 }),
+    );
     const { result } = renderHook(() => useToken());
 
     expect(result.current.hasToken).toBe(false);
-    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
   });
 
   it('descarta un token sin fecha de vencimiento', () => {
-    sessionStorage.setItem(
-      TOKEN_KEY,
-      JSON.stringify({ accessToken: 'x', refreshToken: 'y' }),
-    );
+    localStorage.setItem(TOKEN_KEY, JSON.stringify({ accessToken: 'x' }));
     const { result } = renderHook(() => useToken());
 
     expect(result.current.hasToken).toBe(false);
   });
 
   it('tolera contenido corrupto en el storage', () => {
-    sessionStorage.setItem(TOKEN_KEY, '{no es json');
+    localStorage.setItem(TOKEN_KEY, '{no es json');
     const { result } = renderHook(() => useToken());
 
     expect(result.current.hasToken).toBe(false);
@@ -78,33 +81,35 @@ describe('lectura inicial', () => {
 });
 
 describe('saveToken / clearToken', () => {
-  it('guarda en sessionStorage y expone el token', () => {
+  it('guarda en localStorage y expone el token', () => {
     const { result } = renderHook(() => useToken());
 
     act(() => result.current.saveToken(fakeToken(3600)));
 
     expect(result.current.hasToken).toBe(true);
     expect(result.current.token).toBe('acceso-falso-a');
-    expect(sessionStorage.getItem(TOKEN_KEY)).not.toBeNull();
+    expect(localStorage.getItem(TOKEN_KEY)).not.toBeNull();
   });
 
-  it('usa sessionStorage y no localStorage: el token no sobrevive la pestaña', () => {
+  it('usa localStorage y no sessionStorage: el access token sobrevive el cierre de la pestaña', () => {
     const { result } = renderHook(() => useToken());
 
     act(() => result.current.saveToken(fakeToken(3600)));
 
-    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull();
   });
 
-  it('clearToken borra el token del storage y del estado', () => {
+  it('clearToken borra el token del storage y del estado', async () => {
     const { result } = renderHook(() => useToken());
 
     act(() => result.current.saveToken(fakeToken(3600)));
-    act(() => result.current.clearToken());
+    await act(async () => {
+      await result.current.clearToken();
+    });
 
     expect(result.current.hasToken).toBe(false);
     expect(result.current.token).toBeNull();
-    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
   });
 });
 
@@ -117,7 +122,7 @@ describe('getValidToken', () => {
   });
 
   it('devuelve el token vigente sin llamar a la API', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(3600)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(3600)));
     const { result } = renderHook(() => useToken());
 
     await expect(result.current.getValidToken()).resolves.toBe('acceso-falso-a');
@@ -126,12 +131,12 @@ describe('getValidToken', () => {
 
   it('refresca antes de vencer: con 4 minutos restantes ya lo renueva', async () => {
     // El buffer de refresco es de 5 minutos.
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(240)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(240)));
     mockFetch().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => ({
         access_token: 'acceso-nuevo',
-        refresh_token: 'refresco-nuevo',
         expires_at: AHORA_SEC + 21600,
       }),
     });
@@ -146,20 +151,20 @@ describe('getValidToken', () => {
   });
 
   it('no refresca con 6 minutos restantes', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(360)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(360)));
     const { result } = renderHook(() => useToken());
 
     await expect(result.current.getValidToken()).resolves.toBe('acceso-falso-a');
     expect(mockFetch()).not.toHaveBeenCalled();
   });
 
-  it('el refresco va por la ruta de servidor, no directo a Strava', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+  it('el refresco va por la ruta de servidor, sin mandar nada en el body', async () => {
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
     mockFetch().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => ({
         access_token: 'acceso-nuevo',
-        refresh_token: 'refresco-nuevo',
         expires_at: AHORA_SEC + 21600,
       }),
     });
@@ -172,16 +177,16 @@ describe('getValidToken', () => {
     const [url, init] = mockFetch().mock.calls[0];
     expect(url).toBe('/api/strava/refresh');
     expect(init.method).toBe('POST');
-    expect(JSON.parse(init.body)).toEqual({ refresh_token: 'refresco-falso-a' });
+    expect(init.body).toBeUndefined();
   });
 
-  it('persiste el token renovado', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+  it('persiste el token renovado en localStorage', async () => {
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
     mockFetch().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => ({
         access_token: 'acceso-nuevo',
-        refresh_token: 'refresco-nuevo',
         expires_at: AHORA_SEC + 21600,
       }),
     });
@@ -192,17 +197,17 @@ describe('getValidToken', () => {
     });
 
     await waitFor(() => expect(result.current.token).toBe('acceso-nuevo'));
-    const guardado = JSON.parse(sessionStorage.getItem(TOKEN_KEY)!);
-    expect(guardado.refreshToken).toBe('refresco-nuevo');
+    const guardado = JSON.parse(localStorage.getItem(TOKEN_KEY)!);
+    expect(guardado.accessToken).toBe('acceso-nuevo');
   });
 
   it('deduplica refrescos concurrentes en una sola llamada', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
     mockFetch().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => ({
         access_token: 'acceso-nuevo',
-        refresh_token: 'refresco-nuevo',
         expires_at: AHORA_SEC + 21600,
       }),
     });
@@ -223,8 +228,8 @@ describe('getValidToken', () => {
   });
 
   it('devuelve null si la ruta de refresco responde con error', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
-    mockFetch().mockResolvedValue({ ok: false, json: async () => ({}) });
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+    mockFetch().mockResolvedValue({ ok: false, status: 401, json: async () => ({ error: 'reauthorize' }) });
 
     const { result } = renderHook(() => useToken());
 
@@ -232,7 +237,7 @@ describe('getValidToken', () => {
   });
 
   it('devuelve null si la red falla, sin propagar la excepción', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
     mockFetch().mockRejectedValue(new Error('sin red'));
 
     const { result } = renderHook(() => useToken());
@@ -241,24 +246,24 @@ describe('getValidToken', () => {
   });
 
   it('un refresco fallido no borra el token guardado', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
-    mockFetch().mockResolvedValue({ ok: false, json: async () => ({}) });
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+    mockFetch().mockResolvedValue({ ok: false, status: 401, json: async () => ({ error: 'reauthorize' }) });
 
     const { result } = renderHook(() => useToken());
     await result.current.getValidToken();
 
-    expect(sessionStorage.getItem(TOKEN_KEY)).not.toBeNull();
+    expect(localStorage.getItem(TOKEN_KEY)).not.toBeNull();
   });
 
   it('permite reintentar después de un fallo', async () => {
-    sessionStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(fakeToken(0)));
     mockFetch()
-      .mockResolvedValueOnce({ ok: false, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({ error: 'transient' }) })
       .mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({
           access_token: 'acceso-nuevo',
-          refresh_token: 'refresco-nuevo',
           expires_at: AHORA_SEC + 21600,
         }),
       });
