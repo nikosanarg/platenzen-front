@@ -54,6 +54,30 @@ export function chooseBestZoom(
   return 10;
 }
 
+/** Lado de un tile de OSM, en píxeles. Es fijo por convención del formato. */
+export const TILE_SIZE = 256;
+
+/**
+ * Posición de un punto en el "mundo" en píxeles, al zoom dado.
+ *
+ * Es la misma proyección que usan los tiles (Mercator), y esa es la razón de
+ * que exista: proyectar los puntos con una regla y los tiles con otra los
+ * desalinea, y el error crece con la distancia — que es justo lo que pasaba
+ * cuando el mapa abarcaba media Argentina.
+ */
+export function latLonToWorldPx(lat: number, lon: number, zoom: number): [number, number] {
+  const [tx, ty] = latLonToTileFloat(lat, lon, zoom);
+  return [tx * TILE_SIZE, ty * TILE_SIZE];
+}
+
+/** Inversa de `latLonToWorldPx`, para saber sobre qué punto se soltó el mouse. */
+export function worldPxToLatLon(x: number, y: number, zoom: number): [number, number] {
+  const n = Math.pow(2, zoom);
+  const lon = (x / TILE_SIZE / n) * 360 - 180;
+  const latRad = Math.atan(Math.sinh(Math.PI * (1 - (2 * (y / TILE_SIZE)) / n)));
+  return [(latRad * 180) / Math.PI, lon];
+}
+
 export interface OsmTile {
   tx: number;
   ty: number;

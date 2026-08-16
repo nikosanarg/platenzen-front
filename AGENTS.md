@@ -35,9 +35,10 @@ terminado.
    fórmula lleva verificación con datos concretos.
 2. **El tono es factual, sin lenguaje motivacional.** "Estado actual" muestra
    observaciones breves y objetivas. No agregar arengas ni signos de exclamación.
-3. Las dos categorías secretas de logros sólo se revelan cuando el usuario está cerca de
-   alcanzarlas. No exponerlas en listados, respuestas de API ni código de cliente
-   accesible.
+3. **No hay sistema de recompensas ni de "permisos".** Existió uno —niveles con premios de
+   comida, tiers, categorías secretas— y se eliminó por decisión del PO: el producto mide
+   lo que la persona corrió, no la premia. Si aparece un pedido de gamificación, se plantea
+   antes de construirlo; no se reintroduce por analogía con lo que había.
 4. Los tokens de Strava son credenciales de terceros: van por las rutas de
    `src/app/api/strava/*`, nunca al cliente ni al repo. **El refresh token vive sólo en la
    cookie `httpOnly` `strava_refresh`**, que el servidor escribe, lee y rota; el cliente

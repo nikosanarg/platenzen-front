@@ -73,8 +73,11 @@ es un cambio aparte, no algo a colar en otra tarea.
   proyectados, predicciones y porcentaje de consistencia salen de datos reales. Una fórmula
   mal hecha le miente al corredor sobre su progreso. Todo cambio de fórmula lleva
   verificación con datos concretos, no sólo build verde.
-- **Las dos categorías secretas de logros** sólo se revelan cuando el usuario está cerca.
-  No exponerlas en listados, respuestas de API ni código de cliente inspeccionable.
+- **Hay dos sistemas de nivel/XP y sobrevive uno solo**: `lib/xpSystem.ts`, el que alimenta
+  la tarjeta de arriba de la Home. El alternativo (`lib/levels.ts`, `gamification.ts`,
+  `milestones.ts`, `predictions.ts` y sus paneles) se eliminó. Si ves un "+N XP" en pantalla,
+  verificá que salga de `xpSystem`: los de `milestones.ts` eran decorativos y no sumaban a
+  nada, que fue el motivo de sacarlos.
 - Tokens de Strava: credenciales de terceros. Nunca al repo ni al cliente.
 - Límites de la API de Strava: el historial completo se procesa una vez, no en cada render.
 

@@ -181,6 +181,101 @@ export function computeWorldMap(activities: Activity[]): WorldMapData | null {
   };
 }
 
+/**
+ * Un grupo de zonas que a la escala actual del mapa caen encima unas de otras.
+ *
+ * Existe por dos motivos distintos que se veían igual de mal:
+ *
+ * 1. Las zonas son celdas de ~1 km. Con el mapa mostrando media Argentina, las
+ *    quince zonas de una misma ciudad caen en dos o tres píxeles: se dibujaban
+ *    superpuestas y la lista mostraba quince filas para tres manchas.
+ * 2. Una corrida atraviesa varias celdas contiguas, así que **aparecía repetida
+ *    en cada una**. De ahí las seis filas seguidas de "35.1 km · 3×": eran las
+ *    mismas tres actividades contadas seis veces.
+ *
+ * Por eso el conteo del grupo **no** es la suma de los conteos de sus zonas:
+ * son actividades distintas, deduplicadas por id. Sumarlas repetiría el mismo
+ * error a otra escala.
+ */
+export interface ZoneCluster {
+  id: string;
+  lat: number;
+  lon: number;
+  /** Actividades distintas que pasaron por el grupo, no la suma de las zonas. */
+  visitCount: number;
+  distanceKm: number;
+  lastVisit: string;
+  bestPaceSecPerKm: number;
+  /** Cuántas celdas quedaron adentro: 1 significa que no se agrupó nada. */
+  zoneCount: number;
+  activities: ZoneActivity[];
+}
+
+/**
+ * Agrupa zonas que quedan a menos de `minSeparationPx` en pantalla.
+ *
+ * Recibe la proyección en vez de calcularla para que el agrupado dependa del
+ * **zoom actual**: al acercarse, las mismas zonas caen más separadas y los
+ * grupos se abren solos. Es la pieza que hace que el zoom sirva de algo.
+ */
+export function clusterZones(
+  zones: MapZone[],
+  project: (lat: number, lon: number) => [number, number],
+  minSeparationPx: number,
+): ZoneCluster[] {
+  // De mayor a menor: la zona más visitada siembra el grupo, así el centro
+  // queda donde de verdad se corre y no donde cayó la primera de la lista.
+  const porImportancia = [...zones].sort((a, b) => b.visitCount - a.visitCount);
+
+  const grupos: { semilla: [number, number]; zonas: MapZone[] }[] = [];
+
+  for (const zona of porImportancia) {
+    const [x, y] = project(zona.lat, zona.lon);
+    const cerca = grupos.find(g => Math.hypot(g.semilla[0] - x, g.semilla[1] - y) < minSeparationPx);
+
+    if (cerca) {
+      cerca.zonas.push(zona);
+    } else {
+      grupos.push({ semilla: [x, y], zonas: [zona] });
+    }
+  }
+
+  return grupos.map(({ zonas }) => {
+    // Deduplicar por actividad: una corrida que cruza cinco celdas del grupo
+    // es una sola corrida.
+    const porActividad = new Map<number, ZoneActivity>();
+    for (const zona of zonas) {
+      for (const act of zona.activities) {
+        if (!porActividad.has(act.activityId)) porActividad.set(act.activityId, act);
+      }
+    }
+
+    const actividades = [...porActividad.values()].sort((a, b) =>
+      b.dateIso.localeCompare(a.dateIso)
+    );
+
+    const totalKm = actividades.reduce((s, a) => s + a.distanceKm, 0);
+    const ritmos = actividades.filter(a => a.paceSecPerKm > 0).map(a => a.paceSecPerKm);
+
+    // El centro se pondera por visitas: el grupo se dibuja donde más se corrió.
+    const pesoTotal = zonas.reduce((s, z) => s + z.visitCount, 0) || zonas.length;
+    const lat = zonas.reduce((s, z) => s + z.lat * z.visitCount, 0) / pesoTotal;
+    const lon = zonas.reduce((s, z) => s + z.lon * z.visitCount, 0) / pesoTotal;
+
+    return {
+      id: zonas.map(z => z.id).join('|'),
+      lat,
+      lon,
+      visitCount: actividades.length,
+      distanceKm: Math.round(totalKm * 10) / 10,
+      lastVisit: actividades[0]?.date ?? '',
+      bestPaceSecPerKm: ritmos.length > 0 ? Math.round(Math.min(...ritmos)) : 0,
+      zoneCount: zonas.length,
+      activities: actividades,
+    };
+  }).sort((a, b) => b.visitCount - a.visitCount);
+}
+
 export function formatPaceStr(secPerKm: number): string {
   if (secPerKm <= 0) return '—';
   const { minutes, seconds } = splitPace(secPerKm);
