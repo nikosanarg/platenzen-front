@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import StyledComponentsRegistry from '@/lib/registry';
 import RegistroServiceWorker from '@/components/pwa/RegistroServiceWorker';
+import { InstalacionPWAProvider } from '@/components/pwa/useInstalacionPWA';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Platenzen — Strava Stats',
-  description: 'Visualizá tus estadísticas de Strava',
+  title: 'Platenzen — Estadísticas de running',
+  description: 'Visualizá tus estadísticas de running',
   applicationName: 'Platenzen',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
@@ -29,8 +30,17 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
-        <RegistroServiceWorker />
+        <StyledComponentsRegistry>
+          {/*
+            El provider envuelve a `children` y al registro juntos: `beforeinstallprompt`
+            llega una sola vez, y tanto las pantallas como el botón flotante tienen que
+            leerlo del mismo lugar.
+          */}
+          <InstalacionPWAProvider>
+            {children}
+            <RegistroServiceWorker />
+          </InstalacionPWAProvider>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

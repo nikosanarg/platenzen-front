@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState as useStateReact } from 'react';
 import { usePathname } from 'next/navigation';
-import { IconRun, IconRefresh, IconLogout } from '@/components/Icon';
+import { IconRun, IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
+import { useBotonInstalacionInline } from '@/components/pwa/useInstalacionPWA';
 import {
   DashboardRoot,
   DashboardHeader,
@@ -61,6 +62,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useStateReact(false);
   const isMobile = useIsMobile(isMounted);
+  // Antes del `return null` de abajo: los hooks no pueden quedar detrás de una
+  // salida temprana.
+  const { sePuedeInstalar, instalar } = useBotonInstalacionInline();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -85,6 +89,17 @@ const Dashboard: React.FC<DashboardProps> = ({
         <HeaderRight>
           {isFromCache && cacheAge !== null && (
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
+          )}
+          {/*
+            Va primero a propósito: instalar la app es lo que hace que el historial
+            sobreviva y que se abra sin navegador, y una vez adentro del dashboard nadie
+            sale a buscarlo. Desaparece solo cuando ya está instalada.
+          */}
+          {sePuedeInstalar && (
+            <HeaderButton $variant="primary" onClick={instalar}>
+              <IconDownload size={20} color="currentColor" />
+              <ButtonText>Instalar app</ButtonText>
+            </HeaderButton>
           )}
           <HeaderButton $variant="ghost" onClick={onRefresh} disabled={loading}>
             {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}

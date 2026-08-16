@@ -47,6 +47,33 @@ export const InstallButton = styled.button`
   }
 `;
 
+/**
+ * El botón de instalación embebido en una pantalla, en vez de flotando en una
+ * esquina. Es secundario a propósito: en la pantalla de conexión no puede
+ * competir con "Conectar con Strava", que es a lo que la persona vino.
+ */
+export const InstallInlineButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+  }
+`;
+
 export const IOSBanner = styled(AvisoFlotante)`
   strong {
     display: block;

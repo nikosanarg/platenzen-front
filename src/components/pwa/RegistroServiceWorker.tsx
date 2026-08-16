@@ -1,40 +1,32 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InstallButton, IOSBanner, UpdateBanner, UpdateButton } from './styled';
-
-/**
- * `beforeinstallprompt` no está en los tipos de lib.dom todavía (Chrome lo
- * implementa fuera del estándar). Se tipa lo mínimo que se usa.
- */
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { useInstalacionPWA } from './useInstalacionPWA';
 
 /**
  * RegistroServiceWorker — ciclo de vida de la PWA de Platenzen.
  *
  * Base: `mixbol-front/components/pwa/RegistroServiceWorker.tsx`. Se toma de
  * ahí el registro con detección de actualización (`updatefound` →
- * `statechange`), la captura de `beforeinstallprompt`, la detección de iOS
- * sin standalone, y `navigator.storage.persist()`.
+ * `statechange`) y `navigator.storage.persist()`.
  *
- * Lo que NO se copia de Mixbol, y por qué (ver docs/feedback-frente-d.md):
+ * El estado de instalación **no** vive acá sino en `useInstalacionPWA`:
+ * `beforeinstallprompt` llega una sola vez y hay que quedárselo, así que un
+ * único dueño lo captura y lo reparte. Este componente sólo dibuja el botón
+ * flotante, que es el respaldo — se esconde cuando alguna pantalla ya ofrece la
+ * instalación embebida en su propio layout.
+ *
+ * Lo que NO se copia de Mixbol, y por qué (ver el historial de la tanda):
  * - El banner de actualización ahí se arma con `document.createElement` +
  *   `innerHTML`. Es deuda de aquel repo: un banner es un componente de React,
- *   va con estado y JSX como el resto de la UI, con `styled-components` (que
- *   es lo que ya usa este repo) en vez de `style.cssText` a mano.
- * - El `console.log('SW registered:', registration)`: ruido en la consola de
- *   producción.
- * - `useToast`: Platenzen no tiene ese contexto. El aviso de actualización se
- *   resuelve enteramente con el banner de abajo.
+ *   va con estado y JSX como el resto de la UI.
+ * - El `console.log('SW registered:', registration)`: ruido en producción.
+ * - `useToast`: Platenzen no tiene ese contexto.
  */
 export default function RegistroServiceWorker() {
-  const [mostrarBotonInstalar, setMostrarBotonInstalar] = useState(false);
-  const [mostrarBannerIOS, setMostrarBannerIOS] = useState(false);
   const [actualizacionLista, setActualizacionLista] = useState(false);
-  const promptDiferidoRef = useRef<BeforeInstallPromptEvent | null>(null);
+  const { sePuedeInstalar, instalar, esIOS, anclajesInline } = useInstalacionPWA();
 
   useEffect(() => {
     /**
@@ -57,8 +49,7 @@ export default function RegistroServiceWorker() {
      * localStorage se va entero, que es donde vive el historial completo de
      * actividades cacheado (`src/lib/cache.ts`, TTL de 6 días): un par de MB
      * y varios minutos de descarga contra la API de Strava para reponerlo.
-     * Esto importa más acá que en Mixbol, que no cachea nada tan pesado. Si
-     * el navegador lo niega, no pasa nada: se sigue como hasta ahora.
+     * Si el navegador lo niega, no pasa nada: se sigue como hasta ahora.
      */
     if (navigator.storage?.persist) {
       navigator.storage
@@ -90,54 +81,7 @@ export default function RegistroServiceWorker() {
           console.error('No se pudo registrar el service worker:', error);
         });
     }
-
-    const manejarBeforeInstallPrompt = (evento: Event) => {
-      evento.preventDefault();
-      promptDiferidoRef.current = evento as BeforeInstallPromptEvent;
-      setMostrarBotonInstalar(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', manejarBeforeInstallPrompt);
-
-    const manejarAppInstalada = () => {
-      promptDiferidoRef.current = null;
-      setMostrarBotonInstalar(false);
-    };
-
-    window.addEventListener('appinstalled', manejarAppInstalada);
-
-    // iOS/Safari no dispara `beforeinstallprompt`: la única forma de instalar
-    // ahí es "Compartir → Agregar a inicio", y hay que decirlo a mano.
-    const esIOS =
-      /iPhone|iPad|iPod/.test(navigator.userAgent) &&
-      !(window.navigator as Navigator & { standalone?: boolean }).standalone;
-    const esSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-
-    if (esIOS && esSafari) {
-      // Mismo patrón que `Dashboard/index.tsx` para el flag `isMounted`: esto
-      // sólo puede saberse después de montar (depende de `navigator`, que no
-      // existe en SSR), así que el setState síncrono dentro del efecto es
-      // intencional, no un efecto derivable de props/estado.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMostrarBannerIOS(true);
-    }
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', manejarBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', manejarAppInstalada);
-    };
   }, []);
-
-  const handleInstalarClick = async () => {
-    if (!promptDiferidoRef.current) return;
-
-    promptDiferidoRef.current.prompt();
-    const { outcome } = await promptDiferidoRef.current.userChoice;
-    if (outcome === 'accepted') {
-      promptDiferidoRef.current = null;
-      setMostrarBotonInstalar(false);
-    }
-  };
 
   const handleRecargarClick = () => {
     window.location.reload();
@@ -145,11 +89,11 @@ export default function RegistroServiceWorker() {
 
   return (
     <>
-      {mostrarBotonInstalar && (
-        <InstallButton onClick={handleInstalarClick}>Instalar app</InstallButton>
+      {sePuedeInstalar && anclajesInline === 0 && (
+        <InstallButton onClick={instalar}>Instalar app</InstallButton>
       )}
 
-      {mostrarBannerIOS && (
+      {esIOS && (
         <IOSBanner role="status">
           <strong>Agregar a pantalla de inicio</strong>
           <span>Tocá el ícono compartir (↗) y elegí &ldquo;Agregar a inicio&rdquo;.</span>
