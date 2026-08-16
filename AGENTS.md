@@ -102,4 +102,24 @@ ni para volver la app offline-first.
   (`localStorage`, `src/lib/cache.ts`); el worker sólo cachea el shell y los assets.
 - El registro corre **sólo en producción y sobre contexto seguro**: en `next dev` un
   service worker sirve chunks de una compilación anterior y se pierde una tarde buscando el
-  bug donde no está.
+  bug donde no está. Corolario práctico: **el botón de instalar no aparece en `npm run
+  dev`**, y no está roto — el navegador no emite `beforeinstallprompt` sin manifiesto y
+  service worker activos.
+- **El estado de instalación tiene un solo dueño: `pwa/useInstalacionPWA`.**
+  `beforeinstallprompt` llega **una única vez**; si dos componentes lo escucharan por su
+  cuenta, el segundo no vería nada. De ahí sale la coordinación: cada pantalla que ofrece la
+  instalación embebida registra un anclaje, y el botón flotante —que es el respaldo— se
+  esconde mientras haya alguno. Si agregás un tercer lugar donde ofrecerla, usá
+  `useBotonInstalacionInline` y esa regla se cumple sola.
+
+## Proveedores en la pantalla de conexión
+
+Se muestran **todos** los proveedores que Platenzen sabe leer, incluso los que todavía no se
+pueden conectar. Una opción visible y apagada comunica de qué es capaz el producto; una
+ausencia no comunica nada. Lo que no se hace es fingir que funciona: el motivo del bloqueo
+va en **texto visible**, no en un tooltip que hay que descubrir.
+
+Un botón bloqueado se marca con **`aria-disabled`, nunca con el `disabled` nativo**: un
+botón realmente deshabilitado no recibe foco ni puntero, así que quien navega con teclado o
+lector de pantalla nunca llegaría a la explicación — que es justamente lo único que hay para
+comunicar. El guard del click vive adentro del componente, no en quien lo usa.

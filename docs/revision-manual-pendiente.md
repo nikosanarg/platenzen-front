@@ -33,6 +33,19 @@ probar contra Strava.
 
 ## 2. Instalación de la PWA
 
+**Ojo antes de empezar**: el botón de instalar **no aparece con `npm run dev`**. El
+navegador sólo emite `beforeinstallprompt` con manifiesto y service worker activos, y el
+worker se registra sólo en producción. Hay que probar con `npm run build && npm run start`.
+
+Dónde tiene que aparecer la oferta, y **una sola a la vez**:
+
+- En la pantalla de conexión, embebida abajo de todo, separada por una línea.
+- Ya con sesión, como botón naranja en el encabezado del dashboard, a la izquierda de
+  "Actualizar datos".
+- El botón flotante de la esquina es el respaldo: **no** tiene que verse cuando alguna de
+  las dos anteriores está en pantalla.
+- Después de instalar, ninguna de las tres tiene que seguir ofreciéndola.
+
 - **Desktop (Chrome/Edge)**: el manifiesto carga sin errores en DevTools → Application →
   Manifest; aparece el ícono de instalar; la app instalada abre en modo standalone y sin
   fogonazo blanco al arrancar.
