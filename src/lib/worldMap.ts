@@ -2,6 +2,7 @@ import { Activity } from '@/types/activity';
 import { decodePolyline } from '@/lib/polylineDecoder';
 import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
+import { haversineKm } from '@/lib/explorationUtils';
 
 export interface ZoneActivity {
   activityId: number;
@@ -182,63 +183,91 @@ export function computeWorldMap(activities: Activity[]): WorldMapData | null {
 }
 
 /**
- * Un grupo de zonas que a la escala actual del mapa caen encima unas de otras.
+ * Un lugar donde corrés. Es lo que la lista llama "zona".
  *
- * Existe por dos motivos distintos que se veían igual de mal:
+ * Internamente el mapa parte el mundo en celdas de ~1 km, pero **eso no es una
+ * zona y nunca debería llegar a la pantalla**: una corrida de 12 km atraviesa
+ * diez celdas, así que aparecía repetida en cada una. De ahí salían las seis
+ * filas idénticas de "35.1 km · 3×" — las mismas tres salidas contadas seis
+ * veces — y el "11 zonas" que no significaba nada para quien mira.
  *
- * 1. Las zonas son celdas de ~1 km. Con el mapa mostrando media Argentina, las
- *    quince zonas de una misma ciudad caen en dos o tres píxeles: se dibujaban
- *    superpuestas y la lista mostraba quince filas para tres manchas.
- * 2. Una corrida atraviesa varias celdas contiguas, así que **aparecía repetida
- *    en cada una**. De ahí las seis filas seguidas de "35.1 km · 3×": eran las
- *    mismas tres actividades contadas seis veces.
- *
- * Por eso el conteo del grupo **no** es la suma de los conteos de sus zonas:
- * son actividades distintas, deduplicadas por id. Sumarlas repetiría el mismo
- * error a otra escala.
+ * Por eso el conteo **no** es la suma de los conteos de sus celdas, sino la
+ * cantidad de actividades distintas, deduplicadas por id.
  */
 export interface ZoneCluster {
   id: string;
   lat: number;
   lon: number;
-  /** Actividades distintas que pasaron por el grupo, no la suma de las zonas. */
+  /** Actividades distintas que pasaron por el lugar. */
   visitCount: number;
   distanceKm: number;
   lastVisit: string;
   bestPaceSecPerKm: number;
-  /** Cuántas celdas quedaron adentro: 1 significa que no se agrupó nada. */
-  zoneCount: number;
   activities: ZoneActivity[];
 }
 
 /**
- * Agrupa zonas que quedan a menos de `minSeparationPx` en pantalla.
+ * Radio de un lugar, en km.
  *
- * Recibe la proyección en vez de calcularla para que el agrupado dependa del
- * **zoom actual**: al acercarse, las mismas zonas caen más separadas y los
- * grupos se abren solos. Es la pieza que hace que el zoom sirva de algo.
+ * Dos salidas a menos de esto son "el mismo lugar donde corro", no dos zonas
+ * distintas. Es del orden del barrio, que es la escala a la que la pregunta
+ * "¿dónde corrí?" tiene una respuesta útil.
  */
-export function clusterZones(
-  zones: MapZone[],
-  project: (lat: number, lon: number) => [number, number],
-  minSeparationPx: number,
-): ZoneCluster[] {
-  // De mayor a menor: la zona más visitada siembra el grupo, así el centro
+export const RADIO_ZONA_KM = 2;
+
+/**
+ * Junta las celdas vecinas en lugares.
+ *
+ * El agrupado es **geográfico y fijo**, no depende del zoom a propósito: si
+ * dependiera, acercarse partiría un lugar en sus celdas y volverían las filas
+ * repetidas. El zoom sirve para mirar de cerca, no para cambiar qué se cuenta.
+ */
+export function clusterZones(zones: MapZone[], radiusKm = RADIO_ZONA_KM): ZoneCluster[] {
+  // De mayor a menor: la celda más visitada siembra el lugar, así el centro
   // queda donde de verdad se corre y no donde cayó la primera de la lista.
   const porImportancia = [...zones].sort((a, b) => b.visitCount - a.visitCount);
+  const n = porImportancia.length;
 
-  const grupos: { semilla: [number, number]; zonas: MapZone[] }[] = [];
+  // Conjuntos disjuntos. Hace falta unir de a pares y que la unión se propague:
+  // agrupar contra una semilla fija partía las corridas largas, porque un
+  // recorrido de 12 km es una LÍNEA y sus celdas del final quedan lejísimos de
+  // la primera aunque sean la misma salida.
+  const padre = Array.from({ length: n }, (_, i) => i);
+  const raiz = (i: number): number => (padre[i] === i ? i : (padre[i] = raiz(padre[i])));
+  const unir = (a: number, b: number) => {
+    const [ra, rb] = [raiz(a), raiz(b)];
+    if (ra !== rb) padre[rb] = ra;
+  };
 
-  for (const zona of porImportancia) {
-    const [x, y] = project(zona.lat, zona.lon);
-    const cerca = grupos.find(g => Math.hypot(g.semilla[0] - x, g.semilla[1] - y) < minSeparationPx);
+  for (let i = 0; i < n; i++) {
+    const actividadesI = new Set(porImportancia[i].activities.map(a => a.activityId));
 
-    if (cerca) {
-      cerca.zonas.push(zona);
-    } else {
-      grupos.push({ semilla: [x, y], zonas: [zona] });
+    for (let j = i + 1; j < n; j++) {
+      // Dos celdas son el mismo lugar si comparten una salida —es literalmente
+      // la misma corrida pasando por las dos— o si están a tiro de caminata,
+      // que junta puntos del mismo barrio aunque nunca los haya unido un
+      // recorrido.
+      const compartenSalida = porImportancia[j].activities.some(a => actividadesI.has(a.activityId));
+      const cerca =
+        haversineKm(
+          porImportancia[i].lat,
+          porImportancia[i].lon,
+          porImportancia[j].lat,
+          porImportancia[j].lon
+        ) <= radiusKm;
+
+      if (compartenSalida || cerca) unir(i, j);
     }
   }
+
+  const porRaiz = new Map<number, MapZone[]>();
+  for (let i = 0; i < n; i++) {
+    const r = raiz(i);
+    if (!porRaiz.has(r)) porRaiz.set(r, []);
+    porRaiz.get(r)!.push(porImportancia[i]);
+  }
+
+  const grupos = [...porRaiz.values()].map(zonas => ({ zonas }));
 
   return grupos.map(({ zonas }) => {
     // Deduplicar por actividad: una corrida que cruza cinco celdas del grupo
@@ -270,7 +299,6 @@ export function clusterZones(
       distanceKm: Math.round(totalKm * 10) / 10,
       lastVisit: actividades[0]?.date ?? '',
       bestPaceSecPerKm: ritmos.length > 0 ? Math.round(Math.min(...ritmos)) : 0,
-      zoneCount: zonas.length,
       activities: actividades,
     };
   }).sort((a, b) => b.visitCount - a.visitCount);

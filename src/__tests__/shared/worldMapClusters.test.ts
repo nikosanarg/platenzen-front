@@ -1,13 +1,16 @@
 /**
- * Agrupado de zonas del mapa de Tu Mundo.
+ * Agrupado de celdas en "lugares donde corrés", que es lo que la lista del mapa
+ * muestra como zonas.
  *
- * Arregla dos cosas que se veían igual de mal y tenían causas distintas: las
- * zonas de una misma ciudad cayendo en los mismos píxeles cuando el mapa
- * abarca medio país, y una misma corrida contada una vez por cada celda de
- * ~1 km que atraviesa. Lo segundo es lo que producía seis filas idénticas de
- * "35.1 km · 3×" en la lista.
+ * Internamente el mapa parte el mundo en celdas de ~1 km. Una corrida de 12 km
+ * atraviesa diez, así que aparecía repetida en cada una: de ahí salían las seis
+ * filas idénticas de "35.1 km · 3×" para las mismas tres salidas.
+ *
+ * El agrupado es geográfico y fijo a propósito. Si dependiera del zoom,
+ * acercarse partiría un lugar en sus celdas y las filas repetidas volverían
+ * justo a la escala en la que uno mira de cerca.
  */
-import { clusterZones, MapZone, ZoneActivity } from '@/lib/worldMap';
+import { clusterZones, MapZone, RADIO_ZONA_KM, ZoneActivity } from '@/lib/worldMap';
 
 function actividad(id: number, km = 10, fecha = '2026-07-02'): ZoneActivity {
   return {
@@ -20,7 +23,7 @@ function actividad(id: number, km = 10, fecha = '2026-07-02'): ZoneActivity {
   };
 }
 
-function zona(id: string, lat: number, lon: number, actividades: ZoneActivity[]): MapZone {
+function celda(id: string, lat: number, lon: number, actividades: ZoneActivity[]): MapZone {
   return {
     id,
     lat,
@@ -35,112 +38,123 @@ function zona(id: string, lat: number, lon: number, actividades: ZoneActivity[])
   };
 }
 
-/** Proyección de juguete: 1 grado = `escala` píxeles. Sube la escala para simular acercarse. */
-const proyeccion = (escala: number) => (lat: number, lon: number): [number, number] =>
-  [lon * escala, -lat * escala];
-
-describe('agrupado por cercanía en pantalla', () => {
-  const cerca = [
-    zona('a', -34.90, -57.95, [actividad(1)]),
-    zona('b', -34.91, -57.96, [actividad(2)]),
-    zona('c', -34.92, -57.97, [actividad(3)]),
-  ];
-
-  it('junta en un punto las zonas que caen encima cuando el mapa está lejos', () => {
-    // A 100 px por grado, las tres zonas están a ~1 px entre sí.
-    const grupos = clusterZones(cerca, proyeccion(100), 44);
-
-    expect(grupos).toHaveLength(1);
-    expect(grupos[0].zoneCount).toBe(3);
-  });
-
-  it('las separa al acercarse, que es para lo que sirve el zoom', () => {
-    // A 10000 px por grado, las mismas zonas quedan a ~100 px.
-    const grupos = clusterZones(cerca, proyeccion(10000), 44);
-
-    expect(grupos).toHaveLength(3);
-    expect(grupos.every(g => g.zoneCount === 1)).toBe(true);
-  });
-
-  it('no junta zonas que están genuinamente lejos', () => {
-    const lejos = [
-      zona('bsas', -34.6, -58.4, [actividad(1)]),
-      zona('neuquen', -38.9, -68.1, [actividad(2)]),
-    ];
-
-    expect(clusterZones(lejos, proyeccion(100), 44)).toHaveLength(2);
-  });
-});
-
-describe('una corrida que cruza varias celdas se cuenta una sola vez', () => {
-  // El caso real: tres salidas de 11.7 km atravesando seis celdas contiguas.
-  // Antes producía seis zonas de "35.1 km · 3×" — el mismo dato repetido.
+describe('una corrida que cruza varias celdas es una sola salida', () => {
+  // El caso real que se veía en pantalla: tres salidas de 11.7 km por el mismo
+  // recorrido de Rosario, atravesando once celdas contiguas.
   const tresSalidas = [actividad(1, 11.7), actividad(2, 11.7), actividad(3, 11.7)];
-  const seisCeldas = Array.from({ length: 6 }, (_, i) =>
-    zona(`celda-${i}`, -34.9 - i * 0.01, -57.95 - i * 0.01, tresSalidas)
+  const onceCeldas = Array.from({ length: 11 }, (_, i) =>
+    celda(`celda-${i}`, -32.95 + i * 0.008, -60.65 + i * 0.008, tresSalidas)
   );
 
-  it('reporta tres salidas, no dieciocho', () => {
-    const grupos = clusterZones(seisCeldas, proyeccion(100), 44);
+  it('reporta un solo lugar, no once', () => {
+    expect(clusterZones(onceCeldas)).toHaveLength(1);
+  });
 
-    expect(grupos).toHaveLength(1);
-    expect(grupos[0].visitCount).toBe(3);
+  it('reporta tres salidas, no treinta y tres', () => {
+    expect(clusterZones(onceCeldas)[0].visitCount).toBe(3);
   });
 
   it('reporta los kilómetros una sola vez', () => {
-    const grupos = clusterZones(seisCeldas, proyeccion(100), 44);
-
-    expect(grupos[0].distanceKm).toBeCloseTo(35.1, 5);
+    expect(clusterZones(onceCeldas)[0].distanceKm).toBeCloseTo(35.1, 5);
   });
 
-  it('deja ver cuántas celdas quedaron adentro, para no fingir que era una sola', () => {
-    expect(clusterZones(seisCeldas, proyeccion(100), 44)[0].zoneCount).toBe(6);
+  it('no parte un recorrido largo aunque sus extremos queden lejísimos', () => {
+    // Un recorrido es una LÍNEA, no una mancha: agrupar por distancia contra
+    // una celda semilla lo partía en pedazos, porque el final de una salida de
+    // 12 km está a 12 km del principio. Se mantienen juntas porque comparten
+    // la salida, no porque estén cerca.
+    const unaSalida = [actividad(1, 12)];
+    const recorrido = Array.from({ length: 12 }, (_, i) =>
+      celda(`km-${i}`, -32.95 + i * 0.05, -60.65, unaSalida)
+    );
+
+    const grupos = clusterZones(recorrido);
+
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0].visitCount).toBe(1);
   });
 });
 
-describe('datos del grupo', () => {
-  it('toma la visita más reciente de todas sus zonas', () => {
-    const grupos = clusterZones(
-      [
-        zona('vieja', -34.90, -57.95, [actividad(1, 10, '2026-01-15')]),
-        zona('nueva', -34.91, -57.96, [actividad(2, 10, '2026-08-09')]),
-      ],
-      proyeccion(100),
-      44
+describe('qué se considera el mismo lugar', () => {
+  it('junta dos puntos del mismo barrio', () => {
+    const cerca = [
+      celda('a', -32.950, -60.650, [actividad(1)]),
+      celda('b', -32.958, -60.657, [actividad(2)]), // ~1 km
+    ];
+
+    expect(clusterZones(cerca)).toHaveLength(1);
+  });
+
+  it('separa dos puntos de la misma ciudad pero de barrios distintos', () => {
+    const lejos = [
+      celda('centro', -32.950, -60.650, [actividad(1)]),
+      celda('otro', -33.000, -60.700, [actividad(2)]), // ~7 km
+    ];
+
+    expect(clusterZones(lejos)).toHaveLength(2);
+  });
+
+  it('nunca junta dos ciudades', () => {
+    const dosCiudades = [
+      celda('rosario', -32.95, -60.65, [actividad(1)]),
+      celda('bsas', -34.60, -58.40, [actividad(2)]),
+    ];
+
+    expect(clusterZones(dosCiudades)).toHaveLength(2);
+  });
+
+  it('no cambia el resultado según cuánto se haya acercado el mapa', () => {
+    // Es la garantía de fondo: el agrupado no recibe el zoom, así que no hay
+    // forma de que acercarse parta un lugar y repita filas.
+    const celdas = Array.from({ length: 5 }, (_, i) =>
+      celda(`c-${i}`, -32.95 + i * 0.005, -60.65, [actividad(1), actividad(2)])
     );
+
+    expect(clusterZones(celdas)).toEqual(clusterZones(celdas));
+    expect(clusterZones(celdas)).toHaveLength(1);
+  });
+
+  it('respeta un radio explícito cuando se lo pasan', () => {
+    const aUnKm = [
+      celda('a', -32.950, -60.650, [actividad(1)]),
+      celda('b', -32.959, -60.650, [actividad(2)]),
+    ];
+
+    expect(clusterZones(aUnKm, RADIO_ZONA_KM)).toHaveLength(1);
+    expect(clusterZones(aUnKm, 0.5)).toHaveLength(2);
+  });
+});
+
+describe('datos del lugar', () => {
+  it('toma la visita más reciente de todas sus celdas', () => {
+    const grupos = clusterZones([
+      celda('vieja', -32.950, -60.650, [actividad(1, 10, '2026-01-15')]),
+      celda('nueva', -32.955, -60.655, [actividad(2, 10, '2026-08-09')]),
+    ]);
 
     expect(grupos[0].lastVisit).toBe('2026-08-09');
   });
 
   it('se centra donde más se corrió, no en el promedio simple', () => {
     const muchas = Array.from({ length: 10 }, (_, i) => actividad(i + 1));
-    const grupos = clusterZones(
-      [
-        zona('frecuente', -34.90, -58.00, muchas),
-        zona('ocasional', -34.99, -58.09, [actividad(99)]),
-      ],
-      proyeccion(100),
-      44
-    );
+    const grupos = clusterZones([
+      celda('frecuente', -32.950, -60.650, muchas),
+      celda('ocasional', -32.962, -60.650, [actividad(99)]),
+    ]);
 
-    // El centro tiene que estar mucho más cerca de la zona frecuente.
-    expect(grupos[0].lat).toBeGreaterThan(-34.92);
+    expect(grupos[0].lat).toBeGreaterThan(-32.953);
   });
 
   it('ordena de más a menos frecuentado', () => {
-    const grupos = clusterZones(
-      [
-        zona('poca', -20, -20, [actividad(1)]),
-        zona('mucha', 20, 20, [actividad(2), actividad(3), actividad(4)]),
-      ],
-      proyeccion(100),
-      44
-    );
+    const grupos = clusterZones([
+      celda('poca', -20, -20, [actividad(1)]),
+      celda('mucha', 20, 20, [actividad(2), actividad(3), actividad(4)]),
+    ]);
 
     expect(grupos.map(g => g.visitCount)).toEqual([3, 1]);
   });
 
-  it('devuelve lista vacía si no hay zonas', () => {
-    expect(clusterZones([], proyeccion(100), 44)).toEqual([]);
+  it('devuelve lista vacía si no hay celdas', () => {
+    expect(clusterZones([])).toEqual([]);
   });
 });

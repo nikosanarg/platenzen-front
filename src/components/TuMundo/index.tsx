@@ -5,7 +5,6 @@ import { Activity } from '@/types/activity';
 import { computeWorldMap, clusterZones, ZoneCluster, formatPaceStr } from '@/lib/worldMap';
 import {
   TILE_SIZE,
-  chooseBestZoom,
   latLonToWorldPx,
   worldPxToLatLon,
 } from '@/lib/osmTiles';
@@ -41,11 +40,16 @@ import {
 const SVG_W = 600;
 const SVG_H = 360;
 
-/** Distancia mínima entre centros para dibujarlos separados. Es ~el diámetro del círculo más grande. */
-const SEPARACION_MINIMA_PX = 44;
+/**
+ * Zoom de arranque: a esta escala el viewport abarca ~2 km de ancho, que es
+ * nivel barrio — la escala a la que "donde corri" se puede leer en el mapa.
+ */
+const ZOOM_INICIAL = 15;
 
-const ZOOM_MIN = 3;
-const ZOOM_MAX = 16;
+// Se puede alejar hasta ver la ciudad y sus alrededores, no mas: el mapa
+// responde "por donde corro", no "en que pais estuve".
+const ZOOM_MIN = 10;
+const ZOOM_MAX = 17;
 
 interface TooltipState {
   x: number;
@@ -76,12 +80,12 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
   // en un efecto — así la primera pintura ya sale bien encuadrada, sin un
   // fotograma intermedio con el mapa en otro lado.
   const vistaInicial = useMemo<Vista | null>(() => {
-    if (!data) return null;
-    return {
-      centerLat: (data.minLat + data.maxLat) / 2,
-      centerLon: (data.minLon + data.maxLon) / 2,
-      zoom: chooseBestZoom(data.minLat, data.maxLat, data.minLon, data.maxLon, 3),
-    };
+    if (!data || data.zones.length === 0) return null;
+    // Centrado en el lugar mas frecuentado, no en el centro geometrico de todo
+    // lo recorrido: con salidas en dos ciudades, ese centro cae en el medio del
+    // campo, donde no se corrio nunca.
+    const principal = [...data.zones].sort((a, b) => b.visitCount - a.visitCount)[0];
+    return { centerLat: principal.lat, centerLon: principal.lon, zoom: ZOOM_INICIAL };
   }, [data]);
 
   // Mientras el usuario no toque nada manda el encuadre inicial; apenas mueve o
@@ -113,10 +117,10 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     [vista]
   );
 
-  const clusters = useMemo(() => {
-    if (!data || !vista) return [];
-    return clusterZones(data.zones, project, SEPARACION_MINIMA_PX);
-  }, [data, vista, project]);
+  // El agrupado NO depende del zoom: ver el comentario de `clusterZones`.
+  // Si dependiera, acercarse partiria un lugar en sus celdas de 1 km y la lista
+  // volveria a repetir la misma salida en varias filas.
+  const clusters = useMemo(() => (data ? clusterZones(data.zones) : []), [data]);
 
   /** Los tiles que tocan el viewport al zoom actual. */
   const tiles = useMemo(() => {
@@ -246,8 +250,9 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     actualizarVista(prev => ({
       centerLat: cluster.lat,
       centerLon: cluster.lon,
-      // Si el grupo tiene varias zonas adentro, acercarse las separa.
-      zoom: cluster.zoneCount > 1 ? Math.min(ZOOM_MAX, prev.zoom + 2) : prev.zoom,
+      // Se acerca a nivel barrio si estaba mas lejos; si ya estaba cerca, respeta
+      // el zoom que el usuario eligio.
+      zoom: Math.max(prev.zoom, ZOOM_INICIAL),
     }));
   };
 
@@ -324,27 +329,11 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
                       setTooltip({
                         x: ((coords[0] + 12) / SVG_W) * 100,
                         y: ((coords[1] - 36) / SVG_H) * 100,
-                        text:
-                          `${cluster.visitCount} salida${cluster.visitCount !== 1 ? 's' : ''} · ${cluster.distanceKm} km` +
-                          (cluster.zoneCount > 1 ? ` · ${cluster.zoneCount} zonas` : ''),
+                        text: `${cluster.visitCount} salida${cluster.visitCount !== 1 ? 's' : ''} · ${cluster.distanceKm} km`,
                       });
                     }}
                     onMouseLeave={() => setTooltip(null)}
                   />
-                  {/* Cuántas zonas hay adentro: sin esto, un grupo y una zona suelta se ven igual. */}
-                  {cluster.zoneCount > 1 && r >= 12 && (
-                    <text
-                      x={cx}
-                      y={cy + 4}
-                      textAnchor="middle"
-                      fontSize="11"
-                      fontWeight="700"
-                      fill="#fff"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      {cluster.zoneCount}
-                    </text>
-                  )}
                 </g>
               );
             })}
@@ -378,7 +367,7 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <SubTitle>Zonas más frecuentadas</SubTitle>
-          <MapHint>Arrastrá para moverte y usá la rueda para acercarte. Al acercarte, las zonas agrupadas se abren.</MapHint>
+          <MapHint>Tocá una zona para verla en el mapa. Arrastrá para moverte y usá la rueda para acercarte.</MapHint>
           <ZoneList>
             {clusters.slice(0, 15).map((cluster, idx) => (
               <ZoneItem
@@ -388,10 +377,7 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
               >
                 <ZoneRank>#{idx + 1}</ZoneRank>
                 <ZoneInfo>
-                  <ZoneName>
-                    {cluster.distanceKm} km acumulados
-                    {cluster.zoneCount > 1 && ` · ${cluster.zoneCount} zonas`}
-                  </ZoneName>
+                  <ZoneName>{cluster.distanceKm} km acumulados</ZoneName>
                   <ZoneMeta>Última visita: {cluster.lastVisit}</ZoneMeta>
                 </ZoneInfo>
                 <ZoneVisits>{cluster.visitCount}×</ZoneVisits>

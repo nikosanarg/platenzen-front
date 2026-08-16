@@ -10,8 +10,6 @@ import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart
 import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
 import PerformanceTabs from '@/components/charts/PerformanceTabs';
 import CollapsibleSection from '@/components/CollapsibleSection';
-import PersonalGoals from '@/components/PersonalGoals';
-import ConsistencyPanel from '@/components/ConsistencyPanel';
 import TuMundo from '@/components/TuMundo';
 import { LegendaryGroup, PatternsGrid } from '@/components/Dashboard/styled';
 
@@ -24,17 +22,9 @@ export default function ProgresoPage() {
 
       <CoachAnalisis activities={activities} stats={stats} />
 
-      <CollapsibleSection
-        title="Objetivos y territorio"
-        subtitle="metas propias, constancia y por dónde corrés"
-        defaultOpen
-      >
-        <LegendaryGroup>
-          <PersonalGoals activities={activities} stats={stats} />
-          <ConsistencyPanel activities={activities} stats={stats} />
-          <TuMundo activities={activities} />
-        </LegendaryGroup>
-      </CollapsibleSection>
+      <LegendaryGroup>
+        <TuMundo activities={activities} />
+      </LegendaryGroup>
 
       <LegendaryGroup>
         <RecordHistorySection activities={activities} />
