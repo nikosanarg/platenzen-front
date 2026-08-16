@@ -94,6 +94,20 @@ export const IconHourglass: React.FC<Props> = ({ size = 20, color = 'currentColo
   </svg>
 );
 
+export const IconCompass: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <circle cx="10" cy="10" r="7.5" stroke={color} strokeWidth="1.5" />
+    <path d="m13 7-1.8 4.2L7 13l1.8-4.2L13 7z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
+export const IconMountain: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <path d="M2 16h16L12 5l-3 5.5L7.2 8 2 16z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="m10.3 8.2 1.7-3.2 1.7 3.2h-3.4z" fill={color} />
+  </svg>
+);
+
 export const IconDownload: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <path d="M10 2v10" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

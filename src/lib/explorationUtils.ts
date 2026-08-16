@@ -23,20 +23,32 @@ export function haversineKm(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/** Radio por defecto: dos salidas a menos de 500 m son "el mismo lugar". */
+export const RADIO_LUGAR_KM = 0.5;
+
 /**
  * Counts the number of distinct activity starting places among the given runs.
  * Two starting points are considered the same place when their great-circle
- * distance is ≤ 500 m. Starting position is taken from the first point of
+ * distance is ≤ `radiusKm`. Starting position is taken from the first point of
  * each activity's summary polyline.
+ *
+ * El radio es parámetro porque hay dos preguntas distintas: "¿salí desde otra
+ * esquina?" (500 m, el default histórico) y "¿salí desde otra zona?", que es la
+ * que hace la rama de Exploración y que usa el mismo radio con el que "Tu mundo"
+ * agrupa zonas — si no, salir por otra puerta contaría como lugar nuevo.
  */
-export function countDistinctStartingPlaces(runs: Activity[]): number {
+export function countDistinctStartingPlaces(
+  runs: Activity[],
+  radiusKm: number = RADIO_LUGAR_KM,
+): number {
   const places: [number, number][] = [];
   for (const run of runs) {
     const polyline = run.map?.summary_polyline;
     if (!polyline) continue;
     const coords = decodePolyline(polyline);
+    if (!coords.length) continue;
     const [lat, lon] = coords[0];
-    const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= 0.5);
+    const isNear = places.some(([pLat, pLon]) => haversineKm(lat, lon, pLat, pLon) <= radiusKm);
     if (!isNear) places.push([lat, lon]);
   }
   return places.length;

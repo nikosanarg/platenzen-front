@@ -13,15 +13,20 @@ export const Card = styled(Panel)`
   }
 `;
 
-/* ── Top row: identity · spider · role tree ──────────────────────── */
+/* ── Top row: resumen · radar · árbol de habilidades ─────────────── */
 
 export const TopRow = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 1.75rem;
   align-items: start;
 
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 760px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
@@ -89,93 +94,6 @@ export const StreakBadge = styled.span`
   padding: 0.1rem 0.6rem;
 `;
 
-/* ── Chromatic level-progress bar ────────────────────────────────── */
-
-export const LevelBarRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-top: 0.6rem;
-`;
-
-export const LevelTrack = styled.div`
-  flex: 1;
-  height: 8px;
-  background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-`;
-
-export const LevelFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  border-radius: 999px;
-  width: ${({ $pct }) => Math.max(2, $pct * 100).toFixed(1)}%;
-  /* The gradient spans the full track width so the fill reveals the
-     chromatic scale up to the current progress point. */
-  background-image: var(--role-gradient);
-  background-size: ${({ $pct }) => (100 / Math.max(0.02, $pct)).toFixed(1)}% 100%;
-  background-position: left center;
-  background-repeat: no-repeat;
-  transition: width 0.8s ease;
-`;
-
-export const LevelEndpoint = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-`;
-
-export const LevelEndpointDot = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 2px solid var(--text-muted);
-`;
-
-export const LevelEndpointLabel = styled.div`
-  font-size: 0.6rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-`;
-
-/* ── XP headline: el número de XP es el dato central de la progresión ── */
-
-export const XpHeadRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-`;
-
-export const XpBigValue = styled.span`
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  line-height: 1;
-
-  @media (max-width: 600px) {
-    font-size: 1.3rem;
-  }
-`;
-
-export const XpMeta = styled.span`
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-`;
-
-export const XpToNext = styled.div`
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 0.3rem;
-`;
-
 /* ── Persona description ──────────────────────────────────────────── */
 
 export const PersonaText = styled.p`
@@ -241,7 +159,7 @@ export const StatLabel = styled.div`
   text-overflow: ellipsis;
 `;
 
-/* ── Rango: progreso dentro de la rama dominante ─────────────────── */
+/* ── Encabezados y pie de las columnas visuales ──────────────────── */
 
 export const VisualColTitle = styled.h3`
   font-size: 0.68rem;
@@ -253,92 +171,24 @@ export const VisualColTitle = styled.h3`
   margin-bottom: 0.75rem;
 `;
 
-export const RankBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding-top: 0.5rem;
-`;
-
-export const RankCurrentRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  text-align: center;
-`;
-
-export const RankCurrentName = styled.div`
-  font-size: 1.2rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: var(--text-primary);
-  text-transform: uppercase;
-`;
-
-export const RankPct = styled.span`
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--accent);
-`;
-
-export const RankNextName = styled.span`
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-`;
-
-export const RankProgressTrack = styled.div`
-  height: 6px;
-  background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 220px;
-`;
-
-export const RankProgressFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => Math.max(2, Math.min(100, $pct)).toFixed(1)}%;
-  background: var(--accent);
-  border-radius: 999px;
-  transition: width 0.6s ease;
-`;
-
-export const RankStepsRow = styled.div`
+/** Aclara qué significa el polígono punteado del radar. */
+export const RadarNote = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-`;
-
-export const RankStep = styled.span<{ $state: 'done' | 'current' | 'upcoming' }>`
-  font-size: 0.64rem;
-  font-weight: ${({ $state }) => ($state === 'current' ? '700' : '500')};
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: ${({ $state }) =>
-    $state === 'current'
-      ? 'var(--accent)'
-      : $state === 'done'
-      ? 'var(--text-secondary)'
-      : 'var(--text-muted)'};
-`;
-
-export const RankStepArrow = styled.span`
-  font-size: 0.64rem;
+  gap: 0.4rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
-`;
-
-export const RankMaxNote = styled.div`
   text-align: center;
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  margin-top: 0.4rem;
+`;
+
+export const RadarNoteDot = styled.span`
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  flex-shrink: 0;
+  border-top: 2px dashed #ef4444;
 `;
 
 /* ── Activity heatmap (full-width, bottom) ───────────────────────── */
