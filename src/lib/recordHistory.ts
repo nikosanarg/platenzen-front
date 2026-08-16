@@ -1,8 +1,7 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { mpsToSecPerKm, splitPace } from '@/utils/pace';
 import { HALF_MARATHON_KM, HALF_MARATHON_M } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 export interface RecordEntry {
   date: string;
@@ -23,14 +22,14 @@ export interface DistanceHistory {
 }
 
 function buildHistory(
-  activities: StravaActivity[],
+  activities: Activity[],
   minM: number,
   targetM: number
 ): RecordEntry[] {
   const eligible = activities
     .filter(
       a =>
-        RUNNING_SPORTS.has(a.sport_type || a.type) &&
+        isRunning(a) &&
         a.distance >= minM &&
         a.moving_time > 0 &&
         a.average_speed > 0
@@ -59,7 +58,7 @@ function buildHistory(
   return history;
 }
 
-export function computeRecordHistories(activities: StravaActivity[]): DistanceHistory[] {
+export function computeRecordHistories(activities: Activity[]): DistanceHistory[] {
   return [
     { label: '5K', distanceKm: 5, targetM: 5000, minM: 4000 },
     { label: '10K', distanceKm: 10, targetM: 10000, minM: 8500 },

@@ -10,12 +10,12 @@ import {
   pctChange,
 } from '@/lib/periodComparison';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
-const on = (date: string, over: Partial<StravaActivity> = {}) =>
+const on = (date: string, over: Partial<Activity> = {}) =>
   activity({ start_date_local: `${date}T12:00:00Z`, start_date: `${date}T12:00:00Z`, ...over });
 
-const periodo = (acts: StravaActivity[], key: '30d' | '90d' | 'year') =>
+const periodo = (acts: Activity[], key: '30d' | '90d' | 'year') =>
   computePeriodComparisons(acts).find((p) => p.period === key)!;
 
 beforeEach(() => {

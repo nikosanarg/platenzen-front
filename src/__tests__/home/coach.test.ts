@@ -11,7 +11,7 @@ import { computeCoachRecommendation } from '@/lib/coach';
 import { computeStats } from '@/lib/stats';
 import { ProcessedStats, WeeklyStats } from '@/types/stats';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 /** Una corrida de `km` ubicada `days` días antes de ahora. */
-function runDaysAgo(days: number, km: number, id = 1, over: Partial<StravaActivity> = {}): StravaActivity {
+function runDaysAgo(days: number, km: number, id = 1, over: Partial<Activity> = {}): Activity {
   const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
   return activity({
     id,

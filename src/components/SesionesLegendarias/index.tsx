@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeLegendarySessions } from '@/lib/legendarySessions';
 import {
@@ -22,7 +22,7 @@ import {
 } from './styled';
 
 interface SesionesLegendariasProps {
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

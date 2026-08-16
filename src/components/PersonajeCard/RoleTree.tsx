@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import type { StravaActivity } from '@/types/strava';
+import type { Activity } from '@/types/activity';
 import type { ProcessedStats } from '@/types/stats';
 import type { BranchResult } from '@/lib/roles';
 import {
@@ -12,6 +12,7 @@ import {
   MILESTONE_KM,
 } from '@/lib/roleThresholds';
 import { HALF_MARATHON_KM } from '@/lib/distances';
+import { isRunning, isTrailRun } from '@/lib/sports';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -22,9 +23,8 @@ interface ChecklistItem { label: string; passed: boolean; }
 
 // ── Checklist builders ─────────────────────────────────────────────────────
 
-function countMilestones(activities: StravaActivity[]): number {
-  const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
-  const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
+function countMilestones(activities: Activity[]): number {
+  const runs = activities.filter(isRunning);
   const reached = new Set<number>();
   for (const a of runs) {
     const km = a.distance / 1000;
@@ -33,16 +33,15 @@ function countMilestones(activities: StravaActivity[]): number {
   return reached.size;
 }
 
-function calcTrailRatio(activities: StravaActivity[]): number {
-  const RUNNING = new Set(['Run', 'TrailRun', 'VirtualRun']);
-  const runs = activities.filter(a => RUNNING.has(a.sport_type || a.type));
+function calcTrailRatio(activities: Activity[]): number {
+  const runs = activities.filter(isRunning);
   if (!runs.length) return 0;
-  return runs.filter(a => (a.sport_type || a.type) === 'TrailRun').length / runs.length;
+  return runs.filter(isTrailRun).length / runs.length;
 }
 
 function buildChecklist(
   branch: Branch, level: number,
-  activities: StravaActivity[], stats: ProcessedStats
+  activities: Activity[], stats: ProcessedStats
 ): ChecklistItem[] {
   const avgW = stats.weeklyAvgDistance;
   const maxKm = stats.longestActivity;
@@ -237,7 +236,7 @@ function Arrow({ status }: { status: NodeStatus }) {
 
 interface RoleTreeProps {
   branches: BranchResult[];
-  activities: StravaActivity[];
+  activities: Activity[];
   stats: ProcessedStats;
 }
 

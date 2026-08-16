@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
 
@@ -10,7 +10,7 @@ export interface SmartInsight {
 }
 
 export function generateSmartInsights(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): SmartInsight[] {
   const insights: SmartInsight[] = [];
@@ -71,7 +71,7 @@ export function generateSmartInsights(
   }
 
   // 5. Weekly consistency streak
-  let recentQuantity = 32; // look at last 32 weeks
+  const recentQuantity = 32; // look at last 32 weeks
   const recent = stats.weekly.slice(-recentQuantity);
   const active = recent.filter(w => w.count > 0).length;
   if (active >= recentQuantity / 2) {

@@ -1,9 +1,8 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
-
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
+import { isRunning } from '@/lib/sports';
 
 // Fibonacci-based level thresholds, scaled by 200 XP per fib unit
 // fib: 1,1,2,3,5,8,13,21,34,55,89,144,233,377,610
@@ -72,17 +71,17 @@ export interface LevelInfo {
   breakdown: XPBreakdown;
 }
 
-function get12MonthRuns(activities: StravaActivity[]): StravaActivity[] {
+function get12MonthRuns(activities: Activity[]): Activity[] {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const cutoffMs = cutoff.getTime();
   return activities.filter(a => {
     const d = new Date(a.start_date_local).getTime();
-    return d >= cutoffMs && RUNNING_SPORTS.has(a.sport_type || a.type);
+    return d >= cutoffMs && isRunning(a);
   });
 }
 
-function countMilestones(activities: StravaActivity[]): number {
+function countMilestones(activities: Activity[]): number {
   const reached = new Set<number>();
   for (const a of activities) {
     const km = a.distance / 1000;
@@ -93,7 +92,7 @@ function countMilestones(activities: StravaActivity[]): number {
   return reached.size;
 }
 
-function countPRs(activities: StravaActivity[]): number {
+function countPRs(activities: Activity[]): number {
   const sorted = [...activities].sort(
     (a, b) => new Date(a.start_date_local).getTime() - new Date(b.start_date_local).getTime()
   );
@@ -122,7 +121,7 @@ interface WeekGroup {
   count: number;
 }
 
-function groupByWeek(activities: StravaActivity[]): WeekGroup[] {
+function groupByWeek(activities: Activity[]): WeekGroup[] {
   const map = new Map<string, WeekGroup>();
   for (const a of activities) {
     const d = new Date(a.start_date_local);
@@ -207,7 +206,7 @@ function buildSummary(breakdown: Omit<XPBreakdown, 'xpSourceSummary' | 'total' |
   return `Tu mayor fuente de XP: ${top.label} (${b(top.value)} XP). También sumaron ${second.label} (${b(second.value)} XP).`;
 }
 
-export function computeXPBreakdown(activities: StravaActivity[], stats: ProcessedStats): XPBreakdown {
+export function computeXPBreakdown(activities: Activity[], stats: ProcessedStats): XPBreakdown {
   const recent = get12MonthRuns(activities);
   const totalKm12mo = recent.reduce((s, a) => s + a.distance / 1000, 0);
   const fromKm = Math.round(totalKm12mo * 5);
@@ -248,7 +247,7 @@ export function computeXPBreakdown(activities: StravaActivity[], stats: Processe
   };
 }
 
-export function getLevelInfo(activities: StravaActivity[], stats: ProcessedStats): LevelInfo {
+export function getLevelInfo(activities: Activity[], stats: ProcessedStats): LevelInfo {
   const breakdown = computeXPBreakdown(activities, stats);
   const xp = breakdown.total;
 

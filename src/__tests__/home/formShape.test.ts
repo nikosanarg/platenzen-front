@@ -8,7 +8,7 @@ import { computeFormShape } from '@/lib/formShape';
 import { computeStats } from '@/lib/stats';
 import { ProcessedStats, WeeklyStats } from '@/types/stats';
 import { activity } from '@/__tests__/helpers/activity';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 
 /** `count` semanas de `km`, activas salvo que se pida lo contrario. */
 const weeks = (count: number, km: number, active = true): WeeklyStats[] =>
@@ -107,7 +107,7 @@ describe('métricas reportadas', () => {
 
 describe('cambio de ritmo', () => {
   /** 10 corridas: las 5 más recientes a `nuevo` s/km, las 5 previas a `viejo`. */
-  function runs(viejo: number, nuevo: number): StravaActivity[] {
+  function runs(viejo: number, nuevo: number): Activity[] {
     const make = (i: number, secPerKm: number, day: number) =>
       activity({
         id: i,

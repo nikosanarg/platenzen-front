@@ -1,4 +1,4 @@
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -14,7 +14,7 @@ export interface ConsistencyStats {
 }
 
 export function computeConsistencyStats(
-  activities: StravaActivity[],
+  activities: Activity[],
   stats: ProcessedStats
 ): ConsistencyStats {
   let consecutiveWeeks = 0;

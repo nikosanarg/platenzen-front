@@ -22,7 +22,7 @@ describe('saveCache / loadCache', () => {
     const loaded = loadCache();
     expect(loaded).not.toBeNull();
     expect(loaded!.activities).toEqual(acts);
-    expect(loaded!.version).toBe(1);
+    expect(loaded!.version).toBe(2);
     expect(typeof loaded!.timestamp).toBe('number');
   });
 
@@ -56,7 +56,7 @@ describe('isCacheFresh', () => {
   const at = (ageMs: number): CacheData => ({
     activities: [],
     timestamp: Date.now() - ageMs,
-    version: 1,
+    version: 2,
   });
 
   it('considera fresco lo guardado hace menos de 6 días', () => {

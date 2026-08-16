@@ -1,22 +1,21 @@
 import React from 'react';
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import ActivityCard from '@/components/ActivityCard';
 import { SectionRoot, SectionTitle, TopGrid } from './styled';
+import { isRunning } from '@/lib/sports';
 
 interface TopActivitiesProps {
-  activities: StravaActivity[];
+  activities: Activity[];
 }
 
-const RUNNING_SPORTS = new Set(['Run', 'TrailRun', 'VirtualRun']);
-
-function getTop(activities: StravaActivity[]): Array<{ activity: StravaActivity; highlight: string }> {
+function getTop(activities: Activity[]): Array<{ activity: Activity; highlight: string }> {
   if (activities.length === 0) return [];
-  const results: Array<{ activity: StravaActivity; highlight: string }> = [];
+  const results: Array<{ activity: Activity; highlight: string }> = [];
 
   const byDistance = [...activities].sort((a, b) => b.distance - a.distance)[0];
   if (byDistance) results.push({ activity: byDistance, highlight: 'Mayor distancia' });
 
-  const running = activities.filter((a) => RUNNING_SPORTS.has(a.sport_type || a.type) && a.average_speed > 0);
+  const running = activities.filter((a) => isRunning(a) && a.average_speed > 0);
   if (running.length > 0) {
     const byPace = [...running].sort((a, b) => b.average_speed - a.average_speed)[0];
     if (byPace && byPace.id !== byDistance?.id) {

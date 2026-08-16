@@ -2,7 +2,7 @@
  * Utilities shared across exploration-branch role calculations.
  */
 
-import { StravaActivity } from '@/types/strava';
+import { Activity } from '@/types/activity';
 import { decodePolyline } from '@/lib/polylineDecoder';
 
 /** Great-circle distance in km between two lat/lon points (Haversine formula). */
@@ -29,7 +29,7 @@ export function haversineKm(
  * distance is ≤ 500 m. Starting position is taken from the first point of
  * each activity's summary polyline.
  */
-export function countDistinctStartingPlaces(runs: StravaActivity[]): number {
+export function countDistinctStartingPlaces(runs: Activity[]): number {
   const places: [number, number][] = [];
   for (const run of runs) {
     const polyline = run.map?.summary_polyline;
