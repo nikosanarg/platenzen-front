@@ -15,8 +15,14 @@ import type { BranchSnapshot } from '@/lib/branchTree';
 
 const GRID_LEVELS = 4;
 const CENTER = 150;
-const RADIUS = 88;
-const LABEL_R = 108;
+const RADIUS = 95;
+/**
+ * Las etiquetas viven apenas afuera del anillo exterior. Es el número que
+ * limita cuánto puede crecer el radar: la más larga ("Exploración") cae a la
+ * izquierda con anclaje al final, así que a más radio, más cerca queda su
+ * primera letra del borde del viewBox.
+ */
+const LABEL_R = 110;
 
 /** Los anillos donde caen los niveles. Coinciden con las anclas de la escala. */
 const TIER_RINGS = [0.25, 0.5, 1];

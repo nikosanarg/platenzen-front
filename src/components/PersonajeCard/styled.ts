@@ -17,7 +17,7 @@ export const Card = styled(Panel)`
 
 export const TopRow = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, 1.1fr);
   gap: 1.75rem;
   align-items: start;
 
@@ -47,9 +47,10 @@ export const VisualCol = styled.div`
   }
 `;
 
+/** Al ancho del tablero del árbol, para que las dos piezas pesen lo mismo. */
 export const AdnChartWrapper = styled.div`
   width: 100%;
-  max-width: 300px;
+  max-width: 325px;
   margin: 0 auto;
 `;
 
