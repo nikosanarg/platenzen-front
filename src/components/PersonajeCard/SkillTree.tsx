@@ -71,7 +71,8 @@ const Wrap = styled.div`
 const Board = styled.div`
   position: relative;
   width: 100%;
-  max-width: 320px;
+  /* La define la card: el radar usa la misma. */
+  max-width: var(--board-max);
   aspect-ratio: 1;
   margin: 0 auto;
   /* Las etiquetas de rama viven fuera del círculo y necesitan asomarse. */

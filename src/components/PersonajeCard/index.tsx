@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeRoles } from '@/lib/roles';
@@ -29,7 +29,9 @@ import {
   StatBody,
   StatValue,
   StatLabel,
-  VisualColTitle,
+  VisualSwitch,
+  VisualSwitchBtn,
+  VisualPanel,
   RadarNote,
   RadarNoteDot,
   ActivitySection,
@@ -37,12 +39,21 @@ import {
   ActivitySubtitle,
 } from './styled';
 
+/** Las dos lecturas del mismo cálculo de ramas. El radar es la de entrada. */
+const VISTAS = [
+  { id: 'radar', label: 'Radar' },
+  { id: 'arbol', label: 'Árbol' },
+] as const;
+
+type Vista = (typeof VISTAS)[number]['id'];
+
 interface PersonajeCardProps {
   activities: Activity[];
   stats: ProcessedStats;
 }
 
 const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
+  const [vista, setVista] = useState<Vista>('radar');
   const tree = useMemo(() => computeBranchTree(activities), [activities]);
   const decay = useMemo(() => computeBranchDecay(activities), [activities]);
 
@@ -111,28 +122,50 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           </StatsGrid>
         </IdentityCol>
 
-        {/* ── Radar: el mismo cálculo del árbol, visto de una ── */}
+        {/* ── Perfil de corredor: el radar y el árbol son el mismo cálculo ── */}
         <VisualCol>
-          <VisualColTitle>Perfil de corredor</VisualColTitle>
-          <AdnChartWrapper>
-            <SpiderChart branches={tree.branches} decay={decayPcts} />
-          </AdnChartWrapper>
-          <RadarNote>
-            {enRiesgo.length > 0 ? (
+          <VisualSwitch role="tablist" aria-label="Perfil de corredor">
+            {VISTAS.map(v => (
+              <VisualSwitchBtn
+                key={v.id}
+                type="button"
+                role="tab"
+                id={`perfil-tab-${v.id}`}
+                aria-selected={vista === v.id}
+                aria-controls="perfil-panel"
+                $active={vista === v.id}
+                onClick={() => setVista(v.id)}
+              >
+                {v.label}
+              </VisualSwitchBtn>
+            ))}
+          </VisualSwitch>
+
+          <VisualPanel
+            role="tabpanel"
+            id="perfil-panel"
+            aria-labelledby={`perfil-tab-${vista}`}
+          >
+            {vista === 'radar' ? (
               <>
-                <RadarNoteDot />
-                Dónde quedarías si dejaras de correr {DIAS_DECAIMIENTO} días.
+                <AdnChartWrapper>
+                  <SpiderChart branches={tree.branches} decay={decayPcts} />
+                </AdnChartWrapper>
+                <RadarNote>
+                  {enRiesgo.length > 0 ? (
+                    <>
+                      <RadarNoteDot />
+                      Dónde quedarías si dejaras de correr {DIAS_DECAIMIENTO} días.
+                    </>
+                  ) : (
+                    'Tu progreso no vence en el próximo mes.'
+                  )}
+                </RadarNote>
               </>
             ) : (
-              'Tu progreso no vence en el próximo mes.'
+              <SkillTree tree={tree} />
             )}
-          </RadarNote>
-        </VisualCol>
-
-        {/* ── Árbol de habilidades ── */}
-        <VisualCol>
-          <VisualColTitle>Árbol de habilidades</VisualColTitle>
-          <SkillTree tree={tree} />
+          </VisualPanel>
         </VisualCol>
       </TopRow>
 
