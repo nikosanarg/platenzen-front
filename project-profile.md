@@ -49,12 +49,15 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | `npx jest` (43 suites, 682 tests) |
+| Tests | `npx jest` (44 suites, 688 tests) |
 | Cobertura | `npm run test:coverage` |
 | Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
+| Levantar local sin login de Strava | `NEXT_PUBLIC_STRAVA_AUTH_MODE=mock` en `.env.local` + `npm run dev` |
 
-Requiere credenciales de la API de Strava en variables de entorno.
+Requiere credenciales de la API de Strava en variables de entorno, salvo en modo mock
+(`NEXT_PUBLIC_STRAVA_AUTH_MODE=mock`), que entra al dashboard sin OAuth y con la fixture.
+Ver `src/lib/authMode.ts` y el README.
 
 **`npm ci` falla**: el `package-lock.json` está desincronizado con `package.json` en
 dependencias transitorias opcionales (`@emnapi/*`). Usá `npm install`. Regenerar el lock
@@ -89,8 +92,9 @@ es un cambio aparte, no algo a colar en otra tarea.
 - Faltan íconos 192/512 con variante `maskable` para la PWA: hoy se declara el logo de
   412×411, que alcanza para instalar pero Android lo recorta contra su máscara circular.
   Necesita un asset de diseño, no código.
-- `src/__mocks__/activitiesMock.ts` es un volcado real de la API de Strava sin ningún
-  consumidor. Sirve como fixture realista si alguien la necesita; hoy es peso muerto.
+- `src/__mocks__/activitiesMock.ts` es un volcado real de la API de Strava. Dejó de ser
+  peso muerto: es lo que carga el modo mock. Sigue siendo un dump real —con trazas GPS—,
+  así que no puede terminar en un bundle de producción.
 
 ---
 
@@ -102,8 +106,8 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Tests
 
-Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **43
-suites, 682 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **44
+suites, 688 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
 `comparative/`, `achievements/`, `providers/`, `api/`, `shared/`), con una factory de
 actividades en `helpers/activity.ts`.
 

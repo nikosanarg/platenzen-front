@@ -6,6 +6,7 @@ import { useToken, StoredToken } from '@/hooks/useToken';
 import { useActivities } from '@/hooks/useActivities';
 import { StravaDataProvider } from '@/hooks/useStravaData';
 import { computeStats } from '@/lib/stats';
+import { isStravaMockMode } from '@/lib/authMode';
 import TokenInput from '@/components/TokenInput';
 import Dashboard from '@/components/Dashboard';
 import {
@@ -66,7 +67,9 @@ const AppClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     if (didInitLoad.current || status !== 'idle') return;
 
-    if (hasToken) {
+    // En modo mock no hay token que pedir: `useActivities` carga la fixture
+    // antes de llegar a usarlo. Ver `lib/authMode.ts`.
+    if (hasToken || isStravaMockMode()) {
       didInitLoad.current = true;
       fetch(getValidToken);
       return;
@@ -149,7 +152,8 @@ const AppClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
   }
 
-  const showTokenInput = (!hasToken && !hasSession && !reconectando) || status === 'error';
+  const showTokenInput =
+    !isStravaMockMode() && ((!hasToken && !hasSession && !reconectando) || status === 'error');
 
   if (showTokenInput) {
     const errorMsg = oauthError

@@ -82,4 +82,23 @@ npm install
 npm run dev
 ```
 
-Abrí [http://localhost:3000](http://localhost:3000). Para el OAuth local, agregá `localhost` como Authorization Callback Domain en tu app de Strava.
+Abrí [http://localhost:3000](http://localhost:3000).
+
+#### Entrar sin pasar por el login de Strava
+
+Strava acepta un solo Authorization Callback Domain por app, así que desde `localhost` el
+OAuth no vuelve: o apuntás la app al dominio real, o al de desarrollo, no a los dos. Para
+trabajar en el dashboard sin ese ida y vuelta, en `.env.local`:
+
+```bash
+NEXT_PUBLIC_STRAVA_AUTH_MODE=mock
+```
+
+Con eso la app entra derecho al dashboard con el historial de `src/__mocks__/activitiesMock.ts`,
+sin token y sin llamar a Strava. **No lee ni escribe la cache de `localStorage`**: el historial
+real que tengas guardado sigue intacto y aparece tal cual cuando apagues el modo.
+
+Sólo sirve en desarrollo: en un build de producción queda apagado aunque la variable esté
+seteada, y la fixture ni siquiera entra al bundle. Si querés probar el OAuth de verdad en
+local, apagá el modo y agregá `localhost` como Authorization Callback Domain en tu app de
+Strava.

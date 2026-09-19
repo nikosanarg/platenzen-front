@@ -88,6 +88,25 @@ vino el dato.
   pública que necesita un backend con persistencia que Platenzen no tiene. El mapper y la
   matriz están; el resto no se puede hacer todavía. Ver `docs/matriz-proveedores.md`.
 
+## Modo mock local
+
+Strava acepta **un solo** Authorization Callback Domain por app, así que desde `localhost`
+el OAuth no vuelve. `NEXT_PUBLIC_STRAVA_AUTH_MODE=mock` entra al dashboard sin login y con
+`src/__mocks__/activitiesMock.ts`. Es para desarrollo y nada más.
+
+- **No toca la cache, ni para leer ni para escribir.** Guardar la fixture dejaría el
+  historial falso en `localStorage` durante los seis días del TTL, y al apagar el modo se
+  vería como si fuera el real: la regla 1 rota en silencio. Por lo mismo, "Actualizar
+  datos" en mock no borra la cache del historial real.
+- **La guarda de `NODE_ENV` va inline junto al `import()` de la fixture**, no sólo adentro
+  de `isStravaMockMode()`. El bundler pliega el literal y descarta la rama sólo si lo ve en
+  el `if`; escondido en la función, el chunk se emite igual y la fixture —que es un volcado
+  real, con trazas GPS de la casa de alguien— queda publicada en `/_next/static` aunque no
+  se cargue nunca. Si movés ese chequeo, verificalo con
+  `grep -rl "18653919721" .next/static .next/server` después de buildear.
+- Las actividades del mock se construyen con `toActivity`, como las de cualquier
+  proveedor. La fixture es el payload crudo de Strava, no `Activity` ya armada.
+
 ## PWA
 
 Es una capa de distribución del frontend, no una excusa para mover credenciales al cliente

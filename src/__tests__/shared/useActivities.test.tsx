@@ -121,3 +121,36 @@ describe('refresh', () => {
     expect(result.current.isFromCache).toBe(false);
   });
 });
+
+describe('modo mock (NEXT_PUBLIC_STRAVA_AUTH_MODE=mock)', () => {
+  const modoOriginal = process.env.NEXT_PUBLIC_STRAVA_AUTH_MODE;
+  beforeEach(() => { process.env.NEXT_PUBLIC_STRAVA_AUTH_MODE = 'mock'; });
+  afterEach(() => { process.env.NEXT_PUBLIC_STRAVA_AUTH_MODE = modoOriginal; });
+
+  it('carga la fixture sin token, sin red y sin tocar la cache', async () => {
+    const getToken = jest.fn();
+
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(getToken);
+    });
+
+    expect(result.current.status).toBe('success');
+    expect(result.current.activities.length).toBeGreaterThan(0);
+    expect(result.current.activities.every(a => a.provider === 'strava' && a.externalId)).toBe(true);
+    expect(getToken).not.toHaveBeenCalled();
+    expect(mockedFetchAll).not.toHaveBeenCalled();
+    expect(mockedLoadCache).not.toHaveBeenCalled();
+    expect(saveCache).not.toHaveBeenCalled();
+  });
+
+  it('"Actualizar" no borra la cache del historial real', async () => {
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.refresh(jest.fn());
+    });
+
+    expect(clearCache).not.toHaveBeenCalled();
+    expect(result.current.status).toBe('success');
+  });
+});
