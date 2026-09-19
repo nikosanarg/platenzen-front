@@ -23,12 +23,12 @@ export default function ProgresoPage() {
       <CoachAnalisis activities={activities} stats={stats} />
 
       <LegendaryGroup>
-        <TuMundo activities={activities} />
+        <RecordHistorySection activities={activities} />
+        <SesionesLegendarias activities={activities} stats={stats} />
       </LegendaryGroup>
 
       <LegendaryGroup>
-        <RecordHistorySection activities={activities} />
-        <SesionesLegendarias activities={activities} stats={stats} />
+        <TuMundo activities={activities} />
       </LegendaryGroup>
 
       <CollapsibleSection
