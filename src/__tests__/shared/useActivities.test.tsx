@@ -7,7 +7,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useActivities } from '@/hooks/useActivities';
 import { fetchAllActivities, StravaError } from '@/services/providers/strava/api';
-import { saveCache, loadCache, isCacheFresh, clearCache } from '@/lib/cache';
+import { saveCache, loadCache, isCacheFresh, necesitaActualizar, clearCache } from '@/lib/cache';
 import { activity } from '@/__tests__/helpers/activity';
 
 jest.mock('@/services/providers/strava/api', () => {
@@ -19,6 +19,7 @@ jest.mock('@/lib/cache');
 const mockedFetchAll = fetchAllActivities as jest.Mock;
 const mockedLoadCache = loadCache as jest.Mock;
 const mockedIsCacheFresh = isCacheFresh as jest.Mock;
+const mockedNecesitaActualizar = necesitaActualizar as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -100,6 +101,86 @@ describe('fetch', () => {
 
     expect(result.current.status).toBe('error');
     expect(result.current.error).toBe('Error inesperado al cargar actividades.');
+  });
+});
+
+describe('actualización automática al entrar (cache de más de una hora)', () => {
+  const HORA = 60 * 60 * 1000;
+  const cacheVieja = () => ({
+    activities: [activity({ id: 1 })],
+    timestamp: Date.now() - 3 * HORA,
+    version: 2,
+  });
+
+  beforeEach(() => {
+    mockedLoadCache.mockReturnValue(cacheVieja());
+    mockedIsCacheFresh.mockReturnValue(true); // vigente (< 6 días)...
+    mockedNecesitaActualizar.mockReturnValue(true); // ...pero con más de una hora
+  });
+
+  it('vuelve a pedir a Strava aunque la cache siga vigente', async () => {
+    const nuevas = [activity({ id: 2 })];
+    mockedFetchAll.mockResolvedValue(nuevas);
+
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(jest.fn().mockResolvedValue('tok'));
+    });
+
+    expect(mockedFetchAll).toHaveBeenCalledTimes(1);
+    expect(result.current.activities).toEqual(nuevas);
+    expect(result.current.isFromCache).toBe(false);
+    expect(saveCache).toHaveBeenCalledWith(nuevas);
+  });
+
+  it('si la red falla, muestra la cache vieja con su antigüedad en vez de un error', async () => {
+    mockedFetchAll.mockRejectedValue(new Error('sin conexión'));
+
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(jest.fn().mockResolvedValue('tok'));
+    });
+
+    expect(result.current.status).toBe('success');
+    expect(result.current.error).toBeNull();
+    expect(result.current.isFromCache).toBe(true);
+    expect(result.current.cacheAge).toBeGreaterThanOrEqual(3 * HORA);
+    expect(result.current.activities).toHaveLength(1);
+  });
+
+  it('si no hay token válido, también cae a la cache vieja', async () => {
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(jest.fn().mockResolvedValue(null));
+    });
+
+    expect(result.current.status).toBe('success');
+    expect(result.current.isFromCache).toBe(true);
+    expect(mockedFetchAll).not.toHaveBeenCalled();
+  });
+
+  it('un permiso faltante no se tapa con la cache: es un error que hay que ver', async () => {
+    mockedFetchAll.mockRejectedValue(new StravaError(403, 'scope_missing'));
+
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(jest.fn().mockResolvedValue('tok'));
+    });
+
+    expect(result.current.status).toBe('error');
+    expect(result.current.error).toBe('scope_missing');
+  });
+
+  it('no refresca de más: con la cache de menos de una hora no pide nada', async () => {
+    mockedNecesitaActualizar.mockReturnValue(false);
+
+    const { result } = renderHook(() => useActivities());
+    await act(async () => {
+      await result.current.fetch(jest.fn());
+    });
+
+    expect(mockedFetchAll).not.toHaveBeenCalled();
+    expect(result.current.isFromCache).toBe(true);
   });
 });
 

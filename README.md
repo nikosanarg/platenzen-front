@@ -65,7 +65,7 @@ En ambos casos el token se guarda en `localStorage` de tu navegador. No se sube 
 Flujo OAuth estándar de Strava. El servidor intercambia el código por tokens (`/api/strava/callback`). El access token se renueva automáticamente antes de expirar usando el refresh token vía `/api/strava/refresh`. Ningún token se persiste en servidor — solo en `localStorage` del cliente.
 
 ### Datos
-Se hace paginación completa sobre `/athlete/activities` (200 actividades por request). El resultado se cachea en `localStorage` con TTL de 6 días para no superar los rate limits de Strava. El usuario puede forzar actualización manual.
+Se hace paginación completa sobre `/athlete/activities` (200 actividades por request). El resultado se cachea en `localStorage` con TTL de 6 días, que es el máximo que se conserva. Al entrar, si la cache tiene **una hora o más**, se vuelve a pedir a Strava automáticamente; con menos, se usa tal cual y no se toca la API, que es lo que mantiene el consumo dentro de los rate limits. Si esa actualización falla (sin red, sesión vencida), se muestra la cache vieja con su antigüedad ("Actualizado hace 3h") en lugar de un error; un permiso faltante (`scope_missing`) sí se muestra como error. El usuario puede forzar la actualización manual en cualquier momento.
 
 Todo el procesamiento (XP, niveles, permisos, récords, predicciones) corre en el cliente sobre los datos crudos de Strava.
 

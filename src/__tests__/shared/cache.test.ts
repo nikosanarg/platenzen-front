@@ -3,11 +3,12 @@
  * que mantiene al repo dentro de los límites de la API de Strava. El TTL de 6
  * días no es arbitrario: es el máximo que permiten los términos de Strava.
  */
-import { clearCache, isCacheFresh, loadCache, saveCache } from '@/lib/cache';
+import { clearCache, isCacheFresh, loadCache, necesitaActualizar, saveCache } from '@/lib/cache';
 import { CacheData } from '@/types/cache';
 import { activity } from '@/__tests__/helpers/activity';
 
 const SIX_DAYS_MS = 6 * 24 * 60 * 60 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 beforeEach(() => {
   localStorage.clear();
@@ -67,6 +68,31 @@ describe('isCacheFresh', () => {
   it('considera vencido lo que llegó a los 6 días', () => {
     expect(isCacheFresh(at(SIX_DAYS_MS))).toBe(false);
     expect(isCacheFresh(at(SIX_DAYS_MS + 60_000))).toBe(false);
+  });
+});
+
+describe('necesitaActualizar', () => {
+  const at = (ageMs: number): CacheData => ({
+    activities: [],
+    timestamp: Date.now() - ageMs,
+    version: 2,
+  });
+
+  it('no pide actualizar lo guardado hace menos de una hora', () => {
+    expect(necesitaActualizar(at(0))).toBe(false);
+    expect(necesitaActualizar(at(ONE_HOUR_MS - 60_000))).toBe(false);
+  });
+
+  it('pide actualizar desde la hora exacta', () => {
+    expect(necesitaActualizar(at(ONE_HOUR_MS))).toBe(true);
+    expect(necesitaActualizar(at(ONE_HOUR_MS + 60_000))).toBe(true);
+  });
+
+  it('es independiente del tope de 6 días: una cache de 2 horas es válida pero vieja', () => {
+    const dosHoras = at(2 * ONE_HOUR_MS);
+
+    expect(isCacheFresh(dosHoras)).toBe(true);
+    expect(necesitaActualizar(dosHoras)).toBe(true);
   });
 });
 

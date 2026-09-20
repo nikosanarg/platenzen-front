@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { Activity } from '@/types/activity';
 import { fetchAllActivities, StravaError } from '@/services/providers/strava/api';
 import { toActivity } from '@/services/providers/strava/adapter';
-import { saveCache, loadCache, isCacheFresh, clearCache } from '@/lib/cache';
+import { saveCache, loadCache, isCacheFresh, necesitaActualizar, clearCache } from '@/lib/cache';
 import { isStravaMockMode } from '@/lib/authMode';
 import { StravaActivity } from '@/types/strava';
 
@@ -50,15 +50,21 @@ export function useActivities(): UseActivitiesResult {
       return;
     }
 
-    if (!forceRefresh) {
-      const cached = loadCache();
-      if (cached && isCacheFresh(cached)) {
-        setActivities(cached.activities);
-        setIsFromCache(true);
-        setCacheAge(Date.now() - cached.timestamp);
-        setStatus('success');
-        return;
-      }
+    // Cache que todavía se puede conservar (< 6 días). No alcanza con que exista:
+    // si tiene más de una hora se vuelve a pedir a Strava en cada entrada.
+    const cached = loadCache();
+    const usable = cached && isCacheFresh(cached) ? cached : null;
+
+    const usarCache = (c: NonNullable<typeof usable>) => {
+      setActivities(c.activities);
+      setIsFromCache(true);
+      setCacheAge(Date.now() - c.timestamp);
+      setStatus('success');
+    };
+
+    if (!forceRefresh && usable && !necesitaActualizar(usable)) {
+      usarCache(usable);
+      return;
     }
 
     setStatus('loading');
@@ -66,8 +72,20 @@ export function useActivities(): UseActivitiesResult {
     setIsFromCache(false);
     setCacheAge(null);
 
+    // Si no se puede refrescar, la cache vieja sigue siendo mejor que la
+    // pantalla de error: se muestra con su antigüedad a la vista ("Actualizado
+    // hace 3h"), que es lo que la distingue de un dato al día. La excepción es
+    // `scope_missing`: ahí el problema no es la red sino el permiso, y no se
+    // arregla mostrando lo de antes.
+    const fallback = (mensaje?: string): boolean => {
+      if (forceRefresh || !usable || mensaje === 'scope_missing') return false;
+      usarCache(usable);
+      return true;
+    };
+
     const token = await getToken();
     if (!token) {
+      if (fallback()) return;
       setError('Token inválido o expirado. Ingresá un nuevo token.');
       setStatus('error');
       return;
@@ -82,6 +100,7 @@ export function useActivities(): UseActivitiesResult {
       setActivities(result);
       setStatus('success');
     } catch (err) {
+      if (fallback(err instanceof StravaError ? err.message : undefined)) return;
       if (err instanceof StravaError) {
         setError(err.message);
       } else {

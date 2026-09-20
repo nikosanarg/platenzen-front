@@ -8,6 +8,15 @@ const CACHE_KEY = 'platenzen_activities_cache';
 // bajo la clave `undefined:undefined`.
 const CACHE_VERSION = 2;
 const CACHE_TTL_MS = 6 * 24 * 60 * 60 * 1000;
+/**
+ * A partir de cuándo una cache todavía válida se considera vieja para mostrarla
+ * sin más: al entrar, se vuelve a pedir a Strava. Son dos umbrales distintos y
+ * no hay que confundirlos: `CACHE_TTL_MS` es cuánto se PUEDE conservar el dato
+ * (tope de los términos de Strava), y esto es cuánto se CONFÍA en él. Lo
+ * segundo es lo que evita que el dashboard muestre horas o días de atraso como
+ * si fuera el estado actual.
+ */
+const AUTO_REFRESH_MS = 60 * 60 * 1000;
 
 export function saveCache(activities: Activity[]): void {
   const data: CacheData = {
@@ -36,6 +45,10 @@ export function loadCache(): CacheData | null {
 
 export function isCacheFresh(cache: CacheData): boolean {
   return Date.now() - cache.timestamp < CACHE_TTL_MS;
+}
+
+export function necesitaActualizar(cache: CacheData): boolean {
+  return Date.now() - cache.timestamp >= AUTO_REFRESH_MS;
 }
 
 export function clearCache(): void {
