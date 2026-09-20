@@ -2,6 +2,13 @@ import styled from 'styled-components';
 
 const ORANGE_SCALE = ['#1a1f28', '#6b3f1a', '#97561d', '#c9711f', '#ff9d42'];
 
+/**
+ * `container-type` para que el tamaño de celda lo decida el ancho DISPONIBLE y
+ * no el del viewport: el heatmap dejó de ser una banda a lo ancho de la card y
+ * ahora vive en una columna. Con media queries, una pantalla de escritorio le
+ * seguía pidiendo celdas de 11px a un contenedor de 400px y las 53 semanas
+ * salían como rectángulos verticales.
+ */
 export const HeatmapCard = styled.div`
   background: none;
   border: none;
@@ -9,6 +16,7 @@ export const HeatmapCard = styled.div`
   padding: 0.2rem 0 0 0;
   width: 100%;
   overflow: hidden;
+  container-type: inline-size;
 `;
 
 export const HeatmapViewport = styled.div`
@@ -24,12 +32,12 @@ export const HeatmapViewport = styled.div`
   overflow: hidden;
   position: relative;
 
-  @media (max-width: 700px) {
+  @container (max-width: 700px) {
     --cell-gap: 2px;
     --min-cell-size: 7px;
   }
 
-  @media (max-width: 480px) {
+  @container (max-width: 480px) {
     --cell-gap: 1px;
     --min-cell-size: 5px;
   }
@@ -53,9 +61,13 @@ export const HeatmapMonthsRow = styled.div`
   gap: var(--cell-gap);
   min-height: var(--month-row-height);
   width: 100%;
-  overflow: hidden;
 `;
 
+/**
+ * Sin `overflow: hidden`: la etiqueta ("ENE") es más ancha que la columna de
+ * una semana en la que vive, y recortarla la dejaba en "EN" o "E". No pisa a
+ * la siguiente: los meses distan de 4 a 5 columnas.
+ */
 export const HeatmapMonthCell = styled.span`
   width: 100%;
   height: var(--month-row-height);
@@ -63,8 +75,6 @@ export const HeatmapMonthCell = styled.span`
   color: var(--text-muted);
   text-transform: uppercase;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
 `;
 
 export const HeatmapGrid = styled.div`

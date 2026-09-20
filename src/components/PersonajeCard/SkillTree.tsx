@@ -6,14 +6,17 @@ import type { BranchId, BranchSnapshot, Tier, TreeSnapshot } from '@/lib/branchT
 import {
   IconFlame, IconRoute, IconTrendUp, IconCalendar, IconCompass, IconMountain,
 } from '@/components/Icon';
+import BranchWeb, { RADIUS, TIER_RINGS, polar } from './branchWeb';
+import { AdnChartWrapper } from './styled';
 
 /**
- * El árbol de habilidades: seis ramas saliendo del centro, tres nodos cada una.
+ * Las marcas del árbol sobre la telaraña compartida (`BranchWeb`): tres nodos
+ * por eje, uno en cada anillo punteado. El nodo de nivel N cae en el mismo
+ * punto donde el radar marca el ancla de ese nivel (25/50/100% del radio).
  *
- * Los nodos van en HTML absoluto sobre un SVG que dibuja sólo los radios. Se
- * podría hacer todo en SVG, pero entonces los íconos y el foco por teclado
- * habría que reimplementarlos — así se reutilizan los componentes de `Icon` y
- * cada nodo es un `<button>` de verdad.
+ * Cada nodo es un `<button>` real dentro de un `foreignObject`: así se
+ * reutilizan los componentes de `Icon` y el foco por teclado, y la geometría
+ * sale de las mismas funciones que dibujan los anillos.
  *
  * El detalle no es un tooltip flotante sino una franja fija debajo: con 18
  * nodos en círculo, un panel posicionado se recorta o tapa a los vecinos, y el
@@ -22,9 +25,13 @@ import {
 
 // ── Geometría ───────────────────────────────────────────────────────────────
 
-/** Radios de cada nivel, en % del contenedor desde el centro. */
-const NODE_R = [13, 25, 37];
-const LABEL_R = 46;
+/**
+ * Diámetro de un nodo, en unidades del viewBox. Los de nivel 1 y 2 quedan a
+ * 24 y 48 unidades del centro y a ~24 de su vecino de la rama de al lado, así
+ * que más de 21 se pisarían entre sí; el de nivel 3 está en el borde, donde
+ * hay lugar de sobra.
+ */
+const NODE_SIZE = [20, 20, 25];
 
 const ICONS: Record<BranchId, React.FC<{ size?: number; color?: string }>> = {
   resistencia: IconFlame,
@@ -34,19 +41,6 @@ const ICONS: Record<BranchId, React.FC<{ size?: number; color?: string }>> = {
   exploracion: IconCompass,
   desnivel: IconMountain,
 };
-
-function angleAt(i: number, n: number): number {
-  return (Math.PI * 2 * i) / n - Math.PI / 2;
-}
-
-/** Posición en % (left, top) a `r` % del centro, para el ángulo de la rama `i`. */
-function pos(r: number, i: number, n: number): { left: string; top: string } {
-  const a = angleAt(i, n);
-  return {
-    left: `${(50 + Math.cos(a) * r).toFixed(3)}%`,
-    top: `${(50 + Math.sin(a) * r).toFixed(3)}%`,
-  };
-}
 
 // ── Estilos ─────────────────────────────────────────────────────────────────
 
@@ -68,32 +62,11 @@ const Wrap = styled.div`
   width: 100%;
 `;
 
-const Board = styled.div`
-  position: relative;
-  width: 100%;
-  /* La define la card: el radar usa la misma. */
-  max-width: var(--board-max);
-  aspect-ratio: 1;
-  margin: 0 auto;
-  /* Las etiquetas de rama viven fuera del círculo y necesitan asomarse. */
-  overflow: visible;
-`;
-
-const Spokes = styled.svg`
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-`;
-
 type NodeState = 'locked' | 'unlocked' | 'peak';
 
 const Node = styled.button<{ $state: NodeState; $active: boolean }>`
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 34px;
-  height: 34px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -122,7 +95,7 @@ const Node = styled.button<{ $state: NodeState; $active: boolean }>`
   ${({ $active }) =>
     $active &&
     css`
-      transform: translate(-50%, -50%) scale(1.14);
+      transform: scale(1.14);
       border-color: var(--accent);
     `}
 
@@ -130,50 +103,6 @@ const Node = styled.button<{ $state: NodeState; $active: boolean }>`
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-`;
-
-const CenterNode = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border);
-  text-align: center;
-  line-height: 1;
-`;
-
-const CenterValue = styled.span`
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--text-secondary);
-`;
-
-const CenterLabel = styled.span`
-  font-size: 0.48rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-top: 2px;
-`;
-
-const BranchLabel = styled.span<{ $reached: boolean }>`
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  pointer-events: none;
-  color: ${({ $reached }) => ($reached ? 'var(--text-secondary)' : 'var(--text-muted)')};
 `;
 
 const Detail = styled.div`
@@ -266,7 +195,7 @@ const SkillTree: React.FC<Props> = ({ tree }) => {
   const n = branches.length;
   const desbloqueados = branches.reduce((s, b) => s + b.level, 0);
 
-  const nodeState = (branch: BranchSnapshot, tier: Tier): NodeState => {
+  const nodeState = (tier: Tier): NodeState => {
     if (!tier.unlocked) return 'locked';
     return tier.level === maxLevel ? 'peak' : 'unlocked';
   };
@@ -279,55 +208,27 @@ const SkillTree: React.FC<Props> = ({ tree }) => {
 
   return (
     <Wrap>
-      <Board>
-        <Spokes viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+      <AdnChartWrapper>
+        <BranchWeb branches={branches}>
           {branches.map((branch, i) => {
-            const a = angleAt(i, n);
-            const cos = Math.cos(a);
-            const sin = Math.sin(a);
-            const points = [0, ...NODE_R].map(r => ({
-              x: 50 + cos * r,
-              y: 50 + sin * r,
-            }));
-
-            return points.slice(0, -1).map((p, seg) => {
-              const q = points[seg + 1];
-              const reached = branch.level >= seg + 1;
+            const Ico = ICONS[branch.id];
+            return branch.tiers.map(tier => {
+              const size = NODE_SIZE[tier.level - 1];
+              const [x, y] = polar(RADIUS * TIER_RINGS[tier.level - 1], i, n);
+              const isActive =
+                !!active && active.branch.id === branch.id && active.tier.level === tier.level;
               return (
-                <line
-                  key={`${branch.id}-${seg}`}
-                  x1={p.x.toFixed(2)}
-                  y1={p.y.toFixed(2)}
-                  x2={q.x.toFixed(2)}
-                  y2={q.y.toFixed(2)}
-                  stroke={reached ? 'rgba(var(--accent-rgb), 0.55)' : 'var(--border)'}
-                  strokeWidth={reached ? 1.1 : 0.8}
-                  vectorEffect="non-scaling-stroke"
-                />
-              );
-            });
-          })}
-        </Spokes>
-
-        <CenterNode>
-          <CenterValue>{desbloqueados}</CenterValue>
-          <CenterLabel>de 18</CenterLabel>
-        </CenterNode>
-
-        {branches.map((branch, i) => {
-          const Ico = ICONS[branch.id];
-          return (
-            <React.Fragment key={branch.id}>
-              {branch.tiers.map(tier => {
-                const state = nodeState(branch, tier);
-                const isActive =
-                  !!active && active.branch.id === branch.id && active.tier.level === tier.level;
-                return (
+                <foreignObject
+                  key={`${branch.id}-${tier.level}`}
+                  x={(x - size / 2).toFixed(2)}
+                  y={(y - size / 2).toFixed(2)}
+                  width={size}
+                  height={size}
+                  style={{ overflow: 'visible' }}
+                >
                   <Node
-                    key={tier.level}
                     type="button"
-                    style={pos(NODE_R[tier.level - 1], i, n)}
-                    $state={state}
+                    $state={nodeState(tier)}
                     $active={isActive}
                     aria-label={`${branch.name} · ${tier.name}, nivel ${tier.level}${
                       tier.unlocked ? ', desbloqueado' : ''
@@ -338,18 +239,14 @@ const SkillTree: React.FC<Props> = ({ tree }) => {
                     onBlur={() => setHovered(null)}
                     onClick={() => toggle({ branch, tier })}
                   >
-                    <Ico size={tier.level === 3 ? 17 : 15} color="currentColor" />
+                    <Ico size={tier.level === 3 ? 14 : 11} color="currentColor" />
                   </Node>
-                );
-              })}
-
-              <BranchLabel style={pos(LABEL_R, i, n)} $reached={branch.level > 0}>
-                {branch.name}
-              </BranchLabel>
-            </React.Fragment>
-          );
-        })}
-      </Board>
+                </foreignObject>
+              );
+            });
+          })}
+        </BranchWeb>
+      </AdnChartWrapper>
 
       <Detail>
         {active ? (
@@ -376,8 +273,9 @@ const SkillTree: React.FC<Props> = ({ tree }) => {
           </>
         ) : (
           <DetailHint>
-            Las habilidades se desbloquean solas con lo que corrés. Pasá el mouse por un nodo
-            —o tocalo— para ver cuánto llevás y cuánto te falta.
+            {desbloqueados} de {n * 3} habilidades desbloqueadas. Las habilidades se desbloquean
+            solas con lo que corrés. Pasá el mouse por un nodo —o tocalo— para ver cuánto llevás
+            y cuánto te falta.
           </DetailHint>
         )}
       </Detail>

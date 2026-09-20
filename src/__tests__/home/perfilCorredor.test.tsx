@@ -7,7 +7,7 @@
  * conmutador diciendo cuál, y las dos alimentadas por las mismas actividades.
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import PersonajeCard from '@/components/PersonajeCard';
 import { computeStats } from '@/lib/stats';
 import { activity } from '@/__tests__/helpers/activity';
@@ -79,12 +79,24 @@ it('vuelve al radar cuando se lo elige de nuevo', () => {
   expect(screen.queryByText(HINT_ARBOL)).not.toBeInTheDocument();
 });
 
-it('el año en actividad no depende de la vista elegida', () => {
+it('las seis ramas y sus porcentajes son los mismos en las dos vistas', () => {
   renderCard();
+  const etiquetas = () =>
+    ['Resistencia', 'Fondo', 'Velocidad', 'Consistencia', 'Exploración', 'Desnivel'].map(
+      r => within(screen.getByRole('tabpanel')).getByText(r).nextElementSibling?.textContent,
+    );
 
-  expect(screen.getByText('Tu año en actividad')).toBeInTheDocument();
+  const enRadar = etiquetas();
+  fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
+
+  expect(enRadar.every(p => /^\d+%$/.test(p ?? ''))).toBe(true);
+  expect(etiquetas()).toEqual(enRadar);
+});
+
+it('el árbol dibuja tres nodos por rama, uno en cada anillo', () => {
+  renderCard();
 
   fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
 
-  expect(screen.getByText('Tu año en actividad')).toBeInTheDocument();
+  expect(screen.getAllByRole('button', { name: /nivel [123]/ })).toHaveLength(18);
 });

@@ -28,19 +28,15 @@ export const Card = styled(Panel)`
 /* ── Top row: resumen · perfil (radar o árbol) ───────────────────── */
 
 /**
- * Dos columnas mientras haya ancho para que la identidad y el perfil se lean a
- * la par; por debajo de 900px una sola, que es también donde el perfil deja de
- * entrar al lado.
- *
- * Apilado, el orden natural —identidad, perfil, año— empuja el heatmap fuera de
- * la primera pantalla. `display: contents` disuelve la grilla y sube las
- * columnas a hijas directas de la card, que es lo que habilita reordenarlas:
- * identidad, año en actividad, y recién después el perfil, que es la pieza que
- * se explora y no la que se lee de una.
+ * Columna 1: quién sos, los tres números y el año en actividad. Columna 2: el
+ * perfil (radar o árbol). El heatmap vive adentro de la columna 1 y no como
+ * banda al pie, que es lo que equilibra la card —antes la identidad medía un
+ * tercio de lo que medía el perfil y el resto era hueco— y de paso deja el año
+ * dentro de la primera pantalla del teléfono sin reordenar nada.
  */
 export const TopRow = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 1.75rem;
   align-items: start;
 
@@ -49,7 +45,7 @@ export const TopRow = styled.div`
   }
 
   @media (max-width: 900px) {
-    display: contents;
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -58,10 +54,6 @@ export const IdentityCol = styled.div`
   flex-direction: column;
   gap: 0.4rem;
   min-width: 0;
-
-  @media (max-width: 900px) {
-    order: 1;
-  }
 `;
 
 export const VisualCol = styled.div`
@@ -69,7 +61,6 @@ export const VisualCol = styled.div`
 
   @media (max-width: 900px) {
     width: 100%;
-    order: 3;
   }
 `;
 
@@ -132,14 +123,19 @@ export const PersonaText = styled.p`
 
 /* ── Stat cards ───────────────────────────────────────────────────── */
 
+/**
+ * Los tres en la misma fila. `auto-fit` con un mínimo chico es lo que cumple
+ * "inline salvo en casos extremos" sin un breakpoint inventado: mientras las
+ * tres columnas entren, quedan en fila; recién cuando no, bajan solas.
+ */
 export const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 0.85rem 1rem;
   margin-top: 1.15rem;
 
   @media (max-width: 600px) {
-    gap: 0.7rem 0.75rem;
+    gap: 0.7rem 0.6rem;
     margin-top: 0.9rem;
   }
 `;
@@ -179,12 +175,15 @@ export const StatValue = styled.div<{ $emphasis?: boolean }>`
   text-overflow: ellipsis;
 `;
 
+/**
+ * Sin `nowrap`: que "Semanas al hilo" pueda partirse en dos líneas es lo que
+ * deja entrar las tres tarjetas en fila en un teléfono angosto.
+ */
 export const StatLabel = styled.div`
   font-size: 0.68rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  min-width: 0;
 `;
 
 /* ── Conmutador y pie de la columna visual ───────────────────────── */
@@ -263,29 +262,9 @@ export const RadarNoteDot = styled.span`
   border-top: 2px dashed #ef4444;
 `;
 
-/* ── Activity heatmap (full-width, bottom) ───────────────────────── */
+/* ── Año en actividad: sólo el heatmap, sin encabezados ──────────── */
 
 export const ActivitySection = styled.div`
   width: 100%;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-
-  @media (max-width: 900px) {
-    order: 2;
-  }
-`;
-
-export const ActivityTitle = styled.h3`
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-`;
-
-export const ActivitySubtitle = styled.div`
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
+  margin-top: 1.5rem;
 `;

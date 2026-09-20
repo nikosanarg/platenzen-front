@@ -6,10 +6,8 @@ import { ProcessedStats } from '@/types/stats';
 import { computeRoles } from '@/lib/roles';
 import { computeBranchTree, computeBranchDecay, DIAS_DECAIMIENTO } from '@/lib/branchTree';
 import { computeLongestWeeklyStreak } from '@/utils/streaks';
-import { computeCoreRecord } from '@/lib/coreRecord';
-import { formatRecordTime } from '@/lib/recordHistory';
 import { buildPersonaDescription } from '@/lib/runnerPersona';
-import { IconRoute, IconCalendar, IconFlame, IconHourglass } from '@/components/Icon';
+import { IconRoute, IconCalendar, IconFlame } from '@/components/Icon';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import SpiderChart from './SpiderChart';
 import SkillTree from './SkillTree';
@@ -35,8 +33,6 @@ import {
   RadarNote,
   RadarNoteDot,
   ActivitySection,
-  ActivityTitle,
-  ActivitySubtitle,
 } from './styled';
 
 /** Las dos lecturas del mismo cálculo de ramas. El radar es la de entrada. */
@@ -59,7 +55,6 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
 
   const roles = computeRoles(activities, stats);
   const longestStreak = computeLongestWeeklyStreak(stats.daily);
-  const coreRecord = computeCoreRecord(activities);
 
   /** La rama dominante es la que da el título: la más avanzada, y a igual nivel la más completa. */
   const dominante = useMemo(
@@ -107,19 +102,16 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             <StatCard>
               <StatIcon $emphasis><IconFlame size={18} color="currentColor" /></StatIcon>
               <StatBody>
-                <StatValue $emphasis>{longestStreak} {longestStreak === 1 ? 'semana' : 'semanas'}</StatValue>
-                <StatLabel>Mejor racha</StatLabel>
-              </StatBody>
-            </StatCard>
-
-            <StatCard>
-              <StatIcon $emphasis><IconHourglass size={18} color="currentColor" /></StatIcon>
-              <StatBody>
-                <StatValue $emphasis>{coreRecord ? formatRecordTime(coreRecord.timeSeconds) : '—'}</StatValue>
-                <StatLabel>{coreRecord ? `Récord ${coreRecord.label}` : 'Récord'}</StatLabel>
+                <StatValue $emphasis>{longestStreak}</StatValue>
+                <StatLabel>Semanas al hilo</StatLabel>
               </StatBody>
             </StatCard>
           </StatsGrid>
+
+          {/* ── Consistencia anual: el heatmap como evidencia, no decoración ── */}
+          <ActivitySection>
+            <ActivityHeatmap data={stats.daily} />
+          </ActivitySection>
         </IdentityCol>
 
         {/* ── Perfil de corredor: el radar y el árbol son el mismo cálculo ── */}
@@ -168,15 +160,6 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           </VisualPanel>
         </VisualCol>
       </TopRow>
-
-      {/* ── Consistencia anual: el heatmap como evidencia, no decoración ── */}
-      <ActivitySection>
-        <ActivityTitle>Tu año en actividad</ActivityTitle>
-        <ActivitySubtitle>
-          {longestStreak} {longestStreak === 1 ? 'semana activa' : 'semanas activas'} · {stats.totalActivities.toLocaleString('es-AR')} actividades · {Math.round(stats.totalDistance).toLocaleString('es-AR')} km
-        </ActivitySubtitle>
-        <ActivityHeatmap data={stats.daily} />
-      </ActivitySection>
     </Card>
   );
 };
