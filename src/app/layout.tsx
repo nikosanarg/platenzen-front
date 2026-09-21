@@ -14,6 +14,12 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Platenzen',
   },
+  // iOS ignora los `icons` del manifiesto. Sin esta línea cae a escalar el
+  // favicon de 32px, que es de donde venía el ícono pixelado en la pantalla de
+  // inicio de un iPhone.
+  icons: {
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
 };
 
 // `themeColor` no va en `metadata` en Next 16 (tira warning de deprecación):

@@ -50,9 +50,11 @@ Dónde tiene que aparecer la oferta, y **una sola a la vez**:
   Manifest; aparece el ícono de instalar; la app instalada abre en modo standalone y sin
   fogonazo blanco al arrancar.
 - **Android (Chrome, sobre HTTPS real)**: aparece el botón propio "Instalar app"; al
-  instalar, el botón desaparece. **Mirar el ícono en el launcher**: es donde se va a ver el
-  recorte por falta de variante `maskable`. Sacar una captura sirve de referencia concreta
-  para quien genere los íconos definitivos.
+  instalar, el botón desaparece. **Mirar el ícono en el launcher**: ya existe la variante
+  `maskable`, así que no debería recortarse el rombo. Confirmar también que la marca se lee
+  entera — las dos mitades, blanca y negra, contra el fondo `#606078`.
+- **iPhone, ícono en la pantalla de inicio**: era el peor caso (iOS escalaba el favicon de
+  32px). Con `apple-touch-icon` de 180px tiene que verse nítido.
 - **iOS (Safari)**: aparece el cartel de "Agregar a pantalla de inicio"; agregándola a mano,
   abre standalone. Confirmar de paso que el cartel **no** aparece en Chrome para iOS.
 
