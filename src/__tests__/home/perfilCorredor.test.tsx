@@ -116,7 +116,7 @@ it('la constancia (el mapa de calor) vive en la columna de identidad, sin títul
 it('sin empate entre ramas, no ofrece el chip de cambio', () => {
   renderCard();
 
-  expect(screen.queryByRole('button', { name: /^Ser /i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Cambiar a /i })).not.toBeInTheDocument();
 });
 
 it('la rama dominante sale dorada en la telaraña', () => {

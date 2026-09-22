@@ -92,7 +92,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             <LevelBadge>{dominante.name}</LevelBadge>
             {alternativas.map(alt => (
               <SwitchChip key={alt.id} type="button" onClick={() => setElegidoId(alt.id)}>
-                Ser {alt.tiers[alt.level - 1].name}
+                Cambiar a {alt.tiers[alt.level - 1].name}
               </SwitchChip>
             ))}
           </RoleHeading>
