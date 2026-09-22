@@ -79,14 +79,14 @@ export const MoreLink = styled(Link)`
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   padding: 0.45rem 1.1rem;
   text-decoration: none;
 
   &:hover {
     color: var(--accent);
-    border-color: rgba(var(--accent-rgb), 0.35);
+    background: var(--bg-card-hover);
   }
 `;

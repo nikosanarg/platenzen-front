@@ -104,14 +104,14 @@ export const HeaderNavLink = styled(Link)<{ $active: boolean }>`
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
   font-weight: ${({ $active }) => ($active ? '700' : '500')};
-  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
+  color: ${({ $active }) => ($active ? 'var(--accent-hover)' : 'var(--text-muted)')};
   background: ${({ $active }) => ($active ? 'var(--bg-card)' : 'transparent')};
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.15s, background 0.15s;
 
   &:hover {
-    color: var(--text-primary);
+    color: ${({ $active }) => ($active ? 'var(--accent-hover)' : 'var(--text-primary)')};
   }
 
   @media (max-width: 640px) {
