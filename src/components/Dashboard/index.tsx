@@ -11,12 +11,11 @@ import {
   HeaderLogo,
   HeaderTitle,
   HeaderRight,
+  HeaderNav,
+  HeaderNavLink,
   CacheInfo,
   HeaderButton,
   ButtonText,
-  HomeTabsBar,
-  HomeTabsInner,
-  HomeTabLink,
   DashboardContent,
   LoadingOverlay,
   LoadingText,
@@ -29,6 +28,7 @@ const HOME_TABS = [
   { href: '/', label: 'Progreso' },
   { href: '/achievements', label: 'Logros' },
   { href: '/comparative', label: 'Comparar' },
+  { href: '/mapa', label: 'Mapa' },
 ] as const;
 
 interface DashboardProps {
@@ -86,6 +86,21 @@ const Dashboard: React.FC<DashboardProps> = ({
           </HeaderLogo>
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>
+        <HeaderNav aria-label="Secciones">
+          {HOME_TABS.map(tab => {
+            const isActive = pathname === tab.href;
+            return (
+              <HeaderNavLink
+                key={tab.href}
+                href={tab.href}
+                $active={isActive}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {tab.label}
+              </HeaderNavLink>
+            );
+          })}
+        </HeaderNav>
         <HeaderRight>
           {isFromCache && cacheAge !== null && (
             <CacheInfo>Actualizado {formatCacheAge(cacheAge)}</CacheInfo>
@@ -111,26 +126,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           </HeaderButton>
         </HeaderRight>
       </DashboardHeader>
-
-      {!loading && (
-        <HomeTabsBar>
-          <HomeTabsInner>
-            {HOME_TABS.map(tab => {
-              const isActive = pathname === tab.href;
-              return (
-                <HomeTabLink
-                  key={tab.href}
-                  href={tab.href}
-                  $active={isActive}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {tab.label}
-                </HomeTabLink>
-              );
-            })}
-          </HomeTabsInner>
-        </HomeTabsBar>
-      )}
 
       {loading ? (
         <LoadingOverlay>

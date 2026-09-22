@@ -3,15 +3,16 @@
 import React, { useMemo } from 'react';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
-import { computeCoachAnalisis, DayKind } from '@/lib/coachAnalisis';
+import { computeCoachAnalisis } from '@/lib/coachAnalisis';
 import { decodePolyline } from '@/lib/polylineDecoder';
 import { getTilesForBounds } from '@/lib/osmTiles';
+import HistorialActividades from '@/components/HistorialActividades';
 import {
   IconRun, IconCheck, IconTrendUp, IconMedal, IconRoute,
-  IconFlame, IconCalendar, IconHourglass,
+  IconFlame, IconCalendar,
 } from '@/components/Icon';
 import {
-  Root, Card, CardHead, HeadTitle, HeadSubtitle,
+  Root, Card,
   MainGrid, ColActivity, ColInsights, ColTitle,
   ActivityHead, ActivityIcon, ActivityName, ActivityDate,
   StatsRow, StatItem, StatValue, StatUnit, StatLabel,
@@ -19,7 +20,8 @@ import {
   InsightList, InsightItem, InsightIcon,
   HighlightGrid, HighlightCardBox, HighlightIcon, HighlightBody,
   HighlightValue, HighlightLabel, HighlightSub,
-  AgendaStrip, AgendaCell, AgendaDay, AgendaRow, AgendaIcon, AgendaLabel,
+  ImpactoStrip, ImpactoLabel, XPBig, XPChip, DNAChip, LevelUpBadge,
+  AchievementChip, ActivitiesSection,
 } from './styled';
 
 // ── Mini map (ported from UltimaActividad) ───────────────────────────────────
@@ -115,13 +117,6 @@ const HIGHLIGHT_ICONS = {
   calendar: IconCalendar,
 } as const;
 
-function dayIcon(kind: DayKind) {
-  if (kind === 'done') return <IconCheck size={15} color="currentColor" />;
-  if (kind === 'run') return <IconRun size={15} color="currentColor" />;
-  if (kind === 'none') return <IconCalendar size={15} color="currentColor" />;
-  return <IconHourglass size={15} color="currentColor" />;
-}
-
 // ── Main component ───────────────────────────────────────────────────────────
 
 interface Props {
@@ -133,16 +128,11 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
   const data = useMemo(() => computeCoachAnalisis(activities, stats), [activities, stats]);
   if (!data) return null;
 
-  const { activity, insights, highlights, agenda } = data;
+  const { activity, impacto, insights, highlights } = data;
 
   return (
     <Root>
       <Card>
-        <CardHead>
-          <HeadTitle>Análisis del Coach</HeadTitle>
-          <HeadSubtitle>Última actividad · resumen e impacto</HeadSubtitle>
-        </CardHead>
-
         <MainGrid>
           {/* ── Column 1: mapa ── */}
           <ColActivity>
@@ -182,6 +172,10 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
                 <StatValue>{activity.pace.replace('/km', '')}<StatUnit>/km</StatUnit></StatValue>
                 <StatLabel>Ritmo prom.</StatLabel>
               </StatItem>
+              <StatItem>
+                <StatValue>{activity.elevationM}<StatUnit>m</StatUnit></StatValue>
+                <StatLabel>Desnivel</StatLabel>
+              </StatItem>
             </StatsRow>
 
             <ColTitle>¿Qué nos dice esta salida?</ColTitle>
@@ -214,25 +208,48 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
               })}
             </HighlightGrid>
           </ColInsights>
-
-          {/* ── Agenda horizontal: ayer, hoy y las próximas 72h ── */}
-          <AgendaStrip>
-            {agenda.map((s, i) => {
-              const esHoy = s.day === 'Hoy';
-              return (
-                <AgendaCell key={i} $today={esHoy}>
-                  <AgendaDay $today={esHoy}>{s.day}</AgendaDay>
-                  <AgendaRow>
-                    <AgendaIcon $kind={s.kind}>{dayIcon(s.kind)}</AgendaIcon>
-                    <AgendaLabel $muted={s.kind === 'rest' || s.kind === 'none'}>
-                      {s.label}
-                    </AgendaLabel>
-                  </AgendaRow>
-                </AgendaCell>
-              );
-            })}
-          </AgendaStrip>
         </MainGrid>
+
+        {/*
+          Lo que esta salida movió en tu progreso, en una sola fila: separa el
+          coach de arriba (mapa y detalle) del historial de abajo. Es la mitad
+          que Strava no tiene, y la razón de que este bloque no sea un espejo
+          de la app de Strava: XP, ADN, nivel y permisos son vocabulario de
+          Platenzen.
+        */}
+        <ImpactoStrip>
+          <ImpactoLabel>Qué movió en tu progreso</ImpactoLabel>
+          <XPBig>+{impacto.xpEarned} XP</XPBig>
+          {impacto.prevLevel !== null && (
+            <LevelUpBadge>
+              Nivel {impacto.prevLevel} → {impacto.currentLevel}
+            </LevelUpBadge>
+          )}
+          {impacto.xpDetails.map(d => (
+            <XPChip key={d.label}>+{d.value} {d.label}</XPChip>
+          ))}
+          {impacto.dnaImpact.map(imp => (
+            <DNAChip key={imp.attribute} $positive={imp.delta > 0}>
+              {imp.attribute} {imp.delta > 0 ? `+${imp.delta}` : imp.delta}
+            </DNAChip>
+          ))}
+          {impacto.newAchievements.map(ach => (
+            <AchievementChip key={ach.name}>{ach.name}</AchievementChip>
+          ))}
+        </ImpactoStrip>
+
+        {/*
+          El historial completo, debajo del separador: la última salida es el
+          dato principal de la card, pero el historial es lo que le da
+          contexto — sin él, la card es sólo hoy.
+        */}
+        <ActivitiesSection>
+          <HistorialActividades
+            activities={activities}
+            pageSize={10}
+            sorts={['fecha', 'distancia', 'ritmo']}
+          />
+        </ActivitiesSection>
       </Card>
     </Root>
   );

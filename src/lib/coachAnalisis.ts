@@ -1,6 +1,11 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
-import { computeEnrichedLastActivity } from '@/lib/lastActivity';
+import {
+  computeEnrichedLastActivity,
+  XPDetail,
+  DNAImpact,
+  NewAchievement,
+} from '@/lib/lastActivity';
 import { computeFormShape } from '@/lib/formShape';
 import { computeCoachRecommendation } from '@/lib/coach';
 import { splitPace } from '@/utils/pace';
@@ -15,8 +20,25 @@ export interface AnalisisActivity {
   distanceKm: string;      // "15.01"
   durationLabel: string;   // "1:22:48"
   pace: string;            // "5:31/km"
+  elevationM: number;      // desnivel positivo acumulado
   polyline: string | null;
   stravaUrl: string;
+}
+
+/**
+ * La capa propia de Platenzen sobre la salida: no qué corriste, sino qué movió
+ * en tu progreso. Es lo que distingue este bloque de mirar la actividad en
+ * Strava, y viene entera de `lastActivity`, que el analisis ya calculaba para
+ * sus insights sin exponer esta mitad.
+ */
+export interface ImpactoPlatenzen {
+  xpEarned: number;
+  xpDetails: XPDetail[];
+  dnaImpact: DNAImpact[];
+  /** No nulo sólo si esta salida hizo subir de nivel. */
+  prevLevel: number | null;
+  currentLevel: number;
+  newAchievements: NewAchievement[];
 }
 
 export type InsightTone = 'positive' | 'neutral' | 'warning';
@@ -44,6 +66,7 @@ export interface DayPlan {
 
 export interface CoachAnalisis {
   activity: AnalisisActivity;
+  impacto: ImpactoPlatenzen;
   insights: Insight[];
   highlights: HighlightCard[];
   agenda: DayPlan[];
@@ -307,12 +330,23 @@ export function computeCoachAnalisis(
     distanceKm: enriched.distanceKm,
     durationLabel: formatClock(last.moving_time),
     pace: enriched.pace,
+    elevationM: Math.round(last.total_elevation_gain),
     polyline: last.map?.summary_polyline ?? null,
     stravaUrl: enriched.stravaUrl,
   };
 
+  const impacto: ImpactoPlatenzen = {
+    xpEarned: enriched.xpEarned,
+    xpDetails: enriched.xpDetails,
+    dnaImpact: enriched.dnaImpact,
+    prevLevel: enriched.prevLevel,
+    currentLevel: enriched.currentLevel,
+    newAchievements: enriched.newAchievements,
+  };
+
   return {
     activity,
+    impacto,
     insights: buildInsights(last, allRuns),
     highlights: buildHighlights(last, allRuns, recentWeeklyAvgKm),
     agenda: buildAgenda(activities, stats),

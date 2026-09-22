@@ -46,6 +46,12 @@ export const IconCheck: React.FC<Props> = ({ size = 16, color = 'currentColor' }
   </svg>
 );
 
+export const IconClose: React.FC<Props> = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M3 3L13 13M13 3L3 13" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
 export const IconRun: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <circle cx="13" cy="3.5" r="1.5" stroke={color} strokeWidth="1.5" />

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { Activity } from '@/types/activity';
-import { computeWorldMap, clusterZones, ZoneCluster, formatPaceStr } from '@/lib/worldMap';
+import { computeWorldMap, clusterZones, formatPaceStr } from '@/lib/worldMap';
 import {
   TILE_SIZE,
   latLonToWorldPx,
@@ -11,17 +11,9 @@ import {
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
-  Layout,
   HeatmapContainer,
   HeatmapSvg,
   Tooltip,
-  ZoneList,
-  ZoneItem,
-  ZoneRank,
-  ZoneInfo,
-  ZoneName,
-  ZoneMeta,
-  ZoneVisits,
   DetailPanel,
   DetailTitle,
   DetailStats,
@@ -31,7 +23,6 @@ import {
   RecentActivities,
   ActivityRow,
   EmptyState,
-  SubTitle,
   ZoomControls,
   ZoomButton,
   MapHint,
@@ -65,28 +56,39 @@ interface Vista {
 
 interface TuMundoProps {
   activities: Activity[];
+  /** El lugar a mostrar de entrada, cuando se llega desde un click en la lista de la sidebar. */
+  initialClusterId?: string;
+  /** El modal que lo embebe ya trae su propio título; acá se apaga el propio. */
+  showHeading?: boolean;
 }
 
-const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
+const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHeading = true }) => {
   const data = useMemo(() => computeWorldMap(activities), [activities]);
   const [vistaUsuario, setVistaUsuario] = useState<Vista | null>(null);
-  const [seleccionado, setSeleccionado] = useState<string | null>(null);
+  const [seleccionado, setSeleccionado] = useState<string | null>(initialClusterId ?? null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const arrastreRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Encuadre inicial: todo el territorio recorrido. Se **deriva**, no se asigna
-  // en un efecto — así la primera pintura ya sale bien encuadrada, sin un
-  // fotograma intermedio con el mapa en otro lado.
+  // El agrupado NO depende del zoom: ver el comentario de `clusterZones`.
+  // Si dependiera, acercarse partiria un lugar en sus celdas de 1 km y la lista
+  // volveria a repetir la misma salida en varias filas.
+  const clusters = useMemo(() => (data ? clusterZones(data.zones) : []), [data]);
+
+  // Encuadre inicial: el lugar pedido (si se llega desde la sidebar) o el
+  // territorio mas frecuentado. Se **deriva**, no se asigna en un efecto —
+  // así la primera pintura ya sale bien encuadrada, sin un fotograma
+  // intermedio con el mapa en otro lado.
   const vistaInicial = useMemo<Vista | null>(() => {
     if (!data || data.zones.length === 0) return null;
-    // Centrado en el lugar mas frecuentado, no en el centro geometrico de todo
-    // lo recorrido: con salidas en dos ciudades, ese centro cae en el medio del
-    // campo, donde no se corrio nunca.
-    const principal = [...data.zones].sort((a, b) => b.visitCount - a.visitCount)[0];
+    const pedido = initialClusterId ? clusters.find(c => c.id === initialClusterId) : undefined;
+    // Sin pedido explicito, centrado en el lugar mas frecuentado, no en el
+    // centro geometrico de todo lo recorrido: con salidas en dos ciudades, ese
+    // centro cae en el medio del campo, donde no se corrio nunca.
+    const principal = pedido ?? [...data.zones].sort((a, b) => b.visitCount - a.visitCount)[0];
     return { centerLat: principal.lat, centerLon: principal.lon, zoom: ZOOM_INICIAL };
-  }, [data]);
+  }, [data, clusters, initialClusterId]);
 
   // Mientras el usuario no toque nada manda el encuadre inicial; apenas mueve o
   // hace zoom, manda el suyo.
@@ -116,11 +118,6 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     },
     [vista]
   );
-
-  // El agrupado NO depende del zoom: ver el comentario de `clusterZones`.
-  // Si dependiera, acercarse partiria un lugar en sus celdas de 1 km y la lista
-  // volveria a repetir la misma salida en varias filas.
-  const clusters = useMemo(() => (data ? clusterZones(data.zones) : []), [data]);
 
   /** Los tiles que tocan el viewport al zoom actual. */
   const tiles = useMemo(() => {
@@ -244,22 +241,10 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
     setArrastrando(false);
   };
 
-  /** Centra el mapa en un grupo y se acerca, para poder abrirlo. */
-  const enfocar = (cluster: ZoneCluster) => {
-    setSeleccionado(prev => (prev === cluster.id ? null : cluster.id));
-    actualizarVista(prev => ({
-      centerLat: cluster.lat,
-      centerLon: cluster.lon,
-      // Se acerca a nivel barrio si estaba mas lejos; si ya estaba cerca, respeta
-      // el zoom que el usuario eligio.
-      zoom: Math.max(prev.zoom, ZOOM_INICIAL),
-    }));
-  };
-
   if (!data || data.zones.length === 0) {
     return (
       <Root>
-        <SectionTitle>Tu Mundo</SectionTitle>
+        {showHeading && <SectionTitle>Tu Mundo</SectionTitle>}
         <EmptyState>Necesitás actividades con recorrido registrado para ver tu mundo.</EmptyState>
       </Root>
     );
@@ -270,122 +255,100 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities }) => {
 
   return (
     <Root>
-      <SectionTitle>Tu Mundo</SectionTitle>
+      {showHeading && <SectionTitle>Tu Mundo</SectionTitle>}
+      <MapHint>Tocá una zona para verla en detalle. Arrastrá para moverte y usá la rueda para acercarte.</MapHint>
 
-      <Layout>
-        <HeatmapContainer>
-          <HeatmapSvg
-            ref={svgRef}
-            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-            aria-label="Mapa de zonas recorridas"
-            onMouseDown={alPresionar}
-            onMouseMove={alMover}
-            onMouseUp={soltarArrastre}
-            onMouseLeave={() => {
-              soltarArrastre();
-              setTooltip(null);
-            }}
-            style={{ cursor: arrastrando ? 'grabbing' : 'grab' }}
+      <HeatmapContainer>
+        <HeatmapSvg
+          ref={svgRef}
+          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+          aria-label="Mapa de zonas recorridas"
+          onMouseDown={alPresionar}
+          onMouseMove={alMover}
+          onMouseUp={soltarArrastre}
+          onMouseLeave={() => {
+            soltarArrastre();
+            setTooltip(null);
+          }}
+          style={{ cursor: arrastrando ? 'grabbing' : 'grab' }}
+        >
+          <rect width={SVG_W} height={SVG_H} fill="var(--bg-primary)" rx="8" />
+
+          {tiles.map(tile => (
+            <image
+              key={tile.key}
+              href={tile.url}
+              x={tile.x}
+              y={tile.y}
+              width={TILE_SIZE}
+              height={TILE_SIZE}
+              preserveAspectRatio="none"
+              style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
+            />
+          ))}
+
+          {clusters.map(cluster => {
+            const [cx, cy] = project(cluster.lat, cluster.lon);
+            // Fuera del viewport no se dibuja: con zoom alto son la mayoría.
+            if (cx < -60 || cx > SVG_W + 60 || cy < -60 || cy > SVG_H + 60) return null;
+
+            const intensidad = cluster.visitCount / maxVisitas;
+            const r = 6 + intensidad * 14;
+            const activo = seleccionado === cluster.id;
+
+            return (
+              <g key={cluster.id}>
+                <circle cx={cx} cy={cy} r={r + 6} fill={`rgba(252, 76, 2, ${intensidad * 0.15})`} />
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={`rgba(252, 76, 2, ${0.3 + intensidad * 0.5})`}
+                  stroke={activo ? '#fc4c02' : 'transparent'}
+                  strokeWidth={activo ? 2 : 0}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSeleccionado(prev => (prev === cluster.id ? null : cluster.id))}
+                  onMouseEnter={e => {
+                    const coords = aCoordsSvg(e.clientX, e.clientY);
+                    if (!coords) return;
+                    setTooltip({
+                      x: ((coords[0] + 12) / SVG_W) * 100,
+                      y: ((coords[1] - 36) / SVG_H) * 100,
+                      text: `${cluster.visitCount} salida${cluster.visitCount !== 1 ? 's' : ''} · ${cluster.distanceKm} km`,
+                    });
+                  }}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              </g>
+            );
+          })}
+        </HeatmapSvg>
+
+        <ZoomControls>
+          <ZoomButton
+            type="button"
+            onClick={() => cambiarZoom(1)}
+            aria-label="Acercar"
+            disabled={(vista?.zoom ?? 0) >= ZOOM_MAX}
           >
-            <rect width={SVG_W} height={SVG_H} fill="var(--bg-primary)" rx="8" />
+            +
+          </ZoomButton>
+          <ZoomButton
+            type="button"
+            onClick={() => cambiarZoom(-1)}
+            aria-label="Alejar"
+            disabled={(vista?.zoom ?? 0) <= ZOOM_MIN}
+          >
+            −
+          </ZoomButton>
+        </ZoomControls>
 
-            {tiles.map(tile => (
-              <image
-                key={tile.key}
-                href={tile.url}
-                x={tile.x}
-                y={tile.y}
-                width={TILE_SIZE}
-                height={TILE_SIZE}
-                preserveAspectRatio="none"
-                style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
-              />
-            ))}
-
-            {clusters.map(cluster => {
-              const [cx, cy] = project(cluster.lat, cluster.lon);
-              // Fuera del viewport no se dibuja: con zoom alto son la mayoría.
-              if (cx < -60 || cx > SVG_W + 60 || cy < -60 || cy > SVG_H + 60) return null;
-
-              const intensidad = cluster.visitCount / maxVisitas;
-              const r = 6 + intensidad * 14;
-              const activo = seleccionado === cluster.id;
-
-              return (
-                <g key={cluster.id}>
-                  <circle cx={cx} cy={cy} r={r + 6} fill={`rgba(252, 76, 2, ${intensidad * 0.15})`} />
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={r}
-                    fill={`rgba(252, 76, 2, ${0.3 + intensidad * 0.5})`}
-                    stroke={activo ? '#fc4c02' : 'transparent'}
-                    strokeWidth={activo ? 2 : 0}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setSeleccionado(prev => (prev === cluster.id ? null : cluster.id))}
-                    onMouseEnter={e => {
-                      const coords = aCoordsSvg(e.clientX, e.clientY);
-                      if (!coords) return;
-                      setTooltip({
-                        x: ((coords[0] + 12) / SVG_W) * 100,
-                        y: ((coords[1] - 36) / SVG_H) * 100,
-                        text: `${cluster.visitCount} salida${cluster.visitCount !== 1 ? 's' : ''} · ${cluster.distanceKm} km`,
-                      });
-                    }}
-                    onMouseLeave={() => setTooltip(null)}
-                  />
-                </g>
-              );
-            })}
-          </HeatmapSvg>
-
-          <ZoomControls>
-            <ZoomButton
-              type="button"
-              onClick={() => cambiarZoom(1)}
-              aria-label="Acercar"
-              disabled={(vista?.zoom ?? 0) >= ZOOM_MAX}
-            >
-              +
-            </ZoomButton>
-            <ZoomButton
-              type="button"
-              onClick={() => cambiarZoom(-1)}
-              aria-label="Alejar"
-              disabled={(vista?.zoom ?? 0) <= ZOOM_MIN}
-            >
-              −
-            </ZoomButton>
-          </ZoomControls>
-
-          {tooltip && (
-            <Tooltip $visible style={{ left: `${tooltip.x}%`, top: `${tooltip.y}%` }}>
-              {tooltip.text}
-            </Tooltip>
-          )}
-        </HeatmapContainer>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <SubTitle>Zonas más frecuentadas</SubTitle>
-          <MapHint>Tocá una zona para verla en el mapa. Arrastrá para moverte y usá la rueda para acercarte.</MapHint>
-          <ZoneList>
-            {clusters.slice(0, 15).map((cluster, idx) => (
-              <ZoneItem
-                key={cluster.id}
-                $active={seleccionado === cluster.id}
-                onClick={() => enfocar(cluster)}
-              >
-                <ZoneRank>#{idx + 1}</ZoneRank>
-                <ZoneInfo>
-                  <ZoneName>{cluster.distanceKm} km acumulados</ZoneName>
-                  <ZoneMeta>Última visita: {cluster.lastVisit}</ZoneMeta>
-                </ZoneInfo>
-                <ZoneVisits>{cluster.visitCount}×</ZoneVisits>
-              </ZoneItem>
-            ))}
-          </ZoneList>
-        </div>
-      </Layout>
+        {tooltip && (
+          <Tooltip $visible style={{ left: `${tooltip.x}%`, top: `${tooltip.y}%` }}>
+            {tooltip.text}
+          </Tooltip>
+        )}
+      </HeatmapContainer>
 
       {detalle && (
         <DetailPanel>

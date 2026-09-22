@@ -12,13 +12,21 @@ récords proyectados para 5K/10K/21K, y un mapa de calor anual con racha y consi
 El tono del producto es deliberadamente factual: las observaciones de "Estado actual" son
 breves y objetivas, sin lenguaje motivacional.
 
+**Platenzen cuenta la trayectoria de un corredor, no muestra un tablero de estadísticas.**
+De ahí salen dos criterios que deciden qué entra y qué no:
+
+- **No imita a Strava Premium.** Una métrica que el dato disponible no sostiene no se
+  aproxima ni se inventa: se deja afuera. Potencia, Suffer Score, esfuerzo relativo y
+  nombre de dispositivo no existen en el payload que se consume (ver "Zonas sensibles").
+- **Una pantalla responde una pregunta.** La Home se ordena por tres: qué hice, cómo
+  estoy, cómo viene mi historia. Un bloque que no contesta ninguna de esas tres no va en
+  la Home aunque el cálculo ya exista.
+
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript.
 - styled-components 6 con SSR registry.
 - Recharts para visualizaciones.
-- `@react-three/fiber` + `@react-three/drei` + `three` para 3D.
-- `@xyflow/react` para diagramas de flujo.
 - Deploy en Vercel.
 
 ## Arquitectura
@@ -49,7 +57,7 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | `npx jest` (44 suites, 697 tests) |
+| Tests | `npx jest` (49 suites, 733 tests) |
 | Cobertura | `npm run test:coverage` |
 | Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
@@ -92,6 +100,11 @@ es un cambio aparte, no algo a colar en otra tarea.
 - Faltan íconos 192/512 con variante `maskable` para la PWA: hoy se declara el logo de
   412×411, que alcanza para instalar pero Android lo recorta contra su máscara circular.
   Necesita un asset de diseño, no código.
+- **`package.json` declara dependencias que ya nadie importa**: `three`,
+  `@react-three/fiber` y `@react-three/drei` (su único consumidor era un mapa de calor
+  3D que se eliminó por ilegible) y `@xyflow/react` (sin consumidor desde antes).
+  Sacarlas es un cambio de dependencias aparte —y con el lock desincronizado, uno que
+  merece su propia verificación—, no algo a colar en otra tarea.
 - `src/__mocks__/activitiesMock.ts` es un volcado real de la API de Strava. Dejó de ser
   peso muerto: es lo que carga el modo mock. Sigue siendo un dump real —con trazas GPS—,
   así que no puede terminar en un bundle de producción.
@@ -106,8 +119,8 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Tests
 
-Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **44
-suites, 697 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **49
+suites, 733 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
 `comparative/`, `achievements/`, `providers/`, `api/`, `shared/`), con una factory de
 actividades en `helpers/activity.ts`.
 

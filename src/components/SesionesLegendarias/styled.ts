@@ -4,123 +4,60 @@ import { Panel } from '@/components/Panel';
 export const Root = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 `;
 
-export const SessionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.875rem;
-
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
-
-export const SessionCard = styled.div`
-  background: var(--bg-deep);
-  border-radius: var(--radius);
-  box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.14);
-  padding: 1.25rem;
+/** Una lista, no una grilla: vive en la sidebar junto a Récords. */
+export const SessionsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  position: relative;
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.26);
-  }
-`;
-
-export const SessionHeader = styled.div`
-  display: flex;
-  align-items: center;
   gap: 0.5rem;
 `;
 
-export const SessionName = styled.div`
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--gold);
-  line-height: 1.3;
-`;
-
-export const SessionDate = styled.div`
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: auto;
-`;
-
-export const SessionStats = styled.div`
-  display: flex;
-  gap: 1.25rem;
-`;
-
-export const SessionStat = styled.div`
+export const SessionRow = styled.a`
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-`;
-
-export const SessionStatValue = styled.div`
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-`;
-
-export const SessionStatLabel = styled.div`
-  font-size: 0.62rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-`;
-
-export const ReasonsList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-`;
-
-export const ReasonBadge = styled.div`
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  border: 1px solid rgba(var(--gold-rgb), 0.35);
-  background: rgba(var(--gold-rgb), 0.07);
-  color: var(--gold-muted);
-`;
-
-export const LegendaryIcon = styled.div`
-  font-size: 1.1rem;
-  line-height: 1;
-`;
-
-export const StravaBtn = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--accent);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 6px;
-  padding: 0.3rem 0.625rem;
-  transition: background 0.15s;
+  gap: 0.25rem;
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
   text-decoration: none;
-  align-self: flex-start;
+  transition: border-color 0.15s;
 
   &:hover {
-    background: rgba(var(--accent-rgb), 0.1);
+    border-color: rgba(var(--gold-rgb), 0.4);
   }
 `;
 
+export const SessionName = styled.div`
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const SessionMeta = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+`;
+
+export const SessionReason = styled.div`
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--gold-muted);
+`;
+
 export const EmptyState = styled(Panel)`
-  padding: 2rem;
+  padding: 1.25rem;
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 `;

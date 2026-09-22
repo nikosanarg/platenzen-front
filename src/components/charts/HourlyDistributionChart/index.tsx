@@ -7,9 +7,10 @@ import { ChartCard, ChartTitle, ChartArea } from '../shared/styled';
 
 interface HourlyDistributionChartProps {
   data: HourCount[];
+  bare?: boolean;
 }
 
-const HourlyDistributionChart: React.FC<HourlyDistributionChartProps> = ({ data }) => {
+const HourlyDistributionChart: React.FC<HourlyDistributionChartProps> = ({ data, bare }) => {
   const trimmedData = React.useMemo(() => {
     const firstIdx = data.findIndex(d => d.count > 0);
     const lastIdx = data.reduce((acc, d, i) => d.count > 0 ? i : acc, -1);
@@ -18,7 +19,7 @@ const HourlyDistributionChart: React.FC<HourlyDistributionChartProps> = ({ data 
   }, [data]);
 
   return (
-    <ChartCard>
+    <ChartCard $bare={bare}>
       <ChartTitle>Actividades por hora</ChartTitle>
       <ChartArea>
         <ResponsiveContainer width="100%" height="100%">

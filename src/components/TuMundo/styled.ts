@@ -7,16 +7,6 @@ export const Root = styled.div`
   gap: 1.25rem;
 `;
 
-export const Layout = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 1rem;
-
-  @media (max-width: 860px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
 export const HeatmapContainer = styled(Panel)`
   overflow: hidden;
   position: relative;
@@ -40,66 +30,6 @@ export const Tooltip = styled.div<{ $visible: boolean }>`
   transition: opacity 0.15s;
   white-space: nowrap;
   z-index: 10;
-`;
-
-export const ZoneList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 400px;
-  overflow-y: auto;
-`;
-
-export const ZoneItem = styled.div<{ $active: boolean }>`
-  background: ${props => props.$active ? 'rgba(var(--accent-rgb), 0.08)' : 'var(--bg-card)'};
-  border: 1px solid ${props => props.$active ? 'rgba(var(--accent-rgb), 0.4)' : 'var(--border)'};
-  border-radius: var(--radius-sm);
-  padding: 0.625rem 0.875rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-  &:hover {
-    border-color: rgba(var(--accent-rgb), 0.3);
-    background: rgba(var(--accent-rgb), 0.05);
-  }
-`;
-
-export const ZoneRank = styled.div`
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  min-width: 1.25rem;
-  text-align: right;
-`;
-
-export const ZoneInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-export const ZoneName = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-export const ZoneMeta = styled.div`
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  margin-top: 0.125rem;
-`;
-
-export const ZoneVisits = styled.div`
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
-  white-space: nowrap;
 `;
 
 export const DetailPanel = styled(Panel)`
@@ -166,14 +96,6 @@ export const EmptyState = styled(Panel)`
   text-align: center;
   color: var(--text-muted);
   font-size: 0.875rem;
-`;
-
-export const SubTitle = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 `;
 
 export const ZoomControls = styled.div`

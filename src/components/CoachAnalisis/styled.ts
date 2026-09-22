@@ -1,14 +1,12 @@
 import styled from 'styled-components';
 import { Panel } from '@/components/Panel';
-import { InsightTone, DayKind } from '@/lib/coachAnalisis';
+import { InsightTone } from '@/lib/coachAnalisis';
 
 function toneColor(tone: InsightTone): string {
   if (tone === 'positive') return 'var(--positive)';
   if (tone === 'warning') return 'var(--warning)';
   return 'var(--text-secondary)';
 }
-
-const ACTIVE_KINDS: DayKind[] = ['done', 'run'];
 
 export const Root = styled.section`
   display: flex;
@@ -20,42 +18,20 @@ export const Card = styled(Panel)`
   overflow: hidden;
 `;
 
-/* ── Header ─────────────────────────────────────────────── */
+/** El historial, a lo ancho de la card, debajo del separador de impacto. */
+export const ActivitiesSection = styled.div`
+  padding: 1.25rem 1.5rem 1.5rem;
 
-export const CardHead = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-
-  @media (max-width: 600px) {
-    padding: 1.15rem 1.15rem;
+  @media (max-width: 1080px) {
+    padding: 1.15rem 1.15rem 1.25rem;
   }
 `;
 
-export const HeadTitle = styled.h2`
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-`;
-
-export const HeadSubtitle = styled.span`
-  font-size: 0.8rem;
-  color: var(--text-muted);
-`;
-
-/* ── Main grid: actividad + observaciones, y la agenda a lo ancho ─────────── */
-
+/** Sólo las dos columnas de arriba: mapa y detalle. El resto va debajo, a lo ancho. */
 export const MainGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  grid-template-areas:
-    "activity insights"
-    "agenda   agenda";
+  grid-template-areas: "activity insights";
   align-items: start;
   gap: 1.25rem 1.5rem;
   padding: 1.5rem;
@@ -64,8 +40,7 @@ export const MainGrid = styled.div`
     grid-template-columns: 1fr;
     grid-template-areas:
       "activity"
-      "insights"
-      "agenda";
+      "insights";
     padding: 1.25rem 1.15rem;
   }
 `;
@@ -172,7 +147,6 @@ export const MapContainer = styled.div`
   width: 100%;
   aspect-ratio: 4 / 3;
   background: var(--bg-primary);
-  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
   display: flex;
@@ -260,7 +234,6 @@ export const HighlightCardBox = styled.div`
   align-items: flex-start;
   gap: 0.6rem;
   background: var(--bg-primary);
-  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.8rem;
 `;
@@ -296,75 +269,80 @@ export const HighlightSub = styled.div`
   margin-top: 0.1rem;
 `;
 
-/* ── Agenda: Ayer → +72h, en una tira horizontal ─────────── */
+/* ── Impacto Platenzen: qué movió la salida en tu progreso ───────── */
 
-/* Los separadores son el fondo del contenedor asomando por el gap de 1px: así
-   siguen cayendo donde corresponde cuando las celdas envuelven a dos filas. */
-export const AgendaStrip = styled.div`
-  grid-area: agenda;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-
-  @media (max-width: 860px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-export const AgendaCell = styled.div<{ $today?: boolean }>`
+/**
+ * Una sola fila con todo inline: separa el coach de arriba (mapa y detalle)
+ * del historial de abajo, a lo ancho completo de la card. Antes eran cuatro
+ * filas apiladas (XP, chips de XP, chips de ADN, logros); ahora es una tira
+ * que se lee de un vistazo y no pesa como una sección propia.
+ */
+export const ImpactoStrip = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.85rem 0.9rem;
-  min-width: 0;
-  background: ${({ $today }) => ($today ? 'rgba(var(--accent-rgb), 0.07)' : 'var(--bg-card)')};
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+
+  @media (max-width: 1080px) {
+    padding: 0.9rem 1.15rem;
+  }
 `;
 
-export const AgendaDay = styled.div<{ $today?: boolean }>`
-  font-size: 0.66rem;
+export const ImpactoLabel = styled.span`
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: ${({ $today }) => ($today ? 'var(--accent)' : 'var(--text-muted)')};
-`;
-
-export const AgendaRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-width: 0;
-`;
-
-export const AgendaIcon = styled.div<{ $kind: DayKind }>`
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  color: var(--text-muted);
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ $kind }) => (ACTIVE_KINDS.includes($kind) ? 'var(--positive)' : 'var(--text-muted)')};
-  background: ${({ $kind }) =>
-    ACTIVE_KINDS.includes($kind) ? 'rgba(var(--positive-rgb), 0.12)' : 'rgba(var(--text-secondary-rgb), 0.1)'};
-  border: 1px solid ${({ $kind }) =>
-    ACTIVE_KINDS.includes($kind) ? 'rgba(var(--positive-rgb), 0.25)' : 'var(--border)'};
 `;
 
-export const AgendaLabel = styled.div<{ $muted?: boolean }>`
+export const XPBig = styled.div`
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gold);
+`;
+
+export const XPChip = styled.div`
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+`;
+
+export const DNAChip = styled.div<{ $positive: boolean }>`
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.25;
-  min-width: 0;
-  color: ${({ $muted }) => ($muted ? 'var(--text-muted)' : 'var(--text-primary)')};
-  text-transform: ${({ $muted }) => ($muted ? 'uppercase' : 'none')};
-  letter-spacing: ${({ $muted }) => ($muted ? '0.06em' : 'normal')};
-  font-size: ${({ $muted }) => ($muted ? '0.72rem' : '0.8rem')};
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.3)' : 'rgba(var(--error-rgb), 0.3)'};
+  background: ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.06)' : 'rgba(var(--error-rgb), 0.06)'};
+  color: ${({ $positive }) => $positive ? 'var(--positive)' : 'var(--error)'};
 `;
 
+export const LevelUpBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-muted);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+`;
+
+export const AchievementChip = styled.div`
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.625rem;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--gold-rgb), 0.4);
+  background: rgba(var(--gold-rgb), 0.08);
+  color: var(--gold);
+`;

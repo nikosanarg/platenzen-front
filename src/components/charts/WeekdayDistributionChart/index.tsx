@@ -7,11 +7,12 @@ import { ChartCard, ChartTitle, ChartArea } from '../shared/styled';
 
 interface WeekdayDistributionChartProps {
   data: WeekdayCount[];
+  bare?: boolean;
 }
 
-const WeekdayDistributionChart: React.FC<WeekdayDistributionChartProps> = ({ data }) => {
+const WeekdayDistributionChart: React.FC<WeekdayDistributionChartProps> = ({ data, bare }) => {
   return (
-    <ChartCard>
+    <ChartCard $bare={bare}>
       <ChartTitle>Tus días más activos</ChartTitle>
       <ChartArea>
         <ResponsiveContainer width="100%" height="100%">

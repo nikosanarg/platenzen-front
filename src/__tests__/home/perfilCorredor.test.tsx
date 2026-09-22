@@ -1,10 +1,12 @@
 /**
- * El conmutador del perfil de corredor en la card de la Home.
+ * El perfil de ramas en la card de la Home: radar y árbol dejaron de ser dos
+ * pestañas y pasaron a ser un solo dibujo — el polígono pintado y los 18 nodos
+ * del árbol conviven sobre la misma telaraña.
  *
- * Radar y árbol dibujan el mismo cálculo de `branchTree`, así que lo que se
- * verifica acá no es qué dibuja cada uno —eso lo cubre `branchTree.test.ts`—
- * sino que sean dos lecturas de una sola pieza: una visible por vez, con el
- * conmutador diciendo cuál, y las dos alimentadas por las mismas actividades.
+ * Lo que se verifica acá no es qué dibuja `branchTree` —eso lo cubre
+ * `branchTree.test.ts`— sino que las dos lecturas efectivamente convivan sin
+ * un conmutador, y que el detalle de un nodo aparezca sólo como tooltip al
+ * pasar el mouse o hacer foco, nunca como texto fijo en la card.
  */
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
@@ -31,7 +33,9 @@ function historial(): Activity[] {
 
 function renderCard() {
   const activities = historial();
-  return render(<PersonajeCard activities={activities} stats={computeStats(activities)} />);
+  const utils = render(<PersonajeCard activities={activities} stats={computeStats(activities)} />);
+  const svg = utils.container.querySelector<HTMLElement>('svg[viewBox="0 0 300 300"]')!;
+  return { ...utils, svg };
 }
 
 beforeEach(() => {
@@ -43,60 +47,83 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-const HINT_ARBOL = /Las habilidades se desbloquean solas/;
+const HINT_FIJO = /habilidades desbloqueadas/;
 /** El pie del radar, en cualquiera de sus dos redacciones. */
 const PIE_RADAR = /Dónde quedarías si dejaras de correr|Tu progreso no vence/;
 
-it('arranca en el radar, con el árbol fuera de la pantalla', () => {
+it('no hay conmutador: no existen las pestañas Radar ni Árbol', () => {
   renderCard();
 
-  expect(screen.getByRole('tab', { name: 'Radar' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.getByRole('tab', { name: 'Árbol' })).toHaveAttribute('aria-selected', 'false');
-  expect(screen.getByText(PIE_RADAR)).toBeInTheDocument();
-  expect(screen.queryByText(HINT_ARBOL)).not.toBeInTheDocument();
+  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
 });
 
-it('conmutar a Árbol reemplaza al radar en el mismo panel', () => {
+it('dibuja los 18 nodos del árbol y el pie del radar en la misma pantalla', () => {
   renderCard();
-  const panel = screen.getByRole('tabpanel');
-
-  fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
-
-  expect(screen.getByRole('tab', { name: 'Árbol' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.getByRole('tab', { name: 'Radar' })).toHaveAttribute('aria-selected', 'false');
-  expect(panel).toContainElement(screen.getByText(HINT_ARBOL));
-  expect(screen.queryByText(PIE_RADAR)).not.toBeInTheDocument();
-});
-
-it('vuelve al radar cuando se lo elige de nuevo', () => {
-  renderCard();
-
-  fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
-  fireEvent.click(screen.getByRole('tab', { name: 'Radar' }));
-
-  expect(screen.getByRole('tab', { name: 'Radar' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.getByText(PIE_RADAR)).toBeInTheDocument();
-  expect(screen.queryByText(HINT_ARBOL)).not.toBeInTheDocument();
-});
-
-it('las seis ramas y sus porcentajes son los mismos en las dos vistas', () => {
-  renderCard();
-  const etiquetas = () =>
-    ['Resistencia', 'Fondo', 'Velocidad', 'Consistencia', 'Exploración', 'Desnivel'].map(
-      r => within(screen.getByRole('tabpanel')).getByText(r).nextElementSibling?.textContent,
-    );
-
-  const enRadar = etiquetas();
-  fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
-
-  expect(enRadar.every(p => /^\d+%$/.test(p ?? ''))).toBe(true);
-  expect(etiquetas()).toEqual(enRadar);
-});
-
-it('el árbol dibuja tres nodos por rama, uno en cada anillo', () => {
-  renderCard();
-
-  fireEvent.click(screen.getByRole('tab', { name: 'Árbol' }));
 
   expect(screen.getAllByRole('button', { name: /nivel [123]/ })).toHaveLength(18);
+  expect(screen.getByText(PIE_RADAR)).toBeInTheDocument();
+});
+
+it('no queda el texto fijo de "N de 18 habilidades desbloqueadas"', () => {
+  renderCard();
+
+  expect(screen.queryByText(HINT_FIJO)).not.toBeInTheDocument();
+});
+
+it('pasar el mouse por un nodo levanta su detalle en un tooltip, no antes', () => {
+  renderCard();
+  const nodo = screen.getAllByRole('button', { name: /nivel 1/ })[0];
+
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+  fireEvent.mouseEnter(nodo);
+
+  const tooltip = screen.getByRole('status');
+  expect(within(tooltip).getByText(/nivel 1/)).toBeInTheDocument();
+
+  fireEvent.mouseLeave(nodo);
+
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
+
+it('tocar un nodo fija el tooltip, y tocarlo de nuevo lo cierra', () => {
+  renderCard();
+  const nodo = screen.getAllByRole('button', { name: /nivel 1/ })[0];
+
+  fireEvent.click(nodo);
+  expect(screen.getByRole('status')).toBeInTheDocument();
+
+  fireEvent.click(nodo);
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
+
+it('las seis ramas y sus porcentajes aparecen una sola vez cada uno en la telaraña', () => {
+  const { svg } = renderCard();
+
+  for (const rama of ['Resistencia', 'Fondo', 'Velocidad', 'Consistencia', 'Exploración', 'Desnivel']) {
+    const etiqueta = within(svg).getByText(rama);
+    expect(etiqueta.nextElementSibling?.textContent).toMatch(/^\d+%$/);
+  }
+});
+
+it('la constancia (el mapa de calor) vive en la columna de identidad, sin título ni leyenda propios', () => {
+  renderCard();
+
+  expect(screen.getByRole('grid', { name: 'Mapa anual de actividad por día' })).toBeInTheDocument();
+  expect(screen.queryByText('Constancia')).not.toBeInTheDocument();
+});
+
+it('sin empate entre ramas, no ofrece el chip de cambio', () => {
+  renderCard();
+
+  expect(screen.queryByRole('button', { name: /^Ser /i })).not.toBeInTheDocument();
+});
+
+it('la rama dominante sale dorada en la telaraña', () => {
+  const { svg } = renderCard();
+
+  // La telaraña dibuja seis radios; el de la rama dominante lleva el trazo dorado.
+  const radios = svg.querySelectorAll('line');
+  const dorados = [...radios].filter(l => l.getAttribute('stroke')?.includes('--gold-rgb'));
+  expect(dorados).toHaveLength(1);
 });

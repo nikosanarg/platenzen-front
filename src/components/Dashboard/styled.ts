@@ -1,28 +1,52 @@
 import Link from 'next/link';
 import styled, { css } from 'styled-components';
 
+/**
+ * Sin fondo propio: deja ver el fondo de la app (`AppBackground`, montado en
+ * el layout raíz) detrás del header y del contenido. `DashboardContent` es el
+ * que pone su oscurecido extra encima.
+ */
 export const DashboardRoot = styled.div`
   min-height: 100vh;
-  background: var(--bg-primary);
 `;
 
+/**
+ * Grid de tres columnas para que la navegación quede centrada de verdad en la
+ * topbar, no sólo "a la izquierda con espacio a la derecha": `1fr auto 1fr`
+ * le da a la columna del medio su ancho justo y reparte el resto por igual a
+ * los costados, así el centro de la nav coincide con el centro del header
+ * sin importar cuánto pesen el logo o los botones de acción.
+ *
+ * En el teléfono no hay ancho para las tres columnas en una fila: la nav baja
+ * a su propia fila completa, todavía dentro del header.
+ */
 export const DashboardHeader = styled.header`
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
   padding: 1rem 1.5rem;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas: "left nav right";
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   position: sticky;
   top: 0;
   z-index: 10;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "left  right"
+      "nav   nav";
+    padding: 0.75rem 1rem;
+  }
 `;
 
 export const HeaderLeft = styled.div`
+  grid-area: left;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 `;
 
 export const HeaderLogo = styled.div`
@@ -44,9 +68,51 @@ export const HeaderTitle = styled.h1`
 `;
 
 export const HeaderRight = styled.div`
+  grid-area: right;
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: 0.75rem;
+`;
+
+/**
+ * Las tabs de la Home viven en la topbar: no hay una segunda franja sticky.
+ * Columna propia en el grid del header —ver `DashboardHeader`— así queda
+ * centrada de verdad, no pegada al logo.
+ */
+export const HeaderNav = styled.nav`
+  grid-area: nav;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+    padding-top: 0.6rem;
+  }
+`;
+
+export const HeaderNavLink = styled(Link)<{ $active: boolean }>`
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: ${({ $active }) => ($active ? '700' : '500')};
+  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
+  background: ${({ $active }) => ($active ? 'var(--bg-card)' : 'transparent')};
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 640px) {
+    flex: 1;
+    text-align: center;
+  }
 `;
 
 export const CacheInfo = styled.span`
@@ -94,54 +160,51 @@ export const ButtonText = styled.span`
   }
 `;
 
-export const HomeTabsBar = styled.nav`
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 64px;
-  z-index: 9;
-`;
-
-export const HomeTabsInner = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  gap: 0;
-`;
-
-export const HomeTabLink = styled(Link)<{ $active: boolean }>`
-  background: ${({ $active }) => ($active ? 'var(--accent-muted)' : 'none')};
-  border: none;
-  border-bottom: 2px solid ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
-  border-radius: ${({ $active }) => ($active ? '6px 6px 0 0' : '0')};
-  padding: 0.875rem 1.5rem;
-  font-size: 0.9rem;
-  font-weight: ${({ $active }) => ($active ? '700' : '400')};
-  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
-  cursor: pointer;
-  margin-bottom: -1px;
-  letter-spacing: 0.01em;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-  white-space: nowrap;
-  text-decoration: none;
-
-  &:hover {
-    color: var(--text-secondary);
-  }
-`;
-
+/**
+ * El centro, donde vive el contenido propio de Platenzen: un fondo negro
+ * extra encima del fondo de la app, para que el texto se lea sobre la foto en
+ * vez de competir con ella. Las cards de adentro (`Panel`, `bg-card`, …) son
+ * opacas aparte — esto es el fondo de la columna que las contiene, no una
+ * propiedad de cada una.
+ */
 export const DashboardContent = styled.main`
+  position: relative;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 1.75rem 1.5rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
+  gap: 2.25rem;
+
+  /*
+   * El negro no es una caja: es un degradado que se desvanece hacia los
+   * bordes de la PANTALLA, no de esta columna. left: 50% + translateX es el
+   * truco para que el pseudo-elemento mida 100vw sin importar que el
+   * contenido esté acotado a 1400px — si el fondo fuera del ancho de la
+   * columna, en una pantalla ancha se vería el corte recto de la captura.
+   */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(6, 7, 10, 0.78) 5%,
+      rgba(6, 7, 10, 0.78) 95%,
+      transparent 100%
+    );
+    z-index: -1;
+    pointer-events: none;
+  }
 
   @media (max-width: 600px) {
-    padding: 1.5rem 1rem;
-    gap: 2.5rem;
+    padding: 1.25rem 1rem 2rem;
+    gap: 1.85rem;
   }
 `;
 
@@ -201,6 +264,7 @@ export const LoadingOverlay = styled.div`
   justify-content: center;
   min-height: 60vh;
   gap: 1rem;
+  background: rgba(6, 7, 10, 0.78);
 `;
 
 export const LoadingText = styled.p`
@@ -223,5 +287,43 @@ export const Spinner = styled.div`
 
   @keyframes spin {
     to { transform: rotate(360deg); }
+  }
+`;
+
+/* ── Historia: contenido principal + sidebar de listas ────────────── */
+
+/**
+ * `900px` es el mismo corte que ya usa el resto del producto para pasar de
+ * escritorio a teléfono (`TopRow`, `VisualPanel`, `useIsMobile`): abajo de eso
+ * no hay ancho para una columna angosta al costado, así que la sidebar baja
+ * al final del contenido principal, en el orden en que aparece en el DOM.
+ */
+export const HistoriaLayout = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const HistoriaMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  min-width: 0;
+`;
+
+export const HistoriaSidebar = styled.aside`
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+
+  @media (min-width: 901px) {
+    position: sticky;
+    top: 5.5rem;
   }
 `;

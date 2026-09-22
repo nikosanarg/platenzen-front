@@ -418,3 +418,45 @@ describe('computeEnrichedLastActivity', () => {
     expect(enriched.xpDetails.some((d) => d.label === 'semana consistente')).toBe(true);
   });
 });
+
+/**
+ * El impacto Platenzen es la mitad que el análisis no exponía: la salida se
+ * mostraba, pero lo que movió en el progreso del corredor vivía en un bloque
+ * aparte que nadie montaba. Estos casos fijan que el análisis la publique.
+ */
+describe('el impacto de la salida en el progreso', () => {
+  const acts = [
+    runDaysAgo(2, { distance: 5000, moving_time: 1500 }, 1),
+    runDaysAgo(1, { distance: 5000, moving_time: 1500 }, 2),
+    runDaysAgo(0, { distance: 21100, moving_time: 7200 }, 3),
+  ];
+
+  it('publica el XP que la última salida sumó', () => {
+    const { impacto } = computeCoachAnalisis(acts, computeStats(acts))!;
+
+    expect(impacto.xpEarned).toBeGreaterThan(0);
+  });
+
+  it('coincide con lo que calcula lastActivity, sin recalcularlo por su cuenta', () => {
+    const stats = computeStats(acts);
+    const enriched = computeEnrichedLastActivity(acts, stats)!;
+
+    const { impacto } = computeCoachAnalisis(acts, stats)!;
+
+    expect(impacto.xpEarned).toBe(enriched.xpEarned);
+    expect(impacto.dnaImpact).toEqual(enriched.dnaImpact);
+    expect(impacto.newAchievements).toEqual(enriched.newAchievements);
+    expect(impacto.currentLevel).toBe(enriched.currentLevel);
+  });
+
+  it('expone el desnivel de la salida, la cuarta métrica que el payload sí trae', () => {
+    const conDesnivel = [
+      runDaysAgo(1, { distance: 10000, moving_time: 3000 }, 1),
+      runDaysAgo(0, { distance: 10000, moving_time: 3000, total_elevation_gain: 92.4 }, 2),
+    ];
+
+    const { activity: a } = computeCoachAnalisis(conDesnivel, computeStats(conDesnivel))!;
+
+    expect(a.elevationM).toBe(92);
+  });
+});

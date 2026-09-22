@@ -4,49 +4,53 @@ import { useStravaData } from '@/hooks/useStravaData';
 import PersonajeCard from '@/components/PersonajeCard';
 import CoachAnalisis from '@/components/CoachAnalisis';
 import RecordHistorySection from '@/components/RecordHistorySection';
-import InsightsSection from '@/components/InsightsSection';
 import SesionesLegendarias from '@/components/SesionesLegendarias';
-import HourlyDistributionChart from '@/components/charts/HourlyDistributionChart';
-import WeekdayDistributionChart from '@/components/charts/WeekdayDistributionChart';
-import PerformanceTabs from '@/components/charts/PerformanceTabs';
+import LugaresFrecuentados from '@/components/LugaresFrecuentados';
+import InsightsSection from '@/components/InsightsSection';
+import PatronesCharts from '@/components/charts/PatronesCharts';
 import CollapsibleSection from '@/components/CollapsibleSection';
-import TuMundo from '@/components/TuMundo';
-import { LegendaryGroup, PatternsGrid } from '@/components/Dashboard/styled';
+import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dashboard/styled';
 
+/**
+ * La Home responde tres preguntas: qué hice, cómo estoy, cómo viene mi
+ * historia (ver `project-profile.md`). "Cómo estoy" hoy no tiene bloque
+ * propio — vive repartido en el registro de referencia del hero y en el
+ * impacto de la última salida dentro del coach.
+ *
+ * Todo el contenido —hero, coach, patrones— comparte una sola sidebar de
+ * lectura rápida (récords, lugares, sesiones legendarias), fija al costado
+ * desde arriba. El mapa grande de "Tu Mundo" no vive suelto en la página: es
+ * lo que se ve al tocar un lugar de la sidebar (ver `LugaresFrecuentados`).
+ * En el teléfono la sidebar baja al final, en el orden en que aparece acá
+ * (ver `HistoriaLayout`).
+ */
 export default function ProgresoPage() {
   const { activities, stats } = useStravaData();
 
   return (
-    <>
-      <PersonajeCard activities={activities} stats={stats} />
+    <HistoriaLayout>
+      <HistoriaMain>
+        {/* ── Quién sos: el récord de referencia, el perfil de ramas y la constancia ── */}
+        <PersonajeCard activities={activities} stats={stats} />
 
-      <CoachAnalisis activities={activities} stats={stats} />
+        {/* ── ¿Qué hice?: la última salida, su impacto y el historial ── */}
+        <CoachAnalisis activities={activities} stats={stats} />
 
-      <LegendaryGroup>
+        <CollapsibleSection
+          title="Patrones y Tendencias"
+          subtitle="cómo, cuándo y cuánto entrenás"
+          defaultOpen
+        >
+          <PatronesCharts stats={stats} />
+          <InsightsSection activities={activities} stats={stats} />
+        </CollapsibleSection>
+      </HistoriaMain>
+
+      <HistoriaSidebar>
         <RecordHistorySection activities={activities} />
+        <LugaresFrecuentados activities={activities} />
         <SesionesLegendarias activities={activities} stats={stats} />
-      </LegendaryGroup>
-
-      <LegendaryGroup>
-        <TuMundo activities={activities} />
-      </LegendaryGroup>
-
-      <CollapsibleSection
-        title="Patrones y Tendencias"
-        subtitle="cómo, cuándo y cuánto entrenás"
-        defaultOpen
-      >
-        <PatternsGrid>
-          <HourlyDistributionChart data={stats.hourlyDistribution} />
-          <WeekdayDistributionChart data={stats.weekdayDistribution} />
-          <PerformanceTabs
-            monthly={stats.monthly}
-            paceEvolution={stats.paceEvolution}
-            cumulativeDistance={stats.cumulativeDistance}
-          />
-        </PatternsGrid>
-        <InsightsSection activities={activities} stats={stats} />
-      </CollapsibleSection>
-    </>
+      </HistoriaSidebar>
+    </HistoriaLayout>
   );
 }
