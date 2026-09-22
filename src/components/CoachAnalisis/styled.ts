@@ -47,6 +47,7 @@ export const RibbonLabel = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.04em;
   line-height: 1.1;
+  transform: translateX(-2ch);
 `;
 
 export const RibbonRecency = styled.div`
