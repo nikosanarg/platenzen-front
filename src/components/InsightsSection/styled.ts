@@ -1,9 +1,14 @@
 import styled from 'styled-components';
+import { Panel } from '@/components/Panel';
 
-export const SectionRoot = styled.div`
+/**
+ * Antes era un divisor suelto (`border-top`) sobre el fondo semitransparente
+ * de la página: legible cuando el fondo era liso, ilegible con la foto
+ * detrás. `Panel` le da la misma superficie opaca que el resto de las cards.
+ */
+export const SectionRoot = styled(Panel)`
   margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
 `;
 
 export const InsightList = styled.ul`
