@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import { Panel } from '@/components/Panel';
 
+/** Sin fondo propio: deja ver el fondo de la app detrás. `TokenCard` ya es opaca. */
 export const TokenContainer = styled.div`
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
   padding: 2rem;
 `;
 

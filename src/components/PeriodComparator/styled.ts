@@ -142,7 +142,6 @@ export const ConclusionBox = styled.div`
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
   border-left: 3px solid var(--border-light);
   border-radius: var(--radius-sm);
   font-size: 0.835rem;

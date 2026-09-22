@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const ChartCard = styled.div<{ $bare?: boolean }>`
   ${({ $bare }) => !$bare && `
     background: var(--bg-card);
-    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1.25rem;
   `}

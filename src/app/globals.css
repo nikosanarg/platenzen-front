@@ -57,7 +57,12 @@
 html,
 body {
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  /*
+   * Sin color de fondo: el que pinta html/body se convierte en el fondo del
+   * lienzo del navegador y se dibuja por debajo de todo, incluso de un
+   * elemento fixed con z-index negativo — taparía el fondo de la app
+   * (`AppBackground`) en vez de dejarlo asomar.
+   */
   color: var(--text-primary);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;

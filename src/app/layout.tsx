@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import StyledComponentsRegistry from '@/lib/registry';
 import RegistroServiceWorker from '@/components/pwa/RegistroServiceWorker';
 import { InstalacionPWAProvider } from '@/components/pwa/useInstalacionPWA';
+import AppBackground from '@/components/AppBackground';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <StyledComponentsRegistry>
+          <AppBackground />
           {/*
             El provider envuelve a `children` y al registro juntos: `beforeinstallprompt`
             llega una sola vez, y tanto las pantallas como el botón flotante tienen que
