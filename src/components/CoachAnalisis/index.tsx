@@ -22,6 +22,7 @@ import {
   HighlightValue, HighlightLabel, HighlightSub,
   ImpactoStrip, ImpactoLabel, XPBig, XPChip, DNAChip, LevelUpBadge,
   AchievementChip, ActivitiesSection,
+  RibbonBanner, RibbonLabel, RibbonRecency,
 } from './styled';
 
 // ── Mini map (ported from UltimaActividad) ───────────────────────────────────
@@ -133,6 +134,11 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
   return (
     <Root>
       <Card>
+        <RibbonBanner>
+          <RibbonLabel>¡Última actividad!</RibbonLabel>
+          <RibbonRecency>{activity.recencyLabel}</RibbonRecency>
+        </RibbonBanner>
+
         <MainGrid>
           {/* ── Column 1: mapa ── */}
           <ColActivity>

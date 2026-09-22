@@ -17,6 +17,7 @@ export interface AnalisisActivity {
   name: string;
   dateTimeLabel: string;   // "18 jul 2026, 17:32"
   dateLabel: string;       // "18 jul 2026"
+  recencyLabel: string;    // "HOY", "AYER", "ANTEAYER" o "18 JUL 2026"
   distanceKm: string;      // "15.01"
   durationLabel: string;   // "1:22:48"
   pace: string;            // "5:31/km"
@@ -95,6 +96,18 @@ function formatDateTime(iso: string): string {
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** "HOY", "AYER", "ANTEAYER" o la fecha, para el cartel de última actividad. */
+function recencyLabel(iso: string): string {
+  const day = new Date(iso);
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(day)) / 86400000);
+
+  if (diffDays === 0) return 'HOY';
+  if (diffDays === 1) return 'AYER';
+  if (diffDays === 2) return 'ANTEAYER';
+  return formatDate(iso).toUpperCase();
 }
 
 function formatClock(seconds: number): string {
@@ -327,6 +340,7 @@ export function computeCoachAnalisis(
     name: last.name,
     dateTimeLabel: formatDateTime(last.start_date_local),
     dateLabel: formatDate(last.start_date_local),
+    recencyLabel: recencyLabel(last.start_date_local),
     distanceKm: enriched.distanceKm,
     durationLabel: formatClock(last.moving_time),
     pace: enriched.pace,

@@ -44,6 +44,13 @@ it('no tiene el header fijo ni la agenda de días', () => {
   expect(screen.queryByText('Mañana')).not.toBeInTheDocument();
 });
 
+it('el cartel de esquina marca cuándo fue la última salida', () => {
+  renderCard();
+
+  expect(screen.getByText('¡Última actividad!')).toBeInTheDocument();
+  expect(screen.getByText('HOY')).toBeInTheDocument();
+});
+
 it('las actividades viven dentro de la card, con sólo tres filtros', () => {
   renderCard();
 

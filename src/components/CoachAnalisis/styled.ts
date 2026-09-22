@@ -15,7 +15,45 @@ export const Root = styled.section`
 `;
 
 export const Card = styled(Panel)`
+  position: relative;
   overflow: hidden;
+`;
+
+/**
+ * Cartel de esquina, inclinado sobre el borde superior izquierdo, como una
+ * etiqueta de "oferta" pegada al producto: `Card` recorta lo que sobra
+ * (`overflow: hidden`) y el ancho fijo + `rotate(-45deg)` lo hacen cruzar la
+ * esquina de punta a punta sin depender del largo del texto.
+ */
+export const RibbonBanner = styled.div`
+  position: absolute;
+  top: 18px;
+  left: -46px;
+  width: 190px;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  z-index: 2;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  text-align: center;
+  padding: 0.3rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+`;
+
+export const RibbonLabel = styled.div`
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+`;
+
+export const RibbonRecency = styled.div`
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.15;
 `;
 
 /** El historial, a lo ancho de la card, debajo del separador de impacto. */
