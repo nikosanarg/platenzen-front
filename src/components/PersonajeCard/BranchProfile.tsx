@@ -44,7 +44,7 @@ const Wrap = styled.div`
 
 type NodeState = 'locked' | 'unlocked' | 'peak';
 
-const NodeBtn = styled.button<{ $state: NodeState; $active: boolean }>`
+const NodeBtn = styled.button<{ $state: NodeState; $active: boolean; $dominant: boolean }>`
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -55,16 +55,23 @@ const NodeBtn = styled.button<{ $state: NodeState; $active: boolean }>`
   padding: 0;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
 
-  background: ${({ $state }) =>
-    $state === 'locked' ? 'var(--bg-secondary)' : 'var(--accent-muted)'};
+  background: ${({ $state, $dominant }) =>
+    $state === 'locked'
+      ? 'var(--bg-secondary)'
+      : $dominant
+      ? 'rgba(var(--gold-rgb), 0.20)'
+      : 'var(--accent-muted)'};
   border: 1.5px solid
-    ${({ $state }) =>
+    ${({ $state, $dominant }) =>
       $state === 'locked'
         ? 'var(--border)'
+        : $dominant
+        ? 'var(--gold)'
         : $state === 'peak'
         ? 'var(--accent)'
         : 'rgba(var(--accent-rgb), 0.45)'};
-  color: ${({ $state }) => ($state === 'locked' ? 'var(--text-muted)' : 'var(--accent)')};
+  color: ${({ $state, $dominant }) =>
+    $state === 'locked' ? 'var(--text-muted)' : $dominant ? 'var(--gold)' : 'var(--accent)'};
 
   ${({ $state }) =>
     $state === 'peak' &&
@@ -261,6 +268,7 @@ const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
                   type="button"
                   $state={nodeState(tier)}
                   $active={isActive}
+                  $dominant={branch.id === dominantId}
                   aria-label={`${branch.name} · ${tier.name}, nivel ${tier.level}${
                     tier.unlocked ? ', desbloqueado' : ''
                   }`}
