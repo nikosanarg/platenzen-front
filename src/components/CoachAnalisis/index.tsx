@@ -178,10 +178,6 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
                 <StatValue>{activity.pace.replace('/km', '')}<StatUnit>/km</StatUnit></StatValue>
                 <StatLabel>Ritmo prom.</StatLabel>
               </StatItem>
-              <StatItem>
-                <StatValue>{activity.elevationM}<StatUnit>m</StatUnit></StatValue>
-                <StatLabel>Desnivel</StatLabel>
-              </StatItem>
             </StatsRow>
 
             <ColTitle>¿Qué nos dice esta salida?</ColTitle>
