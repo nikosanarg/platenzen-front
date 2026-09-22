@@ -227,11 +227,11 @@ export const LegendaryGroup = styled.div`
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 `;
 
@@ -338,4 +338,15 @@ export const HistoriaSidebar = styled.aside`
     position: sticky;
     top: 5.5rem;
   }
+`;
+
+/**
+ * Tercer item del grid, no parte de `HistoriaMain`: en escritorio ocupa las
+ * dos columnas, debajo de contenido + sidebar. En el teléfono, donde el grid
+ * pasa a una sola columna, el orden del DOM es el orden visual — al venir
+ * después de `HistoriaSidebar` en el JSX, queda debajo de récords, lugares y
+ * sesiones legendarias, no arriba.
+ */
+export const HistoriaFooter = styled.div`
+  grid-column: 1 / -1;
 `;

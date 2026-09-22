@@ -8,7 +8,7 @@ import SesionesLegendarias from '@/components/SesionesLegendarias';
 import LugaresFrecuentados from '@/components/LugaresFrecuentados';
 import InsightsSection from '@/components/InsightsSection';
 import PatronesCharts from '@/components/charts/PatronesCharts';
-import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dashboard/styled';
+import { HistoriaLayout, HistoriaMain, HistoriaSidebar, HistoriaFooter } from '@/components/Dashboard/styled';
 
 /**
  * La Home responde tres preguntas: qué hice, cómo estoy, cómo viene mi
@@ -21,7 +21,8 @@ import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dash
  * desde arriba. El mapa grande de "Tu Mundo" no vive suelto en la página: es
  * lo que se ve al tocar un lugar de la sidebar (ver `LugaresFrecuentados`).
  * En el teléfono la sidebar baja al final, en el orden en que aparece acá
- * (ver `HistoriaLayout`).
+ * (ver `HistoriaLayout`), y "Lo que dicen tus datos" —tercer item del grid,
+ * no de `HistoriaMain`— queda debajo de todo eso.
  */
 export default function ProgresoPage() {
   const { activities, stats } = useStravaData();
@@ -37,7 +38,6 @@ export default function ProgresoPage() {
 
         {/* ── Cómo, cuándo y cuánto entrenás: patrones y tendencias ── */}
         <PatronesCharts stats={stats} />
-        <InsightsSection activities={activities} stats={stats} />
       </HistoriaMain>
 
       <HistoriaSidebar>
@@ -45,6 +45,14 @@ export default function ProgresoPage() {
         <LugaresFrecuentados activities={activities} />
         <SesionesLegendarias activities={activities} stats={stats} />
       </HistoriaSidebar>
+
+      {/*
+        Item propio del grid, no de HistoriaMain: en el teléfono el orden del
+        DOM es el orden visual, y viene después de la sidebar a propósito.
+      */}
+      <HistoriaFooter>
+        <InsightsSection activities={activities} stats={stats} />
+      </HistoriaFooter>
     </HistoriaLayout>
   );
 }
