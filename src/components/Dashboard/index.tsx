@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState as useStateReact } from 'react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { IconRun, IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
+import { IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
 import { useBotonInstalacionInline } from '@/components/pwa/useInstalacionPWA';
 import {
   DashboardRoot,
@@ -82,7 +83,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <DashboardHeader>
         <HeaderLeft>
           <HeaderLogo>
-            <IconRun size={18} color="var(--text-on-accent)" />
+            <Image src="/assets/platenzen_logo.png" alt="" width={32} height={32} />
           </HeaderLogo>
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>

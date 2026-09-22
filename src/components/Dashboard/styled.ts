@@ -52,12 +52,17 @@ export const HeaderLeft = styled.div`
 export const HeaderLogo = styled.div`
   width: 32px;
   height: 32px;
-  background: var(--accent);
   border-radius: 8px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 export const HeaderTitle = styled.h1`
@@ -182,24 +187,31 @@ export const DashboardContent = styled.main`
    * truco para que el pseudo-elemento mida 100vw sin importar que el
    * contenido esté acotado a 1400px — si el fondo fuera del ancho de la
    * columna, en una pantalla ancha se vería el corte recto de la captura.
+   *
+   * Sólo tiene sentido en desktop: en el teléfono el contenido ya ocupa todo
+   * el ancho de la pantalla, así que el degradado hacia los "laterales" no
+   * tiene dónde desvanecerse y sólo se ve como una franja oscura pegada a
+   * los bordes.
    */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 100vw;
-    transform: translateX(-50%);
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      rgba(6, 7, 10, 0.78) 5%,
-      rgba(6, 7, 10, 0.78) 95%,
-      transparent 100%
-    );
-    z-index: -1;
-    pointer-events: none;
+  @media (min-width: 601px) {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(6, 7, 10, 0.78) 5%,
+        rgba(6, 7, 10, 0.78) 95%,
+        transparent 100%
+      );
+      z-index: -1;
+      pointer-events: none;
+    }
   }
 
   @media (max-width: 600px) {
