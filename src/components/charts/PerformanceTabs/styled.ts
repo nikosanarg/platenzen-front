@@ -32,9 +32,21 @@ export const TabBtn = styled.button<{ $active: boolean }>`
   }
 `;
 
+/**
+ * Alto fijo, no `flex: 1`: el `ChartCard` que lo contiene no tiene una altura
+ * definida propia (crece con su contenido), así que un `flex: 1` ahí no
+ * resuelve a nada — y sin un alto real en px, `ResponsiveContainer` de
+ * Recharts no tiene de qué medir y el gráfico no aparece. El hijo directo
+ * (el `ChartCard` del gráfico activo) se estira a ese alto para que, a su
+ * vez, el `flex: 1` de `ChartArea` tenga algo real que llenar.
+ */
 export const TabPanel = styled.div`
-  flex: 1;
+  height: 260px;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+
+  > * {
+    flex: 1;
+    min-height: 0;
+  }
 `;

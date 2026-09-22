@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { MonthlyStats } from '@/types/stats';
 import DistanceRitmoChart from '../DistanceRitmoChart';
 import MonthlyComparisonChart from '../MonthlyComparisonChart';
-import { ChartCard, ChartTitle } from '../shared/styled';
+import { ChartCard } from '../shared/styled';
 import { TabsRoot, TabBar, TabBtn, TabPanel } from './styled';
 
 interface PerformanceTabsProps {
@@ -25,7 +25,6 @@ const PerformanceTabs: React.FC<PerformanceTabsProps> = ({ monthly }) => {
 
   return (
     <ChartCard>
-      <ChartTitle>Cómo venís</ChartTitle>
       <TabsRoot>
         <TabBar>
           {ALL_TABS.map((tab) => (

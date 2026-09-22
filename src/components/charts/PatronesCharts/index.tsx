@@ -7,7 +7,7 @@ import WeekdayDistributionChart from '../WeekdayDistributionChart';
 import DistanceRitmoChart from '../DistanceRitmoChart';
 import MonthlyComparisonChart from '../MonthlyComparisonChart';
 import PerformanceTabs from '../PerformanceTabs';
-import { ChartCard, ChartTitle } from '../shared/styled';
+import { ChartCard } from '../shared/styled';
 import { TabsRoot, TabBar, TabBtn, TabPanel } from '../PerformanceTabs/styled';
 import { PatternsGrid } from '@/components/Dashboard/styled';
 import { DesktopOnly, MobileOnly } from './styled';
@@ -39,7 +39,6 @@ const PatronesCharts: React.FC<PatronesChartsProps> = ({ stats }) => {
 
       <MobileOnly>
         <ChartCard>
-          <ChartTitle>Cómo venís</ChartTitle>
           <TabsRoot>
             <TabBar>
               {MOBILE_TABS.map((tab) => (

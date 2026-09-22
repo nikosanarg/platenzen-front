@@ -8,7 +8,6 @@ import SesionesLegendarias from '@/components/SesionesLegendarias';
 import LugaresFrecuentados from '@/components/LugaresFrecuentados';
 import InsightsSection from '@/components/InsightsSection';
 import PatronesCharts from '@/components/charts/PatronesCharts';
-import CollapsibleSection from '@/components/CollapsibleSection';
 import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dashboard/styled';
 
 /**
@@ -36,14 +35,9 @@ export default function ProgresoPage() {
         {/* ── ¿Qué hice?: la última salida, su impacto y el historial ── */}
         <CoachAnalisis activities={activities} stats={stats} />
 
-        <CollapsibleSection
-          title="Patrones y Tendencias"
-          subtitle="cómo, cuándo y cuánto entrenás"
-          defaultOpen
-        >
-          <PatronesCharts stats={stats} />
-          <InsightsSection activities={activities} stats={stats} />
-        </CollapsibleSection>
+        {/* ── Cómo, cuándo y cuánto entrenás: patrones y tendencias ── */}
+        <PatronesCharts stats={stats} />
+        <InsightsSection activities={activities} stats={stats} />
       </HistoriaMain>
 
       <HistoriaSidebar>
