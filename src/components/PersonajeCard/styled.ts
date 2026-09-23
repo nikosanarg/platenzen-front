@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Panel } from '@/components/Panel';
 
 /**
@@ -81,7 +81,31 @@ export const AdnChartWrapper = styled.div`
 
 /* ── Identity header ─────────────────────────────────────────────── */
 
+/**
+ * Columna por defecto: el nombre+badge arriba, los botones de cambio
+ * debajo — a ese ancho no entran los tres en una fila sin apretarse. Recién
+ * a partir de escritorio grande (1200px) vuelven a la misma fila.
+ */
 export const RoleHeading = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  /*
+   * El ancho de pantalla, no el de la card: a 1440px de ventana la card
+   * mide bastante menos (hay una sidebar de 300px al lado), pero el pedido
+   * fue explícito por resolución. nowrap fuerza la fila aunque la card
+   * venga angosta — el contenido de esta fila es corto, entra igual.
+   */
+  @media (min-width: 1200px) {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+  }
+`;
+
+export const RoleNameRow = styled.div`
   display: flex;
   align-items: baseline;
   gap: 0.625rem;
@@ -89,7 +113,7 @@ export const RoleHeading = styled.div`
 `;
 
 export const RoleNamePrimary = styled.h2`
-  font-size: 2rem;
+  font-size: calc(2rem + 4px);
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.03em;
@@ -101,34 +125,48 @@ export const RoleNamePrimary = styled.h2`
 `;
 
 export const LevelBadge = styled.span`
-  font-size: 0.78rem;
+  font-size: calc(0.72rem + 2px);
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+`;
+
+export const SwitchChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 `;
 
 /**
- * Sólo aparece cuando dos ramas empatan en nivel y porcentaje: el título es
- * una decisión ("Veintiunero" vs. "Pasadista") que igual de bien podría ser
- * la otra, así que se ofrece el cambio en vez de elegir en silencio.
+ * Sólo aparece cuando dos ramas empatan en nivel: el título es una decisión
+ * ("Veintiunero" vs. "Pasadista") que igual de bien podría ser la otra, así
+ * que se ofrece el cambio en vez de elegir en silencio. Mismo tratamiento
+ * que "Ver más en el mapa" (`MoreLink` en `LugaresFrecuentados`) — borde +
+ * fondo de card, mismo naranja de marca, no una píldora dorada chica.
  */
 export const SwitchChip = styled.button`
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: var(--gold);
-  background: rgba(var(--gold-rgb), 0.1);
-  border: 1px solid rgba(var(--gold-rgb), 0.35);
-  border-radius: 999px;
-  padding: 0.2rem 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 1.1rem;
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
-    background: rgba(var(--gold-rgb), 0.18);
+    color: var(--accent);
+    background: var(--bg-card-hover);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 `;
@@ -251,14 +289,35 @@ export const StatValue = styled.div`
 `;
 
 /**
- * Sin `nowrap`: que "Semanas al hilo" pueda partirse en dos líneas es lo que
- * deja entrar las tres tarjetas en fila en un teléfono angosto.
+ * Una sola condición (el ancho medido de `StatsGrid`, ver `useCompactStats`
+ * en index.tsx) decide si las tres etiquetas están en una línea o en dos —
+ * nunca cada una por su cuenta. Sin esto, "actividades registradas" (la más
+ * larga) se partía sola mientras las otras dos quedaban en una línea, y las
+ * tres tarjetas terminaban de alturas distintas.
+ *
+ * `$compact` en vez de `@container`: en esta grilla en particular (adentro
+ * de un `grid-area` cuyo ancho lo da `fr` de un grid ancestro, no un ancho
+ * propio) Chrome no volvía a evaluar la container query al cambiar de
+ * tamaño — un `ResizeObserver` mide directo y no depende de esa cadena.
  */
-export const StatLabel = styled.div`
+export const StatLabel = styled.div<{ $compact: boolean }>`
   font-size: 0.68rem;
   color: var(--text-muted);
   line-height: 1.25;
   min-width: 0;
+
+  ${({ $compact }) =>
+    $compact
+      ? css`
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+        `
+      : css`
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        `}
 `;
 
 /* ── Pie de la columna visual ─────────────────────────────────────── */

@@ -35,14 +35,23 @@ export const Card = styled.div<{ $featured: boolean; $withStravaBadge: boolean }
  * Columna sola a la izquierda, compartida por las tres listas: el "#1" de
  * lugares, el "5K" de récords, el emoji del logro en sesiones legendarias.
  * El tamaño base vive acá para que las tres se vean del mismo peso visual —
- * cada sección sólo define su color.
+ * cada sección sólo define su color. El círculo negro es plano, sin borde
+ * ni sombra, un solo color sólido.
+ *
+ * El círculo mide 4px más de diámetro que el espacio que reserva la
+ * columna: crece 2px por lado y un margen negativo de -2px lo empareja de
+ * vuelta, así el resto de la fila no se corre ni un pixel.
  */
 export const LeftVisual = styled.div`
   flex-shrink: 0;
+  width: calc(2.25rem + 4px);
+  height: calc(2.25rem + 4px);
+  margin: -2px;
+  border-radius: 50%;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.25rem;
   font-size: 1.125rem;
   font-weight: 700;
 `;

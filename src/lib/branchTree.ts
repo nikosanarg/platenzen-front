@@ -118,7 +118,9 @@ const PACE_FLOOR_SEC = 480;
 const DIAS_ANIO = 365;
 const DIAS_TRIMESTRE = 91;
 const SEMANAS_TRIMESTRE = 13;
-const SEMANAS_ANIO = 52;
+/** Ventana de "salidas por semana" de Consistencia: el promedio reciente, no el del año entero. */
+const SEMANAS_PROMEDIO_RECIENTE = 4;
+const DIAS_PROMEDIO_RECIENTE = SEMANAS_PROMEDIO_RECIENTE * 7;
 /** Cuánto se adelanta el reloj para proyectar el decaimiento. */
 export const DIAS_DECAIMIENTO = 30;
 
@@ -412,7 +414,9 @@ function velocidad(runs: Activity[]): BranchSnapshot {
 
 function consistencia(runs: Activity[], now: Date): BranchSnapshot {
   const racha = activeWeekStreak(runs, now);
-  const porSemana = runs.length / SEMANAS_ANIO;
+  // Promedio de las últimas 4 semanas, no del año entero: una racha de meses
+  // con un bajón reciente tiene que mostrar el bajón, no diluirlo en 52 semanas.
+  const porSemana = within(runs, now, DIAS_PROMEDIO_RECIENTE).length / SEMANAS_PROMEDIO_RECIENTE;
 
   const A = [4, 12, 26];
   const B = [2, 3, 4];

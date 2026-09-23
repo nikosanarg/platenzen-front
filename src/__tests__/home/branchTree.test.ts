@@ -163,6 +163,19 @@ describe('ventanas móviles', () => {
 
     expect(semanal.value).toBeCloseTo(10, 1);
   });
+
+  it('"Salidas por semana" de Consistencia mira las últimas 4 semanas, no el año', () => {
+    // 12 salidas en los últimos 28 días (3/semana) + 40 más viejas, entre 100
+    // y 139 días atrás, sólo para inflar el total del año. Con el promedio
+    // anual (52 salidas / 52 semanas) daría 1,0 — con el de las últimas 4
+    // semanas, que es lo que el corredor ve como "ahora", da 3,0.
+    const recientes = runsDaily(12, 0, { distance: 8000 });
+    const viejas = runsDaily(40, 100, { distance: 8000 });
+    const porSemana = branchOf([...recientes, ...viejas], 'consistencia').tiers[0].requirements[1];
+
+    expect(porSemana.value).toBeCloseTo(3, 1);
+    expect(porSemana.display).toBe('3,0');
+  });
 });
 
 describe('decaimiento', () => {

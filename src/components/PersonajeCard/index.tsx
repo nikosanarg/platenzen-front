@@ -19,8 +19,10 @@ import {
   VisualCol,
   AdnChartWrapper,
   RoleHeading,
+  RoleNameRow,
   RoleNamePrimary,
   LevelBadge,
+  SwitchChipsRow,
   CoreRecord,
   CoreRecordValue,
   CoreRecordLabel,
@@ -41,7 +43,45 @@ interface PersonajeCardProps {
   stats: ProcessedStats;
 }
 
+/** Por debajo de este ancho, "actividades registradas" (la etiqueta más larga) ya no entra en una línea. */
+const COMPACT_STATS_WIDTH = 340;
+
+/**
+ * Mide `StatsGrid` a mano en vez de un `@container` o un `ResizeObserver`:
+ * en esta grilla en particular —adentro de un `grid-area` cuyo ancho lo da
+ * un `fr` de un grid ancestro, no un ancho propio— las dos APIs reportaban
+ * un ancho más grande que el real (`ResizeObserver` devolvía el ancho
+ * previo a que `auto-fit` resolviera las columnas, no el final). El resize
+ * de ventana con `getBoundingClientRect`, que sí da el ancho pintado, no
+ * tiene ese problema.
+ */
+function useCompactStats<T extends HTMLElement>() {
+  const ref = React.useRef<T>(null);
+  const [compact, setCompact] = useState(false);
+
+  React.useEffect(() => {
+    const medir = () => {
+      const el = ref.current;
+      if (!el) return;
+      setCompact(el.getBoundingClientRect().width < COMPACT_STATS_WIDTH);
+    };
+
+    medir();
+    // Un segundo pase tras el primer paint: la tipografía web puede llegar
+    // después del layout inicial y correr el ancho un poco.
+    const raf = requestAnimationFrame(medir);
+    window.addEventListener('resize', medir);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', medir);
+    };
+  }, []);
+
+  return { ref, compact };
+}
+
 const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
+  const { ref: statsRef, compact: compactStats } = useCompactStats<HTMLDivElement>();
   const tree = useMemo(() => computeBranchTree(activities), [activities]);
   const decay = useMemo(() => computeBranchDecay(activities), [activities]);
 
@@ -51,9 +91,11 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
 
   /**
    * La rama dominante da el título: la más avanzada, y a igual nivel la más
-   * completa. Cuando dos o más empatan en nivel Y porcentaje —no hay una
-   * lectura más completa que la otra— se ofrece el cambio en vez de elegir en
-   * silencio una entre iguales.
+   * completa. Pero el empate que habilita el cambio es por NIVEL solo: dos
+   * ramas en el mismo nivel siguen siendo la misma "distancia" del próximo
+   * nivel (ninguna llegó al 100%), aunque una vaya con 75% y la otra con
+   * 50% dentro de ese tramo — el porcentaje sólo desempata cuál se muestra
+   * primero, no cuáles se pueden elegir.
    */
   const dominanteAuto = useMemo(
     () =>
@@ -62,9 +104,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   );
   const empatados = useMemo(() => {
     if (dominanteAuto.level === 0) return [dominanteAuto];
-    const candidatos = tree.branches.filter(
-      b => b.level === dominanteAuto.level && Math.abs(b.pct - dominanteAuto.pct) < 0.001,
-    );
+    const candidatos = tree.branches.filter(b => b.level === dominanteAuto.level);
     return candidatos.length > 0 ? candidatos : [dominanteAuto];
   }, [tree, dominanteAuto]);
 
@@ -85,13 +125,19 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
         {/* ── Resumen: quién sos y los números gruesos ── */}
         <IdentityMain>
           <RoleHeading>
-            <RoleNamePrimary>{titulo}</RoleNamePrimary>
-            <LevelBadge>{dominante.name}</LevelBadge>
-            {alternativas.map(alt => (
-              <SwitchChip key={alt.id} type="button" onClick={() => setElegidoId(alt.id)}>
-                Cambiar a {alt.tiers[alt.level - 1].name}
-              </SwitchChip>
-            ))}
+            <RoleNameRow>
+              <RoleNamePrimary>{titulo}</RoleNamePrimary>
+              <LevelBadge>{dominante.name}</LevelBadge>
+            </RoleNameRow>
+            {alternativas.length > 0 && (
+              <SwitchChipsRow>
+                {alternativas.map(alt => (
+                  <SwitchChip key={alt.id} type="button" onClick={() => setElegidoId(alt.id)}>
+                    Cambiar a {alt.tiers[alt.level - 1].name}
+                  </SwitchChip>
+                ))}
+              </SwitchChipsRow>
+            )}
           </RoleHeading>
 
           {coreRecord && (
@@ -116,12 +162,12 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
         </VisualCol>
 
         {/* ── Los tres números gruesos ── */}
-        <StatsGrid>
+        <StatsGrid ref={statsRef}>
           <StatCard>
             <StatIcon><IconRoute size={18} color="currentColor" /></StatIcon>
             <StatBody>
-              <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')} km</StatValue>
-              <StatLabel>recorrido</StatLabel>
+              <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')}</StatValue>
+              <StatLabel $compact={compactStats}>kilómetros recorridos</StatLabel>
             </StatBody>
           </StatCard>
 
@@ -129,7 +175,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             <StatIcon><IconCalendar size={18} color="currentColor" /></StatIcon>
             <StatBody>
               <StatValue>{stats.totalActivities.toLocaleString('es-AR')}</StatValue>
-              <StatLabel>actividades</StatLabel>
+              <StatLabel $compact={compactStats}>actividades registradas</StatLabel>
             </StatBody>
           </StatCard>
 
@@ -137,7 +183,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
             <StatBody>
               <StatValue>{longestStreak}</StatValue>
-              <StatLabel>Semanas al hilo</StatLabel>
+              <StatLabel $compact={compactStats}>semanas seguidas</StatLabel>
             </StatBody>
           </StatCard>
         </StatsGrid>

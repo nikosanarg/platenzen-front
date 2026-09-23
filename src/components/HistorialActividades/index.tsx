@@ -15,6 +15,8 @@ import {
   ToggleTitle,
   SortTabs,
   SortTab,
+  Collapsible,
+  CollapsibleInner,
   List,
   ListRow,
   RowDate,
@@ -174,66 +176,75 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
         </SortTabs>
       </Head>
 
-      {abierto && (ordenadas.length === 0 ? (
-        <EmptyState>Todavía no hay actividades en tu historial.</EmptyState>
-      ) : (
-        <>
-          <List>
-            {mostradas.map(activity => (
-              <ListRow key={`${activity.provider}-${activity.externalId}`}>
-                <RowDate>{formatDate(activity.start_date_local)}</RowDate>
-                <RowName title={activity.name}>{activity.name}</RowName>
-                <RowStats>{statsDe(activity)}</RowStats>
-              </ListRow>
-            ))}
-          </List>
+      <Collapsible $open={abierto}>
+        {/*
+          Siempre montado, nunca condicionado a `abierto`: la transición de
+          `grid-template-rows` (0fr → 1fr) es lo que la muestra u oculta.
+          Desmontarla de un salto perdería la animación.
+        */}
+        <CollapsibleInner inert={abierto ? undefined : true}>
+          {ordenadas.length === 0 ? (
+            <EmptyState>Todavía no hay actividades en tu historial.</EmptyState>
+          ) : (
+            <>
+              <List>
+                {mostradas.map(activity => (
+                  <ListRow key={`${activity.provider}-${activity.externalId}`}>
+                    <RowDate>{formatDate(activity.start_date_local)}</RowDate>
+                    <RowName title={activity.name}>{activity.name}</RowName>
+                    <RowStats>{statsDe(activity)}</RowStats>
+                  </ListRow>
+                ))}
+              </List>
 
-          {totalPaginas > 1 && (
-            <Paginator aria-label="Paginación del historial">
-              <PageNavButton
-                type="button"
-                aria-label="Página anterior"
-                disabled={paginaActual === 1}
-                onClick={() => setPagina(p => p - 1)}
-              >
-                ‹
-              </PageNavButton>
-
-              {rangoPaginas(paginaActual, totalPaginas).map((p, i) =>
-                p === 'ellipsis' ? (
-                  <PageEllipsis key={`ellipsis-${i}`} aria-hidden="true">…</PageEllipsis>
-                ) : (
-                  <PageButton
-                    key={p}
+              {totalPaginas > 1 && (
+                <Paginator aria-label="Paginación del historial">
+                  <PageNavButton
                     type="button"
-                    $active={p === paginaActual}
-                    aria-label={`Página ${p}`}
-                    aria-current={p === paginaActual ? 'page' : undefined}
-                    onClick={() => setPagina(p)}
+                    aria-label="Página anterior"
+                    disabled={paginaActual === 1}
+                    onClick={() => setPagina(p => p - 1)}
                   >
-                    {p}
-                  </PageButton>
-                )
+                    ‹
+                  </PageNavButton>
+
+                  {rangoPaginas(paginaActual, totalPaginas).map((p, i) =>
+                    p === 'ellipsis' ? (
+                      <PageEllipsis key={`ellipsis-${i}`} aria-hidden="true">…</PageEllipsis>
+                    ) : (
+                      <PageButton
+                        key={p}
+                        type="button"
+                        $active={p === paginaActual}
+                        aria-label={`Página ${p}`}
+                        aria-current={p === paginaActual ? 'page' : undefined}
+                        onClick={() => setPagina(p)}
+                      >
+                        {p}
+                      </PageButton>
+                    )
+                  )}
+
+                  <PageNavButton
+                    type="button"
+                    aria-label="Página siguiente"
+                    disabled={paginaActual === totalPaginas}
+                    onClick={() => setPagina(p => p + 1)}
+                  >
+                    ›
+                  </PageNavButton>
+                </Paginator>
               )}
 
-              <PageNavButton
-                type="button"
-                aria-label="Página siguiente"
-                disabled={paginaActual === totalPaginas}
-                onClick={() => setPagina(p => p + 1)}
-              >
-                ›
-              </PageNavButton>
-            </Paginator>
+              {showTitle && (
+                <CollapseButton type="button" onClick={colapsar} aria-label="Colapsar actividades" aria-expanded="true">
+                  <IconChevronUp size={14} />
+                </CollapseButton>
+              )}
+            </>
           )}
-
-          {showTitle && (
-            <CollapseButton type="button" onClick={colapsar} aria-label="Colapsar actividades" aria-expanded="true">
-              <IconChevronUp size={14} />
-            </CollapseButton>
-          )}
-        </>
-      ))}
+        </CollapsibleInner>
+      </Collapsible>
     </Root>
   );
 };

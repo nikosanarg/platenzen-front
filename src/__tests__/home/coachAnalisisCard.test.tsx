@@ -65,10 +65,12 @@ it('las actividades viven dentro de la card, con sólo tres filtros', () => {
 });
 
 it('el historial arranca colapsado, sin la lista ni el paginador', () => {
-  renderCard(15);
+  const { container } = renderCard(15);
 
-  expect(screen.queryAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(0);
-  expect(screen.queryByRole('button', { name: 'Página siguiente' })).not.toBeInTheDocument();
+  // El contenido sigue montado (así se puede animar la apertura), pero
+  // `inert` lo saca de la lectura de pantalla y del tabulado mientras está
+  // colapsado.
+  expect(container.querySelector('[inert]')).toBeInTheDocument();
 });
 
 it('tocar "Ver actividades" abre la lista, paginada de a 10', () => {
@@ -93,14 +95,14 @@ it('elegir un filtro estando colapsado abre la lista y aplica ese orden', () => 
 });
 
 it('el chevron de abajo vuelve a colapsar la lista', () => {
-  renderCard(15);
+  const { container } = renderCard(15);
 
   fireEvent.click(screen.getByRole('button', { name: 'Ver actividades' }));
-  expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' }).length).toBeGreaterThan(0);
+  expect(container.querySelector('[inert]')).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Colapsar actividades' }));
 
-  expect(screen.queryAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(0);
+  expect(container.querySelector('[inert]')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Ver actividades' })).toBeInTheDocument();
 });
 

@@ -5,7 +5,6 @@ export const Root = styled.section``;
 export const Head = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 0.75rem;
@@ -51,6 +50,23 @@ export const SortTab = styled.button<{ $active: boolean }>`
     color: var(--text-secondary);
     border-color: var(--text-muted);
   }
+`;
+
+/**
+ * Truco de `grid-template-rows` para animar a un alto que no se conoce de
+ * antemano (el historial tiene largo variable): la fila pasa de `0fr` a
+ * `1fr` y el contenido, recortado por `overflow: hidden` en el hijo, se
+ * revela con la transición en vez de aparecer de golpe.
+ */
+export const Collapsible = styled.div<{ $open: boolean }>`
+  display: grid;
+  grid-template-rows: ${({ $open }) => ($open ? '1fr' : '0fr')};
+  transition: grid-template-rows 0.32s ease;
+`;
+
+export const CollapsibleInner = styled.div`
+  overflow: hidden;
+  min-height: 0;
 `;
 
 /** Filas, no tarjetas: la lista vive angosta, al lado del bloque de impacto. */
