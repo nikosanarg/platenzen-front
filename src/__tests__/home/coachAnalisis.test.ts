@@ -260,7 +260,7 @@ describe('destacados', () => {
     const promedio = analisisOf(historial(12))!.highlights.find((h) => h.label === 'promedio semanal')!;
 
     expect(promedio.value).toMatch(/^\d+(\.\d+)? km$/);
-    expect(promedio.sub).toBe('media de las últimas 4 semanas');
+    expect(promedio.sub).toBe('últimas 4 semanas');
   });
 });
 

@@ -3,6 +3,7 @@
 import React, { useEffect, useState as useStateReact } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { IconButton, Relieve } from 'kaizen-lib/ui';
 import { IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
 import { useBotonInstalacionInline } from '@/components/pwa/useInstalacionPWA';
 import {
@@ -15,8 +16,6 @@ import {
   HeaderNav,
   HeaderNavLink,
   CacheInfo,
-  HeaderButton,
-  ButtonText,
   DashboardContent,
   LoadingOverlay,
   LoadingText,
@@ -112,19 +111,26 @@ const Dashboard: React.FC<DashboardProps> = ({
             sale a buscarlo. Desaparece solo cuando ya está instalada.
           */}
           {sePuedeInstalar && (
-            <HeaderButton $variant="primary" onClick={instalar}>
-              <IconDownload size={20} color="currentColor" />
-              <ButtonText>Instalar app</ButtonText>
-            </HeaderButton>
+            <Relieve $prendido>
+              <IconButton label="Instalar app" active onClick={instalar}>
+                <IconDownload size={20} color="currentColor" />
+              </IconButton>
+            </Relieve>
           )}
-          <HeaderButton $variant="ghost" onClick={onRefresh} disabled={loading}>
-            {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}
-            <ButtonText>{loading ? 'Actualizando...' : 'Actualizar datos'}</ButtonText>
-          </HeaderButton>
-          <HeaderButton $variant="ghost" $mobileRed onClick={onLogout}>
-            <IconLogout size={20} color="currentColor" />
-            <ButtonText>Cambiar token</ButtonText>
-          </HeaderButton>
+          <Relieve>
+            <IconButton
+              label={loading ? 'Actualizando datos…' : 'Actualizar datos'}
+              onClick={onRefresh}
+              disabled={loading}
+            >
+              {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}
+            </IconButton>
+          </Relieve>
+          <Relieve>
+            <IconButton label="Desconectar" onClick={onLogout}>
+              <IconLogout size={20} color="currentColor" />
+            </IconButton>
+          </Relieve>
         </HeaderRight>
       </DashboardHeader>
 

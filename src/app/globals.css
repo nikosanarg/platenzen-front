@@ -1,3 +1,5 @@
+@import 'kaizen-lib/tokens.css';
+
 :root {
   --bg-primary: #0d0d0f;
   --bg-secondary: #141417;
@@ -45,6 +47,22 @@
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* kaizen-lib: sólo se pisa lo que hace a la marca — el resto (relieve,
+     radios, tipografía, motion) cae al default de `kaizen-lib/tokens.css`. */
+  --kz-accent: var(--accent);
+  --kz-accent-hover: var(--accent-hover);
+  --kz-accent-active: var(--accent-hover);
+  --kz-accent-soft: var(--accent-muted);
+  --kz-accent-fg: var(--text-on-accent);
+  --kz-fg: var(--text-primary);
+  --kz-fg-muted: var(--text-secondary);
+  --kz-fg-subtle: var(--text-muted);
+  --kz-surface-hover: var(--bg-card-hover);
+  --kz-surface-active: var(--bg-input);
+  --kz-danger: var(--error);
+  --kz-danger-soft: rgba(var(--error-rgb), 0.15);
+  --kz-ring: var(--accent);
 }
 
 *,

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Panel } from '@/components/Panel';
+import { Panel, glassHover } from '@/components/Panel';
 
 export const Root = styled.div`
   display: flex;
@@ -23,14 +23,12 @@ export const SessionRow = styled.a`
   background: var(--bg-card);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 0.7rem 1.6rem 0.7rem 0.85rem;
+  padding: 0.55rem 1.6rem 0.55rem 0.85rem;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, backdrop-filter 0.15s;
 
-  &:hover {
-    border-color: rgba(var(--gold-rgb), 0.4);
-  }
+  ${glassHover('var(--gold-rgb)')}
 `;
 
 export const SessionName = styled.div`

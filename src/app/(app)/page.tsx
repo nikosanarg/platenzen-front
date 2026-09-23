@@ -8,7 +8,7 @@ import SesionesLegendarias from '@/components/SesionesLegendarias';
 import LugaresFrecuentados from '@/components/LugaresFrecuentados';
 import InsightsSection from '@/components/InsightsSection';
 import PatronesCharts from '@/components/charts/PatronesCharts';
-import { HistoriaLayout, HistoriaMain, HistoriaSidebar, HistoriaFooter } from '@/components/Dashboard/styled';
+import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dashboard/styled';
 
 /**
  * La Home responde tres preguntas: qué hice, cómo estoy, cómo viene mi
@@ -16,13 +16,12 @@ import { HistoriaLayout, HistoriaMain, HistoriaSidebar, HistoriaFooter } from '@
  * propio — vive repartido en el registro de referencia del hero y en el
  * impacto de la última salida dentro del coach.
  *
- * Todo el contenido —hero, coach, patrones— comparte una sola sidebar de
- * lectura rápida (récords, lugares, sesiones legendarias), fija al costado
- * desde arriba. El mapa grande de "Tu Mundo" no vive suelto en la página: es
- * lo que se ve al tocar un lugar de la sidebar (ver `LugaresFrecuentados`).
- * En el teléfono la sidebar baja al final, en el orden en que aparece acá
- * (ver `HistoriaLayout`), y "Lo que dicen tus datos" —tercer item del grid,
- * no de `HistoriaMain`— queda debajo de todo eso.
+ * Todo el contenido —hero, coach, patrones, insights— comparte una sola
+ * sidebar de lectura rápida (récords, lugares, sesiones legendarias), fija al
+ * costado desde arriba. El mapa grande de "Tu Mundo" no vive suelto en la
+ * página: es lo que se ve al tocar un lugar de la sidebar (ver
+ * `LugaresFrecuentados`). En el teléfono la sidebar baja al final, en el
+ * orden en que aparece acá (ver `HistoriaLayout`).
  */
 export default function ProgresoPage() {
   const { activities, stats } = useStravaData();
@@ -38,6 +37,9 @@ export default function ProgresoPage() {
 
         {/* ── Cómo, cuándo y cuánto entrenás: patrones y tendencias ── */}
         <PatronesCharts stats={stats} />
+
+        {/* ── Cómo viene mi historia: lecturas sobre el conjunto de datos ── */}
+        <InsightsSection activities={activities} stats={stats} />
       </HistoriaMain>
 
       <HistoriaSidebar>
@@ -45,14 +47,6 @@ export default function ProgresoPage() {
         <LugaresFrecuentados activities={activities} />
         <SesionesLegendarias activities={activities} stats={stats} />
       </HistoriaSidebar>
-
-      {/*
-        Item propio del grid, no de HistoriaMain: en el teléfono el orden del
-        DOM es el orden visual, y viene después de la sidebar a propósito.
-      */}
-      <HistoriaFooter>
-        <InsightsSection activities={activities} stats={stats} />
-      </HistoriaFooter>
     </HistoriaLayout>
   );
 }

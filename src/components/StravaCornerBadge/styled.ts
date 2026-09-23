@@ -8,10 +8,10 @@ import styled from 'styled-components';
  */
 export const StravaRibbon = styled.div`
   position: absolute;
-  top: 7px;
-  right: -21px;
-  width: 68px;
-  height: 22px;
+  top: 9px;
+  right: -15px;
+  width: 46px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;

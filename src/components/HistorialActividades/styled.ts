@@ -79,26 +79,64 @@ export const RowStats = styled.span`
   flex-shrink: 0;
 `;
 
-export const MoreRow = styled.div`
+export const Paginator = styled.nav`
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 0.75rem;
+  gap: 0.25rem;
+  margin-top: 0.9rem;
 `;
 
-export const MoreButton = styled.button`
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
+const pageButtonBase = `
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
   border-radius: var(--radius-sm);
-  padding: 0.45rem 1.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+`;
+
+export const PageNavButton = styled.button`
+  ${pageButtonBase}
+  font-size: 0.95rem;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
     color: var(--accent);
     border-color: rgba(var(--accent-rgb), 0.35);
   }
+`;
+
+export const PageButton = styled.button<{ $active: boolean }>`
+  ${pageButtonBase}
+  border-color: ${({ $active }) => $active ? 'rgba(var(--accent-rgb), 0.35)' : 'transparent'};
+  background: ${({ $active }) => $active ? 'var(--accent-muted)' : 'transparent'};
+  color: ${({ $active }) => $active ? 'var(--accent)' : 'var(--text-muted)'};
+
+  &:hover:not(:disabled) {
+    color: ${({ $active }) => $active ? 'var(--accent)' : 'var(--text-secondary)'};
+    border-color: ${({ $active }) => $active ? 'rgba(var(--accent-rgb), 0.35)' : 'var(--border)'};
+  }
+`;
+
+export const PageEllipsis = styled.span`
+  min-width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
 `;
 
 export const EmptyState = styled.p`

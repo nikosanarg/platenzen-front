@@ -257,7 +257,7 @@ function buildHighlights(
     icon: 'calendar',
     value: `${recentWeeklyAvgKm} km`,
     label: 'promedio semanal',
-    sub: 'media de las últimas 4 semanas',
+    sub: 'últimas 4 semanas',
     tone: 'neutral',
   });
 

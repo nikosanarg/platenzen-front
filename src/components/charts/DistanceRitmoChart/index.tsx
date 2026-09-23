@@ -96,7 +96,8 @@ const DistanceRitmoChart: React.FC<DistanceRitmoChartProps> = ({ data, bare }) =
               dataKey="pace"
               stroke="var(--accent)"
               strokeWidth={3}
-              dot={false}
+              strokeLinecap="round"
+              dot={{ r: 3, fill: 'var(--accent)', strokeWidth: 0 }}
               activeDot={{ r: 4, fill: 'var(--accent)' }}
               connectNulls
             />

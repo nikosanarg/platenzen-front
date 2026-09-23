@@ -61,11 +61,12 @@ it('las actividades viven dentro de la card, con sólo tres filtros', () => {
   expect(screen.queryByRole('button', { name: 'Más desnivel' })).not.toBeInTheDocument();
 });
 
-it('muestra 10 actividades por defecto, con opción de ver más', () => {
+it('muestra 10 actividades por defecto, paginadas', () => {
   renderCard(15);
 
   // Las tarjetas del historial embebido son `<h4>`; la actividad principal de
   // arriba no lo es, así que este selector cuenta sólo la lista de abajo.
   expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(10);
-  expect(screen.getByRole('button', { name: /Ver \d+ más/ })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Página 2' })).toBeInTheDocument();
 });

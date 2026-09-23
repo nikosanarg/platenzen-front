@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
+import { glassHover } from '@/components/Panel';
 
 export const Root = styled.section``;
 
@@ -17,16 +18,13 @@ export const PlaceItem = styled.button`
   background: var(--bg-card);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.85rem;
+  padding: 0.45rem 0.85rem;
   cursor: pointer;
   text-align: left;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s, background 0.15s;
+  transition: background 0.15s, border-color 0.15s, backdrop-filter 0.15s;
 
-  &:hover {
-    border-color: rgba(var(--accent-rgb), 0.35);
-    background: rgba(var(--accent-rgb), 0.05);
-  }
+  ${glassHover('var(--accent-rgb)')}
 
   &:focus-visible {
     outline: 2px solid var(--accent);

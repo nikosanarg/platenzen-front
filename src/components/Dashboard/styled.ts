@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 
 /**
  * Sin fondo propio: deja ver el fondo de la app (`AppBackground`, montado en
@@ -129,42 +129,6 @@ export const CacheInfo = styled.span`
   }
 `;
 
-export const HeaderButton = styled.button<{ $variant?: 'ghost' | 'primary'; $mobileRed?: boolean }>`
-  background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent)' : 'var(--bg-card)')};
-  color: ${({ $variant }) => ($variant === 'primary' ? 'var(--text-on-accent)' : 'var(--text-secondary)')};
-  border: 1px solid ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border)')};
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.45rem 0.875rem;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-
-  &:hover {
-    background: ${({ $variant }) => ($variant === 'primary' ? 'var(--accent-hover)' : 'var(--bg-card-hover)')};
-    border-color: ${({ $variant }) => ($variant === 'primary' ? 'transparent' : 'var(--border-light)')};
-    color: ${({ $variant }) => ($variant === 'primary' ? 'var(--text-on-accent)' : 'var(--text-primary)')};
-  }
-
-  @media (max-width: 640px) {
-    padding: 0.45rem 0.5rem;
-    ${({ $mobileRed }) => $mobileRed && css`
-      color: var(--error);
-      border-color: var(--error);
-    `}
-  }
-`;
-
-export const ButtonText = styled.span`
-  @media (max-width: 640px) {
-    display: none;
-  }
-`;
-
 /**
  * El centro, donde vive el contenido propio de Platenzen: un fondo negro
  * extra encima del fondo de la app, para que el texto se lea sobre la foto en
@@ -205,8 +169,8 @@ export const DashboardContent = styled.main`
       background: linear-gradient(
         to right,
         transparent 0%,
-        rgba(6, 7, 10, 0.78) 5%,
-        rgba(6, 7, 10, 0.78) 95%,
+        rgba(6, 7, 10, 0.39) 5%,
+        rgba(6, 7, 10, 0.39) 95%,
         transparent 100%
       );
       z-index: -1;
@@ -338,16 +302,4 @@ export const HistoriaSidebar = styled.aside`
     position: sticky;
     top: 5.5rem;
   }
-`;
-
-/**
- * Tercer item del grid, no parte de `HistoriaMain`: en escritorio ocupa las
- * dos columnas, debajo de contenido + sidebar. En el teléfono, donde el grid
- * pasa a una sola columna, el orden del DOM es el orden visual — al venir
- * después de `HistoriaSidebar` en el JSX, queda debajo de récords, lugares y
- * sesiones legendarias, no arriba.
- */
-export const HistoriaFooter = styled.div`
-  grid-column: 1 / -1;
-  min-width: 0;
 `;

@@ -1,1 +1,1 @@
-export { Panel } from './styled';
+export { Panel, glassHover } from './styled';
