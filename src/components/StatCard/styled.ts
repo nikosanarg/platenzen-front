@@ -25,6 +25,17 @@ export const Card = styled.div<{ $featured: boolean; $withStravaBadge: boolean }
 
   ${({ $featured }) => glassHover($featured ? 'var(--gold-rgb)' : 'var(--accent-rgb)')}
 
+  /*
+   * El gris (--text-muted) se redefine acá, no en cada texto: cualquier
+   * subtítulo, valor secundario o ranking de esta card que ya lo use en
+   * reposo pasa a blanco en hover/active sin listarlos uno por uno, y sin
+   * que el token global --text-muted se vea afectado fuera de esta card.
+   */
+  &:hover,
+  &:active {
+    --text-muted: #fff;
+  }
+
   &:focus-visible {
     outline: 2px solid ${({ $featured }) => ($featured ? 'var(--gold)' : 'var(--accent)')};
     outline-offset: 2px;
