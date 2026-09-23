@@ -161,8 +161,8 @@ describe('formatImprovement', () => {
 });
 
 describe('shortDate / fullDate', () => {
-  it('shortDate omite el año y no rellena el día', () => {
-    expect(shortDate('2026-07-05')).toBe('5 jul');
+  it('shortDate no rellena el día, y trae el año', () => {
+    expect(shortDate('2026-07-05')).toBe('5 jul 2026');
   });
 
   it('fullDate escribe el mes completo', () => {

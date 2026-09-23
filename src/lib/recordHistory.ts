@@ -92,9 +92,9 @@ export function formatImprovement(seconds: number): string {
 }
 
 export function shortDate(date: string): string {
-  const [, mo, da] = date.split('-');
+  const [yr, mo, da] = date.split('-');
   const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  return `${parseInt(da)} ${MONTHS[parseInt(mo) - 1]}`;
+  return `${parseInt(da)} ${MONTHS[parseInt(mo) - 1]} ${yr}`;
 }
 
 export function fullDate(date: string): string {

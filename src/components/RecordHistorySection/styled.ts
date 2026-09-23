@@ -34,13 +34,18 @@ export const RowHead = styled.div`
   gap: 0.5rem;
 `;
 
-/** +6px sobre el resto de la card: es lo primero que se lee de la fila. */
+/**
+ * +6px sobre el resto de la card: es lo primero que se lee de la fila. El
+ * borde blanco (`-webkit-text-stroke`) es lo que separa el naranja sólido
+ * del fondo oscuro sin bajarle la saturación al relleno.
+ */
 export const DistanceLabel = styled.span`
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
+  -webkit-text-stroke: 0.5px #fff;
 `;
 
 export const RowTime = styled.span`
@@ -56,7 +61,7 @@ export const RowMeta = styled.div`
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.68rem;
-  color: var(--text-muted);
+  color: var(--text-primary);
 `;
 
 export const ImprovementText = styled.span`

@@ -19,10 +19,11 @@ export const Panel = styled.div`
  * `var(--gold-rgb)`).
  */
 export const glassHover = (tintRgb: string) => css`
-  &:hover {
+  &:hover,
+  &:active {
     background: rgba(${tintRgb}, 0.1);
     border-color: rgba(${tintRgb}, 0.4);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 `;
