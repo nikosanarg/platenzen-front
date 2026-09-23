@@ -1,6 +1,6 @@
 import React from 'react';
 import StravaCornerBadge from '@/components/StravaCornerBadge';
-import { Card, LeftVisual, Info, TopRow, Title, PrimaryValue, SubRow, SecondaryValue, ExtraLine } from './styled';
+import { Card, LeftVisual, Info, Title, SubtitleLine, RightVisual, PrimaryValue, SecondaryValue } from './styled';
 
 export interface StatCardProps {
   /** Slot opcional a la izquierda: soporta badges de distancia ('15K'), ranking ('#1'), ícono o null */
@@ -10,15 +10,16 @@ export interface StatCardProps {
   title: React.ReactNode;
 
   /**
-   * Arreglo con hasta 2 líneas de subtítulos/metadatos
-   * Ej: ["5:20/km · 28 ago 2026"] o ["26.20 km · 6:04/km", "🏅 Distancia más larga"]
+   * Arreglo con hasta 2 líneas de subtítulos/metadatos, cada una su propia
+   * fila debajo del título — no comparten fila con `primaryValue`/`secondaryValue`.
+   * Ej: ["5:20/km", "28 ago 2026"] o ["26.20 km · 6:04/km", "🏅 Distancia más larga"]
    */
   subtitles?: React.ReactNode[];
 
-  /** Valor/métrica principal ubicado a la derecha (flotante) */
+  /** Valor/métrica principal: columna sola a la derecha, simétrica a `leftVisual` */
   primaryValue?: React.ReactNode;
 
-  /** Subvalor/etiqueta debajo del valor principal (ej. "▼ 5'19"") */
+  /** Subvalor apilado debajo de `primaryValue` en esa misma columna (ej. "▼ 5'19"", o la fecha si no hay `primaryValue`) */
   secondaryValue?: React.ReactNode;
 
   /** Muestra la cinta/indicador con el logo de Strava en la esquina superior derecha */
@@ -46,11 +47,13 @@ export interface StatCardProps {
 
 /**
  * La card de fila que comparten récords, sesiones legendarias y lugares
- * frecuentados: mismo layout ([leftVisual] título + subtítulos ... valor
- * principal + secundario), antes reimplementado a mano tres veces. Cada
- * sección sigue decidiendo SU contenido (qué va en cada slot, de qué color
- * es un nodo puntual como el label naranja de récords) — esto sólo unifica
- * el armazón.
+ * frecuentados: tres columnas ([leftVisual] | título+subtítulos | valor
+ * principal+secundario), antes reimplementado a mano tres veces. Las
+ * columnas de los extremos son independientes entre sí — el valor de la
+ * derecha no se empareja fila a fila con un subtítulo puntual, se apila
+ * solo, igual que `leftVisual`. Cada sección sigue decidiendo SU contenido
+ * (qué va en cada slot, de qué color es un nodo puntual como el label
+ * naranja de récords) — esto sólo unifica el armazón.
  */
 const StatCard: React.FC<StatCardProps> = ({
   leftVisual,
@@ -67,7 +70,7 @@ const StatCard: React.FC<StatCardProps> = ({
   rel,
 }) => {
   const featured = variant === 'featured';
-  const [firstSubtitle, ...restSubtitles] = subtitles ?? [];
+  const hasRightVisual = primaryValue !== undefined || secondaryValue !== undefined;
 
   const interactionProps = href
     ? { as: 'a' as const, href, target, rel }
@@ -85,22 +88,18 @@ const StatCard: React.FC<StatCardProps> = ({
       {leftVisual && <LeftVisual>{leftVisual}</LeftVisual>}
 
       <Info>
-        <TopRow>
-          <Title $featured={featured}>{title}</Title>
-          {primaryValue !== undefined && <PrimaryValue>{primaryValue}</PrimaryValue>}
-        </TopRow>
-
-        {(firstSubtitle !== undefined || secondaryValue !== undefined) && (
-          <SubRow>
-            <span>{firstSubtitle}</span>
-            {secondaryValue !== undefined && <SecondaryValue>{secondaryValue}</SecondaryValue>}
-          </SubRow>
-        )}
-
-        {restSubtitles.map((line, i) => (
-          <ExtraLine key={i}>{line}</ExtraLine>
+        <Title $featured={featured}>{title}</Title>
+        {(subtitles ?? []).map((line, i) => (
+          <SubtitleLine key={i}>{line}</SubtitleLine>
         ))}
       </Info>
+
+      {hasRightVisual && (
+        <RightVisual>
+          {primaryValue !== undefined && <PrimaryValue>{primaryValue}</PrimaryValue>}
+          {secondaryValue !== undefined && <SecondaryValue>{secondaryValue}</SecondaryValue>}
+        </RightVisual>
+      )}
     </Card>
   );
 };

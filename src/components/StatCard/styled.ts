@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { glassHover } from '@/components/Panel';
 
 /**
@@ -55,17 +55,6 @@ export const Info = styled.div`
   gap: 0.2rem;
 `;
 
-const rowBase = css`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-`;
-
-export const TopRow = styled.div`
-  ${rowBase}
-`;
-
 export const Title = styled.div<{ $featured: boolean }>`
   font-size: 0.85rem;
   font-weight: 700;
@@ -76,26 +65,39 @@ export const Title = styled.div<{ $featured: boolean }>`
   text-overflow: ellipsis;
 `;
 
-export const PrimaryValue = styled.div`
+/** Cada subtítulo es su propia fila, sin pareja a la derecha — eso vive en `RightVisual`. */
+export const SubtitleLine = styled.div`
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+/**
+ * Columna sola a la derecha, simétrica a `LeftVisual`: el valor principal
+ * (tiempo, visitas) y el secundario (mejora, fecha) apilados e
+ * independientes de las filas de `Info` — no una pareja fila por fila.
+ */
+export const RightVisual = styled.div`
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+`;
+
+export const PrimaryValue = styled.div`
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  white-space: nowrap;
 `;
 
-export const SubRow = styled.div`
-  ${rowBase}
-  font-size: 0.7rem;
+export const SecondaryValue = styled.div`
+  font-size: 0.72rem;
   color: var(--text-muted);
-`;
-
-export const SecondaryValue = styled.span`
-  flex-shrink: 0;
-  color: var(--text-muted);
-`;
-
-export const ExtraLine = styled.div`
-  font-size: 0.66rem;
-  color: var(--text-muted);
+  white-space: nowrap;
 `;

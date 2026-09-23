@@ -44,13 +44,15 @@ const RecordHistorySection: React.FC<RecordHistorySectionProps> = ({ activities 
               primaryValue={formatRecordTime(h.currentBest.projectedTimeSeconds)}
               subtitles={[
                 `${formatDistance(h.distanceKm)} km · ${formatPace(h.currentBest.pace)}`,
+                shortDate(h.currentBest.date),
+              ]}
+              secondaryValue={
                 h.currentBest.improvementSeconds !== null ? (
                   <ImprovementText>▼ {formatImprovement(h.currentBest.improvementSeconds)}</ImprovementText>
                 ) : (
                   'primera marca'
-                ),
-              ]}
-              secondaryValue={shortDate(h.currentBest.date)}
+                )
+              }
             />
           ) : (
             <NoRecord key={h.label}>
