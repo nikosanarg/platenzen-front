@@ -8,9 +8,11 @@ import { secPerKmToString, mpsToSecPerKm } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
 import { parseLocalDate } from '@/utils/localDate';
 import { SectionTitle } from '@/components/Dashboard/styled';
+import { IconChevronUp } from '@/components/Icon';
 import {
   Root,
   Head,
+  ToggleTitle,
   SortTabs,
   SortTab,
   List,
@@ -22,8 +24,35 @@ import {
   PageNavButton,
   PageButton,
   PageEllipsis,
+  CollapseButton,
   EmptyState,
 } from './styled';
+
+/**
+ * Colapsada la primera vez que se ve: el historial completo no es lo
+ * primero que hace falta leer de la card del coach. Una vez que el
+ * corredor la abre, queda abierta — también al volver de otra tab de la
+ * app, aunque eso desmonte y remonte el componente — así que el estado
+ * vive en `localStorage`, no en el estado de React.
+ */
+const STORAGE_KEY = 'platenzen.historialActividades.abierto';
+
+function leerAbiertoGuardado(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function guardarAbierto(abierto: boolean) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, abierto ? '1' : '0');
+  } catch {
+    // localStorage puede fallar (modo privado, cuota): la sección simplemente no recuerda.
+  }
+}
 
 /**
  * El historial completo, en lista: a diferencia de "Récords" (hitos) y
@@ -87,6 +116,19 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
   const opciones = sorts ? ACTIVITY_SORTS.filter(s => sorts.includes(s.id)) : ACTIVITY_SORTS;
   const [orden, setOrden] = useState<ActivitySortKey>(opciones[0].id);
   const [pagina, setPagina] = useState(1);
+  const [abiertoState, setAbiertoState] = useState(leerAbiertoGuardado);
+  // Sin título no hay control para colapsar: se muestra siempre entera.
+  const abierto = showTitle ? abiertoState : true;
+
+  const abrir = () => {
+    setAbiertoState(true);
+    guardarAbierto(true);
+  };
+
+  const colapsar = () => {
+    setAbiertoState(false);
+    guardarAbierto(false);
+  };
 
   const ordenadas = useMemo(
     () => sortActivities(activities, orden),
@@ -100,7 +142,15 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
   return (
     <Root>
       <Head>
-        {showTitle && <SectionTitle>{title}</SectionTitle>}
+        {showTitle && (
+          abierto ? (
+            <SectionTitle>{title}</SectionTitle>
+          ) : (
+            <ToggleTitle type="button" onClick={abrir} aria-expanded="false">
+              Ver {title.toLowerCase()}
+            </ToggleTitle>
+          )
+        )}
         <SortTabs role="group" aria-label="Orden del historial">
           {opciones.map(s => (
             <SortTab
@@ -113,6 +163,9 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
                 // Cambiar el orden reencuadra la lista: seguir en la página 4
                 // mostraría el medio de un ranking que el corredor no vio.
                 setPagina(1);
+                // Elegir un orden desde colapsado también abre la lista: el
+                // filtro se aplica y se ve, no queda seleccionado a ciegas.
+                abrir();
               }}
             >
               {s.label}
@@ -121,7 +174,7 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
         </SortTabs>
       </Head>
 
-      {ordenadas.length === 0 ? (
+      {abierto && (ordenadas.length === 0 ? (
         <EmptyState>Todavía no hay actividades en tu historial.</EmptyState>
       ) : (
         <>
@@ -173,8 +226,14 @@ const HistorialActividades: React.FC<HistorialActividadesProps> = ({
               </PageNavButton>
             </Paginator>
           )}
+
+          {showTitle && (
+            <CollapseButton type="button" onClick={colapsar} aria-label="Colapsar actividades" aria-expanded="true">
+              <IconChevronUp size={14} />
+            </CollapseButton>
+          )}
         </>
-      )}
+      ))}
     </Root>
   );
 };

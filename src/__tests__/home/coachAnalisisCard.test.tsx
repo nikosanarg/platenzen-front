@@ -7,7 +7,7 @@
  * verifica cómo se arma la tarjeta a partir de esos datos.
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import CoachAnalisis from '@/components/CoachAnalisis';
 import { computeStats } from '@/lib/stats';
 import { activity } from '@/__tests__/helpers/activity';
@@ -30,6 +30,9 @@ function renderCard(n = 15) {
 beforeEach(() => {
   jest.useFakeTimers();
   jest.setSystemTime(NOW);
+  // El historial recuerda si estaba abierto en `localStorage`: sin limpiarlo,
+  // un test contamina el estado inicial del siguiente.
+  window.localStorage.clear();
 });
 
 afterEach(() => {
@@ -54,19 +57,60 @@ it('el cartel de esquina marca cuándo fue la última salida', () => {
 it('las actividades viven dentro de la card, con sólo tres filtros', () => {
   renderCard();
 
-  expect(screen.getByText('Actividades')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Ver actividades' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Más recientes' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Más largas' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Más rápidas' })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Más desnivel' })).not.toBeInTheDocument();
 });
 
-it('muestra 10 actividades por defecto, paginadas', () => {
+it('el historial arranca colapsado, sin la lista ni el paginador', () => {
   renderCard(15);
+
+  expect(screen.queryAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(0);
+  expect(screen.queryByRole('button', { name: 'Página siguiente' })).not.toBeInTheDocument();
+});
+
+it('tocar "Ver actividades" abre la lista, paginada de a 10', () => {
+  renderCard(15);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Ver actividades' }));
 
   // Las tarjetas del historial embebido son `<h4>`; la actividad principal de
   // arriba no lo es, así que este selector cuenta sólo la lista de abajo.
   expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(10);
   expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Página 2' })).toBeInTheDocument();
+});
+
+it('elegir un filtro estando colapsado abre la lista y aplica ese orden', () => {
+  renderCard(15);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Más largas' }));
+
+  expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' }).length).toBeGreaterThan(0);
+  expect(screen.getByRole('button', { name: 'Más largas' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+it('el chevron de abajo vuelve a colapsar la lista', () => {
+  renderCard(15);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Ver actividades' }));
+  expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' }).length).toBeGreaterThan(0);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Colapsar actividades' }));
+
+  expect(screen.queryAllByRole('heading', { level: 4, name: 'Salida' })).toHaveLength(0);
+  expect(screen.getByRole('button', { name: 'Ver actividades' })).toBeInTheDocument();
+});
+
+it('recuerda que estaba abierta después de desmontar y volver a montar (cambio de tab)', () => {
+  const { unmount } = renderCard(15);
+  fireEvent.click(screen.getByRole('button', { name: 'Ver actividades' }));
+  unmount();
+
+  renderCard(15);
+
+  expect(screen.getAllByRole('heading', { level: 4, name: 'Salida' }).length).toBeGreaterThan(0);
+  expect(screen.queryByRole('button', { name: 'Ver actividades' })).not.toBeInTheDocument();
 });

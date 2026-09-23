@@ -11,6 +11,26 @@ export const Head = styled.div`
   margin-bottom: 0.75rem;
 `;
 
+/**
+ * Mismo look que `SectionTitle` (Dashboard/styled), pero como botón: es el
+ * control para abrir la sección la primera vez que se ve, colapsada.
+ */
+export const ToggleTitle = styled.button`
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent);
+  }
+`;
+
 export const SortTabs = styled.div`
   display: flex;
   gap: 0.25rem;
@@ -137,6 +157,24 @@ export const PageEllipsis = styled.span`
   justify-content: center;
   font-size: 0.75rem;
   color: var(--text-muted);
+`;
+
+/** Chevron centrado abajo de todo, para volver a colapsar sin subir a buscar el título. */
+export const CollapseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.4rem 0;
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent);
+  }
 `;
 
 export const EmptyState = styled.p`
