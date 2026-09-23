@@ -13,6 +13,7 @@ import {
 export interface RoleSwitcherOption {
   id: string;
   label: string;
+  pct: number;
 }
 
 interface RoleSwitcherProps {
@@ -64,8 +65,8 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ selectedId, selectedLabel, 
       >
         {selectedLabel}
         {open
-          ? <IconChevronUp size={20} color="rgba(var(--accent-rgb), 0.75)" />
-          : <IconChevronDown size={20} color="rgba(var(--accent-rgb), 0.75)" />}
+          ? <IconChevronUp size={20} color="var(--border-light)" />
+          : <IconChevronDown size={20} color="var(--border-light)" />}
       </RoleDropdownTrigger>
 
       {open && (
@@ -80,7 +81,7 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ selectedId, selectedLabel, 
                   setOpen(false);
                 }}
               >
-                {opt.label}
+                {opt.label} ({Math.round(opt.pct)}%)
               </RoleDropdownOptionButton>
             </li>
           ))}

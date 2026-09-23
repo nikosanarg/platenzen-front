@@ -112,6 +112,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const opcionesRama = empatados.map(b => ({
     id: b.id,
     label: b.level > 0 ? b.tiers[b.level - 1].name : 'Corredor',
+    pct: b.pct,
   }));
 
   const consistencia = tree.branches.find(b => b.id === 'consistencia')?.pct ?? 0;

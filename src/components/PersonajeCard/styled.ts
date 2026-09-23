@@ -84,16 +84,17 @@ export const AdnChartWrapper = styled.div`
 export const RoleHeading = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 2rem;
   flex-wrap: wrap;
 `;
 
+/** Dorado, como el título elegido: es la rama a la que pertenece esa lectura. */
 export const LevelBadge = styled.span`
   font-size: calc(0.72rem + 2px);
   font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-card-hover);
-  border: 1px solid var(--border);
+  color: var(--gold);
+  background: rgba(var(--gold-rgb), 0.12);
+  border: 1px solid var(--gold);
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
   letter-spacing: 0.03em;
@@ -103,7 +104,7 @@ export const LevelBadge = styled.span`
 export const RoleNamePrimary = styled.h2`
   font-size: calc(2rem + 4px);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--gold);
   letter-spacing: -0.03em;
   line-height: 1.1;
 
@@ -119,21 +120,22 @@ export const RoleDropdown = styled.div`
 `;
 
 /**
- * Todo transparente salvo el borde y el chevron — un naranja apenas
- * insinuado, no un botón sólido — para que siga leyéndose como el título
- * de la card, no como una acción. `$interactive` en false (una sola rama,
- * nada para elegir) saca el borde entero y vuelve a ser texto plano.
+ * Todo transparente salvo el borde y el chevron — gris claro, apenas un
+ * contorno — para que siga leyéndose como el título de la card, no como un
+ * botón. El texto es dorado (es el título elegido, misma lectura que el
+ * badge de al lado). `$interactive` en false (una sola rama, nada para
+ * elegir) saca el borde entero y vuelve a ser texto plano.
  */
 export const RoleDropdownTrigger = styled.button<{ $interactive: boolean; $open: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.4rem;
   background: transparent;
-  border: 1px solid ${({ $interactive }) => ($interactive ? 'rgba(var(--accent-rgb), 0.45)' : 'transparent')};
-  border-radius: var(--radius-sm);
-  padding: ${({ $interactive }) => ($interactive ? '0.15rem 0.6rem' : '0')};
-  margin: ${({ $interactive }) => ($interactive ? '-0.15rem -0.6rem' : '0')};
-  color: var(--text-primary);
+  border: 1px solid ${({ $interactive }) => ($interactive ? 'var(--border-light)' : 'transparent')};
+  border-radius: 999px;
+  padding: ${({ $interactive }) => ($interactive ? 'calc(0.15rem + 4px) calc(0.6rem + 4px)' : '0')};
+  margin: ${({ $interactive }) => ($interactive ? 'calc(-0.15rem - 4px) calc(-0.6rem - 4px)' : '0')};
+  color: var(--gold);
   font-size: calc(2rem + 4px);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -143,10 +145,6 @@ export const RoleDropdownTrigger = styled.button<{ $interactive: boolean; $open:
   @media (max-width: 600px) {
     font-size: 1.5rem;
   }
-
-  &:hover {
-    border-color: ${({ $interactive }) => ($interactive ? 'rgba(var(--accent-rgb), 0.7)' : 'transparent')};
-  }
 `;
 
 export const RoleDropdownList = styled.ul`
@@ -154,7 +152,7 @@ export const RoleDropdownList = styled.ul`
   z-index: 20;
   top: calc(100% + 0.4rem);
   left: 0;
-  min-width: 12rem;
+  min-width: 14rem;
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -164,6 +162,11 @@ export const RoleDropdownList = styled.ul`
   box-shadow: var(--shadow);
 `;
 
+/**
+ * Blanco por defecto, dorado la rama elegida actualmente, naranja en hover
+ * — el hover pisa al dorado también: da igual cuál esté elegida, la que se
+ * está por tocar es la que se resalta.
+ */
 export const RoleDropdownOptionButton = styled.button<{ $active: boolean }>`
   display: block;
   width: 100%;
@@ -174,7 +177,7 @@ export const RoleDropdownOptionButton = styled.button<{ $active: boolean }>`
   padding: 0.5rem 0.7rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: ${({ $active }) => ($active ? 'var(--accent)' : '#fff')};
+  color: ${({ $active }) => ($active ? 'var(--gold)' : '#fff')};
   cursor: pointer;
   white-space: nowrap;
 
