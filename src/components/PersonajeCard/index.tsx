@@ -12,6 +12,7 @@ import { buildPersonaDescription } from '@/lib/runnerPersona';
 import { IconRoute, IconCalendar, IconFlame } from '@/components/Icon';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import BranchProfile from './BranchProfile';
+import RoleSwitcher from './RoleSwitcher';
 import {
   Card,
   TopRow,
@@ -19,10 +20,7 @@ import {
   VisualCol,
   AdnChartWrapper,
   RoleHeading,
-  RoleNameRow,
-  RoleNamePrimary,
   LevelBadge,
-  SwitchChipsRow,
   CoreRecord,
   CoreRecordValue,
   CoreRecordLabel,
@@ -35,7 +33,6 @@ import {
   StatLabel,
   VisualPanel,
   ActivitySection,
-  SwitchChip,
 } from './styled';
 
 interface PersonajeCardProps {
@@ -110,9 +107,12 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
 
   const [elegidoId, setElegidoId] = useState<BranchId | null>(null);
   const dominante = empatados.find(b => b.id === elegidoId) ?? empatados[0];
-  const alternativas = empatados.filter(b => b.id !== dominante.id);
 
   const titulo = dominante.level > 0 ? dominante.tiers[dominante.level - 1].name : 'Corredor';
+  const opcionesRama = empatados.map(b => ({
+    id: b.id,
+    label: b.level > 0 ? b.tiers[b.level - 1].name : 'Corredor',
+  }));
 
   const consistencia = tree.branches.find(b => b.id === 'consistencia')?.pct ?? 0;
   const persona = buildPersonaDescription(roles.primary, stats, Math.round(consistencia));
@@ -125,19 +125,13 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
         {/* ── Resumen: quién sos y los números gruesos ── */}
         <IdentityMain>
           <RoleHeading>
-            <RoleNameRow>
-              <RoleNamePrimary>{titulo}</RoleNamePrimary>
-              <LevelBadge>{dominante.name}</LevelBadge>
-            </RoleNameRow>
-            {alternativas.length > 0 && (
-              <SwitchChipsRow>
-                {alternativas.map(alt => (
-                  <SwitchChip key={alt.id} type="button" onClick={() => setElegidoId(alt.id)}>
-                    Cambiar a {alt.tiers[alt.level - 1].name}
-                  </SwitchChip>
-                ))}
-              </SwitchChipsRow>
-            )}
+            <RoleSwitcher
+              selectedId={dominante.id}
+              selectedLabel={titulo}
+              options={opcionesRama}
+              onSelect={(id) => setElegidoId(id as BranchId)}
+            />
+            <LevelBadge>{dominante.name}</LevelBadge>
           </RoleHeading>
 
           {coreRecord && (

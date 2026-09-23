@@ -81,47 +81,11 @@ export const AdnChartWrapper = styled.div`
 
 /* ── Identity header ─────────────────────────────────────────────── */
 
-/**
- * Columna por defecto: el nombre+badge arriba, los botones de cambio
- * debajo — a ese ancho no entran los tres en una fila sin apretarse. Recién
- * a partir de escritorio grande (1200px) vuelven a la misma fila.
- */
 export const RoleHeading = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-
-  /*
-   * El ancho de pantalla, no el de la card: a 1440px de ventana la card
-   * mide bastante menos (hay una sidebar de 300px al lado), pero el pedido
-   * fue explícito por resolución. nowrap fuerza la fila aunque la card
-   * venga angosta — el contenido de esta fila es corto, entra igual.
-   */
-  @media (min-width: 1200px) {
-    flex-direction: row;
-    align-items: baseline;
-    flex-wrap: nowrap;
-    gap: 0.75rem;
-  }
-`;
-
-export const RoleNameRow = styled.div`
-  display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.625rem;
   flex-wrap: wrap;
-`;
-
-export const RoleNamePrimary = styled.h2`
-  font-size: calc(2rem + 4px);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-
-  @media (max-width: 600px) {
-    font-size: 1.5rem;
-  }
 `;
 
 export const LevelBadge = styled.span`
@@ -136,38 +100,86 @@ export const LevelBadge = styled.span`
   white-space: nowrap;
 `;
 
-export const SwitchChipsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+export const RoleNamePrimary = styled.h2`
+  font-size: calc(2rem + 4px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+
+  @media (max-width: 600px) {
+    font-size: 1.5rem;
+  }
+`;
+
+/* ── Selector de rama: "Veintiunero" como dropdown cuando hay otra rama empatada ── */
+
+export const RoleDropdown = styled.div`
+  position: relative;
 `;
 
 /**
- * Sólo aparece cuando dos ramas empatan en nivel: el título es una decisión
- * ("Veintiunero" vs. "Pasadista") que igual de bien podría ser la otra, así
- * que se ofrece el cambio en vez de elegir en silencio. Mismo tratamiento
- * que "Ver más en el mapa" (`MoreLink` en `LugaresFrecuentados`) — borde +
- * fondo de card, mismo naranja de marca, no una píldora dorada chica.
+ * Todo transparente salvo el borde y el chevron — un naranja apenas
+ * insinuado, no un botón sólido — para que siga leyéndose como el título
+ * de la card, no como una acción. `$interactive` en false (una sola rama,
+ * nada para elegir) saca el borde entero y vuelve a ser texto plano.
  */
-export const SwitchChip = styled.button`
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-card);
-  border: 1px solid var(--accent);
+export const RoleDropdownTrigger = styled.button<{ $interactive: boolean; $open: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid ${({ $interactive }) => ($interactive ? 'rgba(var(--accent-rgb), 0.45)' : 'transparent')};
   border-radius: var(--radius-sm);
-  padding: 0.45rem 1.1rem;
+  padding: ${({ $interactive }) => ($interactive ? '0.15rem 0.6rem' : '0')};
+  margin: ${({ $interactive }) => ($interactive ? '-0.15rem -0.6rem' : '0')};
+  color: var(--text-primary);
+  font-size: calc(2rem + 4px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
+
+  @media (max-width: 600px) {
+    font-size: 1.5rem;
+  }
+
+  &:hover {
+    border-color: ${({ $interactive }) => ($interactive ? 'rgba(var(--accent-rgb), 0.7)' : 'transparent')};
+  }
+`;
+
+export const RoleDropdownList = styled.ul`
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  min-width: 12rem;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+`;
+
+export const RoleDropdownOptionButton = styled.button<{ $active: boolean }>`
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? 'var(--accent)' : '#fff')};
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
     color: var(--accent);
-    background: var(--bg-card-hover);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
   }
 `;
 

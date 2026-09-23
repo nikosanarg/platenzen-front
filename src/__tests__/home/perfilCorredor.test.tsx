@@ -128,10 +128,11 @@ it('la constancia (el mapa de calor) vive en la columna de identidad, sin títul
   expect(screen.queryByText('Constancia')).not.toBeInTheDocument();
 });
 
-it('sin empate entre ramas, no ofrece el chip de cambio', () => {
-  renderCard();
+it('sin empate entre ramas, el título es texto plano, no un desplegable', () => {
+  const { container } = renderCard();
 
-  expect(screen.queryByRole('button', { name: /^Cambiar a /i })).not.toBeInTheDocument();
+  expect(container.querySelector('[aria-haspopup="listbox"]')).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
 });
 
 it('la rama dominante sale dorada en la telaraña', () => {
