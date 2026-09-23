@@ -104,32 +104,6 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           )}
 
           <PersonaText>{persona}</PersonaText>
-
-          <StatsGrid>
-            <StatCard>
-              <StatIcon><IconRoute size={18} color="currentColor" /></StatIcon>
-              <StatBody>
-                <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')} km</StatValue>
-                <StatLabel>recorrido</StatLabel>
-              </StatBody>
-            </StatCard>
-
-            <StatCard>
-              <StatIcon><IconCalendar size={18} color="currentColor" /></StatIcon>
-              <StatBody>
-                <StatValue>{stats.totalActivities.toLocaleString('es-AR')}</StatValue>
-                <StatLabel>actividades</StatLabel>
-              </StatBody>
-            </StatCard>
-
-            <StatCard>
-              <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
-              <StatBody>
-                <StatValue>{longestStreak}</StatValue>
-                <StatLabel>Semanas al hilo</StatLabel>
-              </StatBody>
-            </StatCard>
-          </StatsGrid>
         </IdentityMain>
 
         {/* ── Perfil de corredor: radar y árbol, un solo dibujo ── */}
@@ -140,6 +114,33 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             </AdnChartWrapper>
           </VisualPanel>
         </VisualCol>
+
+        {/* ── Los tres números gruesos ── */}
+        <StatsGrid>
+          <StatCard>
+            <StatIcon><IconRoute size={18} color="currentColor" /></StatIcon>
+            <StatBody>
+              <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')} km</StatValue>
+              <StatLabel>recorrido</StatLabel>
+            </StatBody>
+          </StatCard>
+
+          <StatCard>
+            <StatIcon><IconCalendar size={18} color="currentColor" /></StatIcon>
+            <StatBody>
+              <StatValue>{stats.totalActivities.toLocaleString('es-AR')}</StatValue>
+              <StatLabel>actividades</StatLabel>
+            </StatBody>
+          </StatCard>
+
+          <StatCard>
+            <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
+            <StatBody>
+              <StatValue>{longestStreak}</StatValue>
+              <StatLabel>Semanas al hilo</StatLabel>
+            </StatBody>
+          </StatCard>
+        </StatsGrid>
 
         {/* ── Constancia: el heatmap solo, sin título ni leyenda propios ── */}
         <ActivitySection>

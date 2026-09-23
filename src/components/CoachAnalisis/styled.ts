@@ -55,6 +55,7 @@ export const RibbonRecency = styled.div`
   font-weight: 800;
   letter-spacing: 0.05em;
   line-height: 1.15;
+  transform: translateX(-4px);
 `;
 
 /** El historial, a lo ancho de la card, debajo del separador de impacto. */

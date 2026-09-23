@@ -33,6 +33,7 @@ export const TopRow = styled.div`
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   grid-template-areas:
     'data    radar'
+    'stats   radar'
     'heatmap radar';
   gap: 1.75rem;
   align-items: start;
@@ -41,11 +42,16 @@ export const TopRow = styled.div`
     gap: 1.5rem;
   }
 
-  /* 60/40 entre datos y radar; el heatmap pasa a su propia fila completa. */
+  /*
+   * 50/50 entre datos y radar. Los tres indicadores dejan de competir por el
+   * ancho de la columna de datos —wrapeaban con puntos suspensivos— y pasan
+   * a su propia fila completa, entre el radar y el heatmap.
+   */
   @media (max-width: 900px) {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas:
       'data    radar'
+      'stats   stats'
       'heatmap heatmap';
   }
 `;
@@ -179,6 +185,10 @@ export const PersonaText = styled.p`
   color: var(--text-muted);
   line-height: 1.5;
   margin-top: 0.85rem;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
 `;
 
 /* ── Stat cards ───────────────────────────────────────────────────── */
@@ -187,16 +197,21 @@ export const PersonaText = styled.p`
  * Los tres en la misma fila. `auto-fit` con un mínimo chico es lo que cumple
  * "inline salvo en casos extremos" sin un breakpoint inventado: mientras las
  * tres columnas entren, quedan en fila; recién cuando no, bajan solas.
+ *
+ * Área propia del grid (`stats`), no hija de `IdentityMain`: en mobile el
+ * ancho de la columna de datos es la mitad de la card, donde el mínimo de
+ * 96px de auto-fit no entra tres veces y las tarjetas wrapeaban con puntos
+ * suspensivos. Con su propia fila a lo ancho completo —entre el radar y el
+ * heatmap— vuelve a tener el espacio que necesita.
  */
 export const StatsGrid = styled.div`
+  grid-area: stats;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 0.85rem 1rem;
-  margin-top: 1.15rem;
 
   @media (max-width: 600px) {
     gap: 0.7rem 0.6rem;
-    margin-top: 0.9rem;
   }
 `;
 
