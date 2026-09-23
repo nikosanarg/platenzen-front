@@ -7,12 +7,21 @@ import styled from 'styled-components';
  */
 const SCALE = ['#14171d', '#2f8f57', '#8bab3c', '#d9a53b', '#ff9d42'];
 
+/**
+ * `height: 100%` + centrado vertical: cuando comparte row con la tarjeta de
+ * "Distancia/Ritmo" (más alta, por su alto fijo en px), la grilla —más baja
+ * por naturaleza— no queda pegada arriba con un hueco muerto abajo.
+ */
 export const Root = styled.div`
   --hours: 24;
   --cell-gap: 3px;
   --min-cell-size: 14px;
   width: 100%;
+  height: 100%;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   position: relative;
   container-type: inline-size;
 

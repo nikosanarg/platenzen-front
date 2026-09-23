@@ -219,14 +219,18 @@ export const ChartsGrid = styled.div`
   }
 `;
 
+/**
+ * Siempre 2 columnas: `PatternsGrid` sólo se monta dentro de `DesktopOnly`
+ * (>900px), el mismo corte en el que `MobileOnly` pasa a mostrar las
+ * pestañas. Un breakpoint propio más angosto acá dejaba una zona intermedia
+ * —escritorio, pero con las dos tarjetas apiladas igual— que no es ninguna
+ * de las dos vistas pensadas para ese ancho.
+ */
 export const PatternsGrid = styled.div`
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  grid-template-columns: 1fr;
-
-  @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr;
-  }
+  align-items: stretch;
 `;
 
 export const FullWidthChart = styled.div`
