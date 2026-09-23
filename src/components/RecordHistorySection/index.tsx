@@ -4,6 +4,7 @@ import React from 'react';
 import { Activity } from '@/types/activity';
 import { computeRecordHistories, formatRecordTime, formatImprovement, shortDate, formatPace } from '@/lib/recordHistory';
 import { SectionTitle } from '@/components/Dashboard/styled';
+import StravaCornerBadge from '@/components/StravaCornerBadge';
 import {
   HistoryRoot,
   HistoryList,
@@ -43,6 +44,7 @@ const RecordHistorySection: React.FC<RecordHistorySectionProps> = ({ activities 
               target="_blank"
               rel="noopener noreferrer"
             >
+              <StravaCornerBadge />
               <RowHead>
                 <DistanceLabel>{h.label}</DistanceLabel>
                 <RowTime>{formatRecordTime(h.currentBest.projectedTimeSeconds)}</RowTime>

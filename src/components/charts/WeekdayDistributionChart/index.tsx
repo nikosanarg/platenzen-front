@@ -13,7 +13,7 @@ interface WeekdayDistributionChartProps {
 const WeekdayDistributionChart: React.FC<WeekdayDistributionChartProps> = ({ data, bare }) => {
   return (
     <ChartCard $bare={bare}>
-      <ChartTitle>Tus días más activos</ChartTitle>
+      <ChartTitle>Días activos</ChartTitle>
       <ChartArea>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>

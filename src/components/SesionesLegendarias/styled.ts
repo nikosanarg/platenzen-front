@@ -15,14 +15,17 @@ export const SessionsList = styled.div`
 `;
 
 export const SessionRow = styled.a`
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   background: var(--bg-card);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.85rem;
+  padding: 0.7rem 1.6rem 0.7rem 0.85rem;
   text-decoration: none;
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.15s;
 
   &:hover {
@@ -60,4 +63,5 @@ export const EmptyState = styled(Panel)`
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8rem;
+  box-shadow: var(--shadow-sm);
 `;

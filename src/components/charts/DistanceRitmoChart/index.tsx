@@ -89,15 +89,15 @@ const DistanceRitmoChart: React.FC<DistanceRitmoChartProps> = ({ data, bare }) =
               }}
               cursor={{ fill: 'var(--accent-muted)' }}
             />
-            <Bar yAxisId="distancia" dataKey="distance" fill="var(--accent)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+            <Bar yAxisId="distancia" dataKey="distance" fill="var(--chart-2)" radius={[4, 4, 0, 0]} maxBarSize={32} />
             <Line
               yAxisId="ritmo"
               type="monotone"
               dataKey="pace"
-              stroke="var(--chart-2)"
-              strokeWidth={2}
+              stroke="var(--accent)"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 4, fill: 'var(--chart-2)' }}
+              activeDot={{ r: 4, fill: 'var(--accent)' }}
               connectNulls
             />
           </ComposedChart>

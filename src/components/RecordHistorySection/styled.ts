@@ -10,14 +10,17 @@ export const HistoryList = styled.div`
 `;
 
 export const DistanceRow = styled.a`
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
   background: var(--bg-card);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.85rem;
+  padding: 0.7rem 1.6rem 0.7rem 0.85rem;
   text-decoration: none;
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.15s;
 
   &:hover {
@@ -72,4 +75,5 @@ export const NoRecord = styled.div`
   background: var(--bg-card);
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.85rem;
+  box-shadow: var(--shadow-sm);
 `;

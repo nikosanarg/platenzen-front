@@ -20,6 +20,7 @@ export const PlaceItem = styled.button`
   padding: 0.6rem 0.85rem;
   cursor: pointer;
   text-align: left;
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.15s, background 0.15s;
 
   &:hover {

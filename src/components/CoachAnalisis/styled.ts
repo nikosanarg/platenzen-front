@@ -37,7 +37,7 @@ export const RibbonBanner = styled.div`
   color: var(--text-on-accent);
   text-align: center;
   padding: 0.3rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-sm);
   pointer-events: none;
 `;
 

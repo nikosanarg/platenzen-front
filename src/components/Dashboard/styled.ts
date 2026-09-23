@@ -349,4 +349,5 @@ export const HistoriaSidebar = styled.aside`
  */
 export const HistoriaFooter = styled.div`
   grid-column: 1 / -1;
+  min-width: 0;
 `;

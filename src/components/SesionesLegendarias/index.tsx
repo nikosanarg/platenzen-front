@@ -5,6 +5,7 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeLegendarySessions } from '@/lib/legendarySessions';
 import { SectionTitle } from '@/components/Dashboard/styled';
+import StravaCornerBadge from '@/components/StravaCornerBadge';
 import {
   Root,
   SessionsList,
@@ -45,6 +46,7 @@ const SesionesLegendarias: React.FC<SesionesLegendariasProps> = ({ activities, s
               target="_blank"
               rel="noopener noreferrer"
             >
+              <StravaCornerBadge />
               <SessionName title={session.activity.name}>{session.activity.name}</SessionName>
               <SessionMeta>
                 <span>{session.distanceKm} km · {session.pace}</span>
