@@ -195,34 +195,20 @@ describe('observaciones', () => {
 describe('destacados', () => {
   it('cada tarjeta trae ícono conocido, valor, etiqueta y tono', () => {
     for (const card of analisisOf(historial(12))!.highlights) {
-      expect(['medal', 'route', 'calendar']).toContain(card.icon);
+      expect(['route', 'calendar']).toContain(card.icon);
       expect(card.value.length).toBeGreaterThan(0);
       expect(card.label.length).toBeGreaterThan(0);
       expect(['positive', 'neutral', 'warning']).toContain(card.tone);
     }
   });
 
-  it('nunca son más de tres: una por ámbito, sin duplicar históricos ni racha', () => {
-    expect(analisisOf(historial(12))!.highlights.length).toBeLessThanOrEqual(3);
+  it('nunca son más de dos: últimos 7 días y promedio semanal, sin ranking de ritmo', () => {
+    expect(analisisOf(historial(12))!.highlights.length).toBeLessThanOrEqual(2);
   });
 
   it('ninguna tarjeta repite la etiqueta de otra', () => {
     const labels = analisisOf(historial(12))!.highlights.map((h) => h.label);
     expect(new Set(labels).size).toBe(labels.length);
-  });
-
-  describe('ranking por ritmo', () => {
-    it('el valor es el ritmo promedio, y el ranking baja a la fila de abajo', () => {
-      const medalla = analisisOf(historial(12))!.highlights.find((h) => h.icon === 'medal')!;
-
-      expect(medalla.value).toBe('5:00/km');
-      expect(medalla.label).toBe('ritmo promedio');
-      expect(medalla.sub).toBe('Top 1 de tus 10K');
-    });
-
-    it('sin al menos tres salidas comparables, no hay tarjeta de ranking', () => {
-      expect(analisisOf([runDaysAgo(1)])!.highlights.some((h) => h.icon === 'medal')).toBe(false);
-    });
   });
 
   describe('últimos 7 días', () => {

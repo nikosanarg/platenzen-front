@@ -93,7 +93,7 @@ function computeXPForActivity(activity: Activity, allActivities: Activity[], sta
   const details: XPDetail[] = [];
 
   const kmDelta = (xpWith.fromKm - xpWithout.fromKm);
-  if (kmDelta > 0) details.push({ label: `+${(activity.distance / 1000).toFixed(1)} km recorridos`, value: kmDelta });
+  if (kmDelta > 0) details.push({ label: `+${(activity.distance / 1000).toFixed(1)} km`, value: kmDelta });
 
   const msDelta = xpWith.fromMilestones - xpWithout.fromMilestones;
   if (msDelta > 0) details.push({ label: 'nuevo hito de distancia', value: msDelta });

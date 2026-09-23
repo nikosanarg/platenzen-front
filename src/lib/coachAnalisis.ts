@@ -8,7 +8,6 @@ import {
 } from '@/lib/lastActivity';
 import { computeFormShape } from '@/lib/formShape';
 import { computeCoachRecommendation } from '@/lib/coach';
-import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
 import { parseLocalDate } from '@/utils/localDate';
 
@@ -119,11 +118,6 @@ function formatClock(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-function formatPace(secPerKm: number): string {
-  const { minutes, seconds } = splitPace(secPerKm);
-  return `${minutes}:${seconds}/km`;
-}
-
 function distanceBucketLabel(km: number): string {
   return `${Math.round(km)}K`;
 }
@@ -219,25 +213,7 @@ function buildHighlights(
   recentWeeklyAvgKm: number
 ): HighlightCard[] {
   const cards: HighlightCard[] = [];
-  const km = activity.distance / 1000;
-  const bucket = distanceBucketLabel(km);
   const now = new Date();
-
-  // Ranking dentro del bucket de distancia, con el ritmo que lo sostiene.
-  const similar = allRuns.filter(a => Math.abs(a.distance / 1000 - km) <= 2.5 && paceSecPerKm(a) > 0);
-  if (similar.length >= 3) {
-    const sorted = [...similar].sort((a, b) => paceSecPerKm(a) - paceSecPerKm(b));
-    const rank = sorted.findIndex(a => a.id === activity.id) + 1;
-    if (rank > 0) {
-      cards.push({
-        icon: 'medal',
-        value: formatPace(paceSecPerKm(activity)),
-        label: 'ritmo promedio',
-        sub: `Top ${rank} de tus ${bucket}`,
-        tone: rank <= 3 ? 'positive' : 'neutral',
-      });
-    }
-  }
 
   // Últimos 7 días contra los 7 previos.
   const last7Km = kmInTrailingDays(allRuns, now, 7, 0);

@@ -262,20 +262,12 @@ export const InsightIcon = styled.div<{ $tone: InsightTone }>`
       : 'rgba(var(--text-secondary-rgb), 0.12)'};
 `;
 
-/* Seis destacados en 3 × 2; bajan a 2 y a 1 columna según el ancho. */
+/** Dos destacados, siempre en fila: ninguno de los dos wrapea a partir de acá. */
 export const HighlightGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
   margin-top: 0.35rem;
-
-  @media (max-width: 860px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 export const HighlightCardBox = styled.div`
@@ -363,10 +355,12 @@ export const XPBig = styled.div`
 
 export const XPChip = styled.div`
   font-size: 0.72rem;
-  color: var(--text-muted);
-  background: var(--bg-primary);
-  border-radius: 4px;
+  font-weight: 600;
   padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--chart-2-rgb), 0.3);
+  background: rgba(var(--chart-2-rgb), 0.08);
+  color: var(--chart-2);
 `;
 
 export const DNAChip = styled.div<{ $positive: boolean }>`

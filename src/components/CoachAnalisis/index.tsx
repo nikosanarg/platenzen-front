@@ -228,7 +228,7 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
             </LevelUpBadge>
           )}
           {impacto.xpDetails.map(d => (
-            <XPChip key={d.label}>+{d.value} {d.label}</XPChip>
+            <XPChip key={d.label}>{d.label}</XPChip>
           ))}
           {impacto.dnaImpact.map(imp => (
             <DNAChip key={imp.attribute} $positive={imp.delta > 0}>

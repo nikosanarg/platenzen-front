@@ -38,6 +38,7 @@
   --role-gradient: linear-gradient(90deg, var(--accent) 0%, #f97316 28%, var(--gold) 58%, #7bd938 82%, var(--success) 100%);
   --chart-1: #fc4c02;
   --chart-2: #3b82f6;
+  --chart-2-rgb: 59, 130, 246;
   --chart-3: #22c55e;
   --chart-4: #a855f7;
   --chart-5: #f59e0b;
