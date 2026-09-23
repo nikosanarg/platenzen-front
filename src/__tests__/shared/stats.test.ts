@@ -178,4 +178,19 @@ describe('computeStats: distribuciones', () => {
 
     expect(stats.cumulativeDistance.map((p) => p.cumulative)).toEqual([5, 8]);
   });
+
+  it('el cruce día×hora cuenta la combinación real, no el producto de las marginales', () => {
+    // 2026-07-15 es miércoles, dos salidas a las 18h y una a las 7h.
+    const stats = computeStats([
+      activity({ id: 1, start_date_local: '2026-07-15T18:30:00Z' }),
+      activity({ id: 2, start_date_local: '2026-07-15T18:45:00Z' }),
+      activity({ id: 3, start_date_local: '2026-07-16T07:00:00Z' }), // jueves
+    ]);
+
+    expect(stats.dayHourDistribution).toHaveLength(7 * 24);
+    const miercoles18 = stats.dayHourDistribution.find((d) => d.dayLabel === 'Mié' && d.hour === 18);
+    const miercoles7 = stats.dayHourDistribution.find((d) => d.dayLabel === 'Mié' && d.hour === 7);
+    expect(miercoles18?.count).toBe(2);
+    expect(miercoles7?.count).toBe(0);
+  });
 });

@@ -4,6 +4,7 @@ import {
   SportCount,
   HourCount,
   WeekdayCount,
+  DayHourCount,
   CumulativePoint,
   PacePoint,
 } from '@/types/stats';
@@ -57,6 +58,30 @@ function computeWeekdayDistribution(activities: Activity[]): WeekdayCount[] {
     label: WEEKDAY_LABELS[day],
     count: counts[day],
   }));
+}
+
+/**
+ * Conteo real por combinación día+hora (no el producto de las dos
+ * distribuciones marginales, que asumiría independencia y no refleja los
+ * patrones reales, como "domingo a la mañana" siendo distinto de "domingo"
+ * en general).
+ */
+function computeDayHourDistribution(activities: Activity[]): DayHourCount[] {
+  const counts = new Map<string, number>();
+  for (const act of activities) {
+    const [yr, mo, da] = act.start_date_local.slice(0, 10).split('-').map(Number);
+    const day = new Date(yr, mo - 1, da).getDay();
+    const hour = parseInt(act.start_date_local.slice(11, 13), 10);
+    const key = `${day}-${hour}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const out: DayHourCount[] = [];
+  for (const day of WEEKDAY_ORDER) {
+    for (let hour = 0; hour < 24; hour++) {
+      out.push({ day, dayLabel: WEEKDAY_LABELS[day], hour, count: counts.get(`${day}-${hour}`) ?? 0 });
+    }
+  }
+  return out;
 }
 
 function computeCumulativeDistance(activities: Activity[]): CumulativePoint[] {
@@ -137,6 +162,7 @@ export function computeStats(activities: Activity[]): ProcessedStats {
     sportDistribution: computeSportDistribution(activities),
     hourlyDistribution: computeHourlyDistribution(activities),
     weekdayDistribution: computeWeekdayDistribution(activities),
+    dayHourDistribution: computeDayHourDistribution(activities),
     cumulativeDistance: computeCumulativeDistance(activities),
   };
 }

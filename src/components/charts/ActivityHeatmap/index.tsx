@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { DayStats } from '@/types/stats';
+import { calculateTooltipPosition, updateTooltipPosition } from '../shared/heatmapTooltip';
 import {
   HeatmapCard,
   HeatmapBody,
@@ -18,10 +19,6 @@ import {
 const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const TOOLTIP_WIDTH = 118;
 const TOOLTIP_HEIGHT = 52;
-const TOOLTIP_MARGIN = 6;
-const TOOLTIP_OFFSET_X = 12;
-const TOOLTIP_OFFSET_Y = 18;
-const TOOLTIP_POSITION_THRESHOLD = 1;
 
 interface ActivityHeatmapProps {
   data: DayStats[];
@@ -101,21 +98,6 @@ function isFutureDate(date: string): boolean {
   return date > today;
 }
 
-function updateTooltipPosition(
-  current: HeatmapTooltipState,
-  coords: { x: number; y: number }
-): HeatmapTooltipState {
-  if (!current) return current;
-  const shouldUpdateX = Math.abs(current.x - coords.x) > TOOLTIP_POSITION_THRESHOLD;
-  const shouldUpdateY = Math.abs(current.y - coords.y) > TOOLTIP_POSITION_THRESHOLD;
-  if (!shouldUpdateX && !shouldUpdateY) return current;
-  return {
-    ...current,
-    x: shouldUpdateX ? coords.x : current.x,
-    y: shouldUpdateY ? coords.y : current.y,
-  };
-}
-
 const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   const weeks = React.useMemo(() => getWeeksInLastYear(), []);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -130,16 +112,9 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
     () => getMonthLabelsByWeek(weeks.map((week) => week[0])),
     [weeks]
   );
-  const calculateTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
+  const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
-    const x = clientX - (rect?.left ?? 0);
-    const y = clientY - (rect?.top ?? 0);
-    const maxX = Math.max(TOOLTIP_MARGIN, (rect?.width ?? 0) - TOOLTIP_WIDTH - TOOLTIP_MARGIN);
-    const maxY = Math.max(TOOLTIP_MARGIN, (rect?.height ?? 0) - TOOLTIP_HEIGHT - TOOLTIP_MARGIN);
-    return {
-      x: Math.min(Math.max(x + TOOLTIP_OFFSET_X, TOOLTIP_MARGIN), maxX),
-      y: Math.min(Math.max(y - TOOLTIP_OFFSET_Y, TOOLTIP_MARGIN), maxY),
-    };
+    return calculateTooltipPosition(rect, clientX, clientY, TOOLTIP_WIDTH, TOOLTIP_HEIGHT);
   }, []);
 
   return (
@@ -181,7 +156,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                         }
                         onMouseEnter={(e) => {
                           if (future) return;
-                          const coords = calculateTooltipPosition(e.clientX, e.clientY);
+                          const coords = getTooltipPosition(e.clientX, e.clientY);
                           setTooltip({
                             x: coords.x,
                             y: coords.y,
@@ -191,7 +166,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                         }}
                         onMouseMove={(e) => {
                           if (future) return;
-                          const coords = calculateTooltipPosition(e.clientX, e.clientY);
+                          const coords = getTooltipPosition(e.clientX, e.clientY);
                           setTooltip((current) => updateTooltipPosition(current, coords));
                         }}
                         onMouseLeave={() => {

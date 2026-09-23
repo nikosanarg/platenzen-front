@@ -225,7 +225,7 @@ export const PatternsGrid = styled.div`
   grid-template-columns: 1fr;
 
   @media (min-width: 1200px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 `;
 

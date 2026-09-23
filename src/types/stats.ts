@@ -43,6 +43,13 @@ export interface WeekdayCount {
   count: number;
 }
 
+export interface DayHourCount {
+  day: number;
+  dayLabel: string;
+  hour: number;
+  count: number;
+}
+
 export interface CumulativePoint {
   date: string;
   cumulative: number;
@@ -67,5 +74,6 @@ export interface ProcessedStats {
   sportDistribution: SportCount[];
   hourlyDistribution: HourCount[];
   weekdayDistribution: WeekdayCount[];
+  dayHourDistribution: DayHourCount[];
   cumulativeDistance: CumulativePoint[];
 }
