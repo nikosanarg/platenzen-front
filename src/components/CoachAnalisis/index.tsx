@@ -13,14 +13,14 @@ import {
 } from '@/components/Icon';
 import {
   Root, Card,
-  MainGrid, ColActivity, ColInsights, ColTitle,
+  MainGrid, ColActivity, ColInsights,
   ActivityHead, ActivityIcon, ActivityName, ActivityDate,
   StatsRow, StatItem, StatValue, StatUnit, StatLabel,
   MapContainer, MapSvg, MapNoData, StravaLink,
   InsightList, InsightItem, InsightIcon,
   HighlightGrid, HighlightCardBox, HighlightTop, HighlightIcon,
   HighlightValue, HighlightLabel, HighlightSub,
-  ImpactoStrip, ImpactoLabel, XPBig, XPChip, DNAChip, LevelUpBadge,
+  ImpactoStrip, XPBig, XPChip, DNAChip, LevelUpBadge,
   AchievementChip, ActivitiesSection,
   RibbonBanner, RibbonLabel, RibbonRecency,
 } from './styled';
@@ -180,7 +180,6 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
               </StatItem>
             </StatsRow>
 
-            <ColTitle>¿Qué nos dice esta salida?</ColTitle>
             <InsightList>
               {insights.map((ins, i) => (
                 <InsightItem key={i}>
@@ -220,7 +219,6 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
           Platenzen.
         */}
         <ImpactoStrip>
-          <ImpactoLabel>Qué movió en tu progreso</ImpactoLabel>
           <XPBig>+{impacto.xpEarned} XP</XPBig>
           {impacto.prevLevel !== null && (
             <LevelUpBadge>

@@ -108,13 +108,6 @@ export const ColInsights = styled(ColDivider)`
   grid-area: insights;
 `;
 
-export const ColTitle = styled.div`
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-`;
 
 /* ── Activity (left) ────────────────────────────────────── */
 
@@ -338,14 +331,6 @@ export const ImpactoStrip = styled.div`
   }
 `;
 
-export const ImpactoLabel = styled.span`
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  flex-shrink: 0;
-`;
 
 export const XPBig = styled.div`
   font-size: 1.25rem;
