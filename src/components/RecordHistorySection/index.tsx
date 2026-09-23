@@ -5,7 +5,12 @@ import { Activity } from '@/types/activity';
 import { computeRecordHistories, formatRecordTime, formatImprovement, shortDate, formatPace } from '@/lib/recordHistory';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import StatCard from '@/components/StatCard';
-import { HistoryRoot, HistoryList, DistanceLabel, ImprovementText, NoRecord } from './styled';
+import { HistoryRoot, HistoryList, DistanceLabel, ActivityName, ImprovementText, NoRecord } from './styled';
+
+/** 21.0975 → "21.1"; 5/10/15 → "5"/"10"/"15": sin ceros decimales de más. */
+function formatDistance(km: number): string {
+  return km % 1 === 0 ? `${km}` : km.toFixed(1);
+}
 
 interface RecordHistorySectionProps {
   activities: Activity[];
@@ -34,16 +39,18 @@ const RecordHistorySection: React.FC<RecordHistorySectionProps> = ({ activities 
               target="_blank"
               rel="noopener noreferrer"
               hasStravaBadge
-              title={<DistanceLabel>{h.label}</DistanceLabel>}
+              leftVisual={<DistanceLabel>{h.label}</DistanceLabel>}
+              title={<ActivityName>{h.currentBest.activityName}</ActivityName>}
               primaryValue={formatRecordTime(h.currentBest.projectedTimeSeconds)}
-              subtitles={[`${formatPace(h.currentBest.pace)} · ${shortDate(h.currentBest.date)}`]}
-              secondaryValue={
+              subtitles={[
+                `${formatDistance(h.distanceKm)} km · ${formatPace(h.currentBest.pace)}`,
                 h.currentBest.improvementSeconds !== null ? (
                   <ImprovementText>▼ {formatImprovement(h.currentBest.improvementSeconds)}</ImprovementText>
                 ) : (
                   'primera marca'
-                )
-              }
+                ),
+              ]}
+              secondaryValue={shortDate(h.currentBest.date)}
             />
           ) : (
             <NoRecord key={h.label}>

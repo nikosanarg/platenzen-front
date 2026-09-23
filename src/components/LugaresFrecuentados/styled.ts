@@ -9,17 +9,14 @@ export const PlaceList = styled.div`
   gap: 0.5rem;
 `;
 
-/** +6px sobre el resto de la card: es lo primero que se lee de la fila. */
-export const PlaceRank = styled.div`
-  font-size: 1.125rem;
-  font-weight: 700;
+/** Tamaño y peso los hereda de `LeftVisual` en `StatCard`; acá sólo el color. */
+export const PlaceRank = styled.span`
   color: var(--text-muted);
-  min-width: 1.5rem;
-  text-align: right;
 `;
 
+/** Mismo tamaño que `PlaceRank`/`DistanceLabel`: los tres son el dato principal de su columna. */
 export const PlaceVisits = styled.div`
-  font-size: 0.75rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;

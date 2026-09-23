@@ -17,7 +17,7 @@ import { HistoriaLayout, HistoriaMain, HistoriaSidebar } from '@/components/Dash
  * impacto de la última salida dentro del coach.
  *
  * Todo el contenido —hero, coach, patrones, insights— comparte una sola
- * sidebar de lectura rápida (récords, lugares, sesiones legendarias), fija al
+ * sidebar de lectura rápida (récords, sesiones legendarias, lugares), fija al
  * costado desde arriba. El mapa grande de "Tu Mundo" no vive suelto en la
  * página: es lo que se ve al tocar un lugar de la sidebar (ver
  * `LugaresFrecuentados`). En el teléfono la sidebar baja al final, en el
@@ -44,8 +44,8 @@ export default function ProgresoPage() {
 
       <HistoriaSidebar>
         <RecordHistorySection activities={activities} />
-        <LugaresFrecuentados activities={activities} />
         <SesionesLegendarias activities={activities} stats={stats} />
+        <LugaresFrecuentados activities={activities} />
       </HistoriaSidebar>
     </HistoriaLayout>
   );

@@ -6,7 +6,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeLegendarySessions } from '@/lib/legendarySessions';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import StatCard from '@/components/StatCard';
-import { Root, SessionsList, SessionReason, EmptyState } from './styled';
+import { Root, SessionsList, SessionReason, SessionIcon, EmptyState } from './styled';
 
 interface SesionesLegendariasProps {
   activities: Activity[];
@@ -39,10 +39,11 @@ const SesionesLegendarias: React.FC<SesionesLegendariasProps> = ({ activities, s
               rel="noopener noreferrer"
               hasStravaBadge
               variant="featured"
+              leftVisual={<SessionIcon>{session.icon}</SessionIcon>}
               title={<span title={session.activity.name}>{session.activity.name}</span>}
               subtitles={[
                 `${session.distanceKm} km · ${session.pace}`,
-                <SessionReason key="reason">{session.icon} {session.reason}</SessionReason>,
+                <SessionReason key="reason">{session.reason}</SessionReason>,
               ]}
               secondaryValue={session.dateLabel}
             />

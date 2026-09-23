@@ -10,19 +10,21 @@ export const HistoryList = styled.div`
 `;
 
 /**
- * +6px sobre el resto de la card: es lo primero que se lee de la fila. El
- * borde blanco (`-webkit-text-stroke`) es lo que separa el naranja sólido
- * del fondo oscuro sin bajarle la saturación al relleno. Va como `title` de
- * `StatCard`, no como parte de su layout — es la única de las tres listas
- * que necesita este tratamiento puntual.
+ * Va como `leftVisual` de `StatCard` (que ya define tamaño y peso ahí) o
+ * suelto dentro de `NoRecord`, que no pasa por `StatCard` — por eso repite
+ * el tamaño acá en vez de heredarlo siempre.
  */
 export const DistanceLabel = styled.span`
-  font-size: 1.05rem;
+  font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
-  -webkit-text-stroke: 0.5px #fff;
+`;
+
+/** Nombre de la actividad como primera row: verde, distinto del naranja del label de distancia. */
+export const ActivityName = styled.span`
+  color: var(--positive);
 `;
 
 export const ImprovementText = styled.span`

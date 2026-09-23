@@ -13,10 +13,7 @@ export const Card = styled.div<{ $featured: boolean; $withStravaBadge: boolean }
   align-items: center;
   gap: 0.65rem;
   width: 100%;
-  background: ${({ $featured }) =>
-    $featured
-      ? 'linear-gradient(135deg, rgba(var(--gold-rgb), 0.07), var(--bg-card) 65%)'
-      : 'var(--bg-card)'};
+  background: var(--bg-card);
   border: 1px solid ${({ $featured }) => ($featured ? 'rgba(var(--gold-rgb), 0.22)' : 'transparent')};
   border-radius: var(--radius-sm);
   padding: ${({ $withStravaBadge }) => ($withStravaBadge ? '0.55rem 1.6rem 0.55rem 0.85rem' : '0.55rem 0.85rem')};
@@ -34,12 +31,20 @@ export const Card = styled.div<{ $featured: boolean; $withStravaBadge: boolean }
   }
 `;
 
+/**
+ * Columna sola a la izquierda, compartida por las tres listas: el "#1" de
+ * lugares, el "5K" de récords, el emoji del logro en sesiones legendarias.
+ * El tamaño base vive acá para que las tres se vean del mismo peso visual —
+ * cada sección sólo define su color.
+ */
 export const LeftVisual = styled.div`
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.5rem;
+  min-width: 2.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
 `;
 
 export const Info = styled.div`

@@ -52,14 +52,13 @@ function formatPace(secPerKm: number): string {
   return `${minutes}:${seconds}/km`;
 }
 
-const FULL_MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+const SHORT_MONTHS = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ];
 
 function formatDate(isoStr: string): string {
   const d = parseLocalDate(isoStr);
-  return `${d.getDate()} de ${FULL_MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
+  return `${d.getDate()} ${SHORT_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ── Candidate builders ──────────────────────────────────────────────────────

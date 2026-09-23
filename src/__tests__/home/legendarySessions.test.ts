@@ -110,9 +110,8 @@ describe('formato de las tarjetas', () => {
     expect(tarjeta.pace).toMatch(/^\d+:\d{2}\/km$/);
   });
 
-  it('escribe la fecha con el mes completo en castellano', () => {
-    expect(tarjeta.dateLabel).toContain('Julio');
-    expect(tarjeta.dateLabel).toContain('2026');
+  it('escribe la fecha corta en castellano', () => {
+    expect(tarjeta.dateLabel).toBe('15 jul 2026');
   });
 
   it('enlaza a la actividad en Strava por id', () => {

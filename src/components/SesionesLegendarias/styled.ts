@@ -20,6 +20,12 @@ export const SessionReason = styled.div`
   color: var(--gold-muted);
 `;
 
+/** El emoji del logro (🥇⚡🎯🚀) como `leftVisual`: tamaño propio, más grande que el texto. */
+export const SessionIcon = styled.span`
+  font-size: 1.4rem;
+  line-height: 1;
+`;
+
 export const EmptyState = styled(Panel)`
   padding: 1.25rem;
   text-align: center;
