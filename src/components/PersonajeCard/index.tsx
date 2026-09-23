@@ -15,7 +15,7 @@ import BranchProfile from './BranchProfile';
 import {
   Card,
   TopRow,
-  IdentityCol,
+  IdentityMain,
   VisualCol,
   AdnChartWrapper,
   RoleHeading,
@@ -86,7 +86,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
     <Card>
       <TopRow>
         {/* ── Resumen: quién sos y los números gruesos ── */}
-        <IdentityCol>
+        <IdentityMain>
           <RoleHeading>
             <RoleNamePrimary>{titulo}</RoleNamePrimary>
             <LevelBadge>{dominante.name}</LevelBadge>
@@ -133,12 +133,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
               </StatBody>
             </StatCard>
           </StatsGrid>
-
-          {/* ── Constancia: el heatmap solo, sin título ni leyenda propios ── */}
-          <ActivitySection>
-            <ActivityHeatmap data={stats.daily} />
-          </ActivitySection>
-        </IdentityCol>
+        </IdentityMain>
 
         {/* ── Perfil de corredor: radar y árbol, un solo dibujo ── */}
         <VisualCol>
@@ -158,6 +153,11 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             </RadarNote>
           </VisualPanel>
         </VisualCol>
+
+        {/* ── Constancia: el heatmap solo, sin título ni leyenda propios ── */}
+        <ActivitySection>
+          <ActivityHeatmap data={stats.daily} />
+        </ActivitySection>
       </TopRow>
     </Card>
   );

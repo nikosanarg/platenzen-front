@@ -19,12 +19,21 @@ export const Card = styled(Panel)`
   }
 `;
 
-/* ── Top row: resumen · perfil de ramas ───────────────────────────── */
-
-/** Columna 1: quién sos y los tres números gruesos. Columna 2: el perfil de ramas. */
+/* ── Top row: resumen · perfil de ramas · constancia ─────────────────
+ *
+ * Tres áreas con nombre, no dos columnas con el heatmap adentro de la
+ * primera: así el heatmap puede tener su propia fila en mobile sin que el
+ * orden del DOM (y con él, el de lectura y tabulación) deje de coincidir con
+ * el visual. `radar` ocupa las dos filas de su columna en desktop — el mismo
+ * resultado que antes, cuando era la única celda de esa columna y el resto
+ * del espacio bajo el radar quedaba vacío por `align-items: start`.
+ */
 export const TopRow = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-areas:
+    'data    radar'
+    'heatmap radar';
   gap: 1.75rem;
   align-items: start;
 
@@ -32,12 +41,17 @@ export const TopRow = styled.div`
     gap: 1.5rem;
   }
 
+  /* 60/40 entre datos y radar; el heatmap pasa a su propia fila completa. */
   @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: 3fr 2fr;
+    grid-template-areas:
+      'data    radar'
+      'heatmap heatmap';
   }
 `;
 
-export const IdentityCol = styled.div`
+export const IdentityMain = styled.div`
+  grid-area: data;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -45,6 +59,7 @@ export const IdentityCol = styled.div`
 `;
 
 export const VisualCol = styled.div`
+  grid-area: radar;
   min-width: 0;
 
   @media (max-width: 900px) {
@@ -260,6 +275,7 @@ export const RadarNoteDot = styled.span`
 /* ── Constancia: el heatmap, dentro de la columna de identidad ────── */
 
 export const ActivitySection = styled.div`
+  grid-area: heatmap;
   width: 100%;
-  margin-top: 1.25rem;
+  min-width: 0;
 `;
