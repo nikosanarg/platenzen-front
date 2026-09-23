@@ -18,7 +18,7 @@ import {
   StatsRow, StatItem, StatValue, StatUnit, StatLabel,
   MapContainer, MapSvg, MapNoData, StravaLink,
   InsightList, InsightItem, InsightIcon,
-  HighlightGrid, HighlightCardBox, HighlightIcon, HighlightBody,
+  HighlightGrid, HighlightCardBox, HighlightTop, HighlightIcon,
   HighlightValue, HighlightLabel, HighlightSub,
   ImpactoStrip, ImpactoLabel, XPBig, XPChip, DNAChip, LevelUpBadge,
   AchievementChip, ActivitiesSection,
@@ -197,14 +197,14 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
                 const Ico = HIGHLIGHT_ICONS[h.icon];
                 return (
                   <HighlightCardBox key={i}>
-                    <HighlightIcon $tone={h.tone}>
-                      <Ico size={18} color="currentColor" />
-                    </HighlightIcon>
-                    <HighlightBody>
+                    <HighlightTop>
+                      <HighlightIcon $tone={h.tone}>
+                        <Ico size={18} color="currentColor" />
+                      </HighlightIcon>
                       <HighlightValue $tone={h.tone}>{h.value}</HighlightValue>
-                      <HighlightLabel>{h.label}</HighlightLabel>
-                      <HighlightSub>{h.sub}</HighlightSub>
-                    </HighlightBody>
+                    </HighlightTop>
+                    <HighlightLabel>{h.label}</HighlightLabel>
+                    <HighlightSub>{h.sub}</HighlightSub>
                   </HighlightCardBox>
                 );
               })}

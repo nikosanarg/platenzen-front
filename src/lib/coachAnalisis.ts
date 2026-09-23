@@ -231,7 +231,7 @@ function buildHighlights(
       cards.push({
         icon: 'medal',
         value: formatPace(paceSecPerKm(activity)),
-        label: 'por ritmo promedio',
+        label: 'ritmo promedio',
         sub: `Top ${rank} de tus ${bucket}`,
         tone: rank <= 3 ? 'positive' : 'neutral',
       });

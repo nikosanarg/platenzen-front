@@ -216,7 +216,7 @@ describe('destacados', () => {
       const medalla = analisisOf(historial(12))!.highlights.find((h) => h.icon === 'medal')!;
 
       expect(medalla.value).toBe('5:00/km');
-      expect(medalla.label).toBe('por ritmo promedio');
+      expect(medalla.label).toBe('ritmo promedio');
       expect(medalla.sub).toBe('Top 1 de tus 10K');
     });
 

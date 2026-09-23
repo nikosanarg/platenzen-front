@@ -182,9 +182,18 @@ export const StatLabel = styled.div`
   color: var(--text-muted);
 `;
 
+/**
+ * `max-height` gana sobre `aspect-ratio` cuando el ancho disponible es
+ * grande: el alto deja de crecer a partir de 450px, pero el ancho sigue
+ * siendo 100% — no encoge para sostener la proporción. El mapa de adentro no
+ * se deforma por eso: usa `preserveAspectRatio="xMidYMid slice"` (recorta,
+ * no estira), así que una card más ancha que alta sólo revela más recorrido,
+ * nunca lo aplasta.
+ */
 export const MapContainer = styled.div`
   width: 100%;
   aspect-ratio: 4 / 3;
+  max-height: 450px;
   background: var(--bg-primary);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -270,11 +279,23 @@ export const HighlightGrid = styled.div`
 
 export const HighlightCardBox = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
   background: var(--bg-primary);
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.8rem;
+`;
+
+/**
+ * El ícono sólo va al lado del valor —no de las tres líneas—, así el label y
+ * el sub usan el ancho completo de la card en vez de arrancar corridos por
+ * el ancho del ícono, que era lo que forzaba el wrap antes de tiempo.
+ */
+export const HighlightTop = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 `;
 
 export const HighlightIcon = styled.div<{ $tone: InsightTone }>`
@@ -282,11 +303,6 @@ export const HighlightIcon = styled.div<{ $tone: InsightTone }>`
   color: ${({ $tone }) => toneColor($tone)};
   display: flex;
   align-items: center;
-  margin-top: 0.1rem;
-`;
-
-export const HighlightBody = styled.div`
-  min-width: 0;
 `;
 
 export const HighlightValue = styled.div<{ $tone: InsightTone }>`
@@ -305,7 +321,6 @@ export const HighlightLabel = styled.div`
 export const HighlightSub = styled.div`
   font-size: 0.66rem;
   color: var(--text-muted);
-  margin-top: 0.1rem;
 `;
 
 /* ── Impacto Platenzen: qué movió la salida en tu progreso ───────── */
