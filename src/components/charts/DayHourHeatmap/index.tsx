@@ -2,10 +2,28 @@
 
 import React from 'react';
 import { DayHourCount } from '@/types/stats';
-import { ChartCard, ChartTitle, ChartArea } from '../shared/styled';
+import { buildHeatLevelMap, getHeatLevel } from '@/lib/heatLevels';
+import { ChartCard, ChartArea } from '../shared/styled';
 import { HeatmapTooltip } from '../ActivityHeatmap/styled';
 import { calculateTooltipPosition, updateTooltipPosition } from '../shared/heatmapTooltip';
-import { Root, Grid, Corner, HourLabel, DayLabel, Cell } from './styled';
+import {
+  Root,
+  Header,
+  HeadingText,
+  Legend,
+  LegendLabel,
+  LegendCol,
+  LegendSwatches,
+  LegendSwatch,
+  LegendScaleLabels,
+  Grid,
+  Corner,
+  HourLabel,
+  DayLabel,
+  Cell,
+} from './styled';
+
+const LEGEND_LEVELS = Array.from({ length: 11 }, (_, i) => i);
 
 interface DayHourHeatmapProps {
   data: DayHourCount[];
@@ -22,15 +40,6 @@ type TooltipState = {
   hour: number;
   count: number;
 } | null;
-
-function getCellLevel(count: number, maxCount: number): number {
-  if (count <= 0 || maxCount <= 0) return 0;
-  const ratio = count / maxCount;
-  if (ratio <= 0.25) return 1;
-  if (ratio <= 0.5) return 2;
-  if (ratio <= 0.75) return 3;
-  return 4;
-}
 
 function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}h`;
@@ -52,16 +61,18 @@ const DayHourHeatmap: React.FC<DayHourHeatmapProps> = ({ data, bare }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = React.useState<TooltipState>(null);
 
-  const { days, hours, countMap, maxCount } = React.useMemo(() => {
+  const { days, hours, countMap, levelMap } = React.useMemo(() => {
     const countMap = new Map<string, number>();
     const hourTotals = new Array<number>(24).fill(0);
     const days: { day: number; label: string }[] = [];
     const seenDays = new Set<number>();
+    const allCounts: number[] = [];
     let maxCount = 0;
 
     for (const entry of data) {
       countMap.set(`${entry.day}-${entry.hour}`, entry.count);
       hourTotals[entry.hour] += entry.count;
+      allCounts.push(entry.count);
       if (entry.count > maxCount) maxCount = entry.count;
       if (!seenDays.has(entry.day)) {
         seenDays.add(entry.day);
@@ -76,7 +87,7 @@ const DayHourHeatmap: React.FC<DayHourHeatmapProps> = ({ data, bare }) => {
         ? Array.from({ length: 24 }, (_, i) => i)
         : Array.from({ length: lastIdx - firstIdx + 1 }, (_, i) => firstIdx + i);
 
-    return { days, hours, countMap, maxCount };
+    return { days, hours, countMap, levelMap: buildHeatLevelMap(allCounts, maxCount) };
   }, [data]);
 
   const getTooltipPosition = React.useCallback((clientX: number, clientY: number) => {
@@ -86,7 +97,23 @@ const DayHourHeatmap: React.FC<DayHourHeatmapProps> = ({ data, bare }) => {
 
   return (
     <ChartCard $bare={bare}>
-      <ChartTitle>Día y hora</ChartTitle>
+      <Header>
+        <HeadingText>Día y hora</HeadingText>
+        <Legend>
+          <LegendLabel>Actividades</LegendLabel>
+          <LegendCol>
+            <LegendSwatches>
+              {LEGEND_LEVELS.map((level) => (
+                <LegendSwatch key={level} $level={level} />
+              ))}
+            </LegendSwatches>
+            <LegendScaleLabels>
+              <span>Pocas</span>
+              <span>Muchas</span>
+            </LegendScaleLabels>
+          </LegendCol>
+        </Legend>
+      </Header>
       <ChartArea>
         <Root ref={containerRef} style={{ '--hours': hours.length } as React.CSSProperties}>
           <Grid role="grid" aria-label="Actividad por día y hora">
@@ -100,7 +127,7 @@ const DayHourHeatmap: React.FC<DayHourHeatmapProps> = ({ data, bare }) => {
                 <DayLabel>{label}</DayLabel>
                 {hours.map((hour) => {
                   const count = countMap.get(`${day}-${hour}`) ?? 0;
-                  const level = getCellLevel(count, maxCount);
+                  const level = getHeatLevel(count, levelMap);
                   return (
                     <Cell
                       key={hour}

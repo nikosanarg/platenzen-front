@@ -43,6 +43,22 @@
   --chart-4: #a855f7;
   --chart-5: #f59e0b;
   --chart-6: #06b6d4;
+  /*
+   * Escala de actividad del heatmap día×hora: 11 tonos, gris (0%) a rojo puro
+   * (100%), pasando por el naranja de la marca (#ff9d42) en 70% — el mismo
+   * punto medio que ya usaba la escala mono-naranja del heatmap anual.
+   */
+  --heat-0: #424242;
+  --heat-10: #38513d;
+  --heat-20: #406f3a;
+  --heat-30: #5a9136;
+  --heat-40: #8ab62f;
+  --heat-50: #d5dd27;
+  --heat-60: #f0c333;
+  --heat-70: #ff9d42;
+  --heat-80: #ff702c;
+  --heat-90: #ff3c16;
+  --heat-100: #ff0000;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
