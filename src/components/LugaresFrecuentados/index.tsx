@@ -6,18 +6,8 @@ import { computeWorldMap, clusterZones, formatPaceStr, ZoneCluster } from '@/lib
 import { SectionTitle } from '@/components/Dashboard/styled';
 import Modal from '@/components/Modal';
 import TuMundo from '@/components/TuMundo';
-import {
-  Root,
-  PlaceList,
-  PlaceItem,
-  PlaceRank,
-  PlaceInfo,
-  PlaceName,
-  PlaceMeta,
-  PlaceVisits,
-  MoreRow,
-  MoreLink,
-} from './styled';
+import StatCard from '@/components/StatCard';
+import { Root, PlaceList, PlaceRank, PlaceVisits, MoreRow, MoreLink } from './styled';
 
 interface LugaresFrecuentadosProps {
   activities: Activity[];
@@ -61,15 +51,17 @@ const LugaresFrecuentados: React.FC<LugaresFrecuentadosProps> = ({ activities })
         {clusters.map((cluster, idx) => {
           const larga = salidaMasLarga(cluster);
           return (
-            <PlaceItem key={cluster.id} type="button" onClick={() => setSeleccionado(cluster.id)}>
-              <PlaceRank>#{idx + 1}</PlaceRank>
-              <PlaceInfo>
-                <PlaceName>{cluster.distanceKm} km acumulados</PlaceName>
-                <PlaceMeta>{formatPaceStr(cluster.bestPaceSecPerKm)} · {cluster.lastVisit}</PlaceMeta>
-                <PlaceMeta>{larga.distanceKm.toFixed(1)} km · {larga.date}</PlaceMeta>
-              </PlaceInfo>
-              <PlaceVisits>{cluster.visitCount}×</PlaceVisits>
-            </PlaceItem>
+            <StatCard
+              key={cluster.id}
+              onClick={() => setSeleccionado(cluster.id)}
+              leftVisual={<PlaceRank>#{idx + 1}</PlaceRank>}
+              title={`${cluster.distanceKm} km acumulados`}
+              subtitles={[
+                `${formatPaceStr(cluster.bestPaceSecPerKm)} · ${cluster.lastVisit}`,
+                `${larga.distanceKm.toFixed(1)} km · ${larga.date}`,
+              ]}
+              primaryValue={<PlaceVisits>{cluster.visitCount}×</PlaceVisits>}
+            />
           );
         })}
       </PlaceList>

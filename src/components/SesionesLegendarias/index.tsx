@@ -5,16 +5,8 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeLegendarySessions } from '@/lib/legendarySessions';
 import { SectionTitle } from '@/components/Dashboard/styled';
-import StravaCornerBadge from '@/components/StravaCornerBadge';
-import {
-  Root,
-  SessionsList,
-  SessionRow,
-  SessionName,
-  SessionMeta,
-  SessionReason,
-  EmptyState,
-} from './styled';
+import StatCard from '@/components/StatCard';
+import { Root, SessionsList, SessionReason, EmptyState } from './styled';
 
 interface SesionesLegendariasProps {
   activities: Activity[];
@@ -40,20 +32,20 @@ const SesionesLegendarias: React.FC<SesionesLegendariasProps> = ({ activities, s
       ) : (
         <SessionsList>
           {sessions.map((session) => (
-            <SessionRow
+            <StatCard
               key={session.activity.id}
               href={session.stravaUrl}
               target="_blank"
               rel="noopener noreferrer"
-            >
-              <StravaCornerBadge />
-              <SessionName title={session.activity.name}>{session.activity.name}</SessionName>
-              <SessionMeta>
-                <span>{session.distanceKm} km · {session.pace}</span>
-                <span>{session.dateLabel}</span>
-              </SessionMeta>
-              <SessionReason>{session.icon} {session.reason}</SessionReason>
-            </SessionRow>
+              hasStravaBadge
+              variant="featured"
+              title={<span title={session.activity.name}>{session.activity.name}</span>}
+              subtitles={[
+                `${session.distanceKm} km · ${session.pace}`,
+                <SessionReason key="reason">{session.icon} {session.reason}</SessionReason>,
+              ]}
+              secondaryValue={session.dateLabel}
+            />
           ))}
         </SessionsList>
       )}

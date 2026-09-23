@@ -4,18 +4,8 @@ import React from 'react';
 import { Activity } from '@/types/activity';
 import { computeRecordHistories, formatRecordTime, formatImprovement, shortDate, formatPace } from '@/lib/recordHistory';
 import { SectionTitle } from '@/components/Dashboard/styled';
-import StravaCornerBadge from '@/components/StravaCornerBadge';
-import {
-  HistoryRoot,
-  HistoryList,
-  DistanceRow,
-  RowHead,
-  DistanceLabel,
-  RowTime,
-  RowMeta,
-  ImprovementText,
-  NoRecord,
-} from './styled';
+import StatCard from '@/components/StatCard';
+import { HistoryRoot, HistoryList, DistanceLabel, ImprovementText, NoRecord } from './styled';
 
 interface RecordHistorySectionProps {
   activities: Activity[];
@@ -38,26 +28,23 @@ const RecordHistorySection: React.FC<RecordHistorySectionProps> = ({ activities 
       <HistoryList>
         {histories.map(h =>
           h.currentBest ? (
-            <DistanceRow
+            <StatCard
               key={h.label}
               href={`https://www.strava.com/activities/${h.currentBest.activityId}`}
               target="_blank"
               rel="noopener noreferrer"
-            >
-              <StravaCornerBadge />
-              <RowHead>
-                <DistanceLabel>{h.label}</DistanceLabel>
-                <RowTime>{formatRecordTime(h.currentBest.projectedTimeSeconds)}</RowTime>
-              </RowHead>
-              <RowMeta>
-                <span>{formatPace(h.currentBest.pace)} · {shortDate(h.currentBest.date)}</span>
-                {h.currentBest.improvementSeconds !== null ? (
+              hasStravaBadge
+              title={<DistanceLabel>{h.label}</DistanceLabel>}
+              primaryValue={formatRecordTime(h.currentBest.projectedTimeSeconds)}
+              subtitles={[`${formatPace(h.currentBest.pace)} · ${shortDate(h.currentBest.date)}`]}
+              secondaryValue={
+                h.currentBest.improvementSeconds !== null ? (
                   <ImprovementText>▼ {formatImprovement(h.currentBest.improvementSeconds)}</ImprovementText>
                 ) : (
-                  <span>primera marca</span>
-                )}
-              </RowMeta>
-            </DistanceRow>
+                  'primera marca'
+                )
+              }
+            />
           ) : (
             <NoRecord key={h.label}>
               <DistanceLabel>{h.label}</DistanceLabel>

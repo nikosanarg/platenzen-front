@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import styled from 'styled-components';
-import { glassHover } from '@/components/Panel';
 
 export const Root = styled.section``;
 
@@ -10,28 +9,6 @@ export const PlaceList = styled.div`
   gap: 0.5rem;
 `;
 
-export const PlaceItem = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  background: var(--bg-card);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 0.45rem 0.85rem;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.15s, border-color 0.15s, backdrop-filter 0.15s;
-
-  ${glassHover('var(--accent-rgb)')}
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-`;
-
 /** +6px sobre el resto de la card: es lo primero que se lee de la fila. */
 export const PlaceRank = styled.div`
   font-size: 1.125rem;
@@ -39,26 +16,6 @@ export const PlaceRank = styled.div`
   color: var(--text-muted);
   min-width: 1.5rem;
   text-align: right;
-`;
-
-export const PlaceInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-export const PlaceName = styled.div`
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-export const PlaceMeta = styled.div`
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  margin-top: 0.125rem;
 `;
 
 export const PlaceVisits = styled.div`
