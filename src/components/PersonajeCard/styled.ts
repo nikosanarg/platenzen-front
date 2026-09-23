@@ -207,15 +207,15 @@ export const StatCard = styled.div`
   min-width: 0;
 `;
 
-export const StatIcon = styled.div<{ $emphasis?: boolean }>`
+export const StatIcon = styled.div`
   width: 34px;
   height: 34px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${({ $emphasis }) => ($emphasis ? 'var(--accent)' : 'var(--accent-muted)')};
-  color: ${({ $emphasis }) => ($emphasis ? 'var(--text-on-accent)' : 'var(--accent)')};
+  background: var(--accent);
+  color: var(--text-on-accent);
   flex-shrink: 0;
 `;
 
@@ -226,9 +226,9 @@ export const StatBody = styled.div`
   min-width: 0;
 `;
 
-export const StatValue = styled.div<{ $emphasis?: boolean }>`
-  font-size: ${({ $emphasis }) => ($emphasis ? '1.15rem' : '0.98rem')};
-  font-weight: ${({ $emphasis }) => ($emphasis ? '800' : '700')};
+export const StatValue = styled.div`
+  font-size: 1.23rem;
+  font-weight: 800;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -249,27 +249,6 @@ export const StatLabel = styled.div`
 /* ── Pie de la columna visual ─────────────────────────────────────── */
 
 export const VisualPanel = styled.div``;
-
-/** Aclara qué significa el polígono punteado del radar. */
-export const RadarNote = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 0.4rem;
-`;
-
-export const RadarNoteDot = styled.span`
-  display: inline-block;
-  width: 14px;
-  height: 0;
-  flex-shrink: 0;
-  border-top: 2px dashed #ef4444;
-`;
-
 
 
 /* ── Constancia: el heatmap, dentro de la columna de identidad ────── */

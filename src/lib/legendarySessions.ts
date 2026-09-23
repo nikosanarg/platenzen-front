@@ -2,6 +2,7 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 // Minimum distance for a pace to be considered representative (avoids a 400m
 // sprint winning "ritmo más rápido").
@@ -57,7 +58,7 @@ const FULL_MONTHS = [
 ];
 
 function formatDate(isoStr: string): string {
-  const d = new Date(isoStr);
+  const d = parseLocalDate(isoStr);
   return `${d.getDate()} de ${FULL_MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
 }
 

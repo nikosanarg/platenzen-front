@@ -3,6 +3,7 @@ import { decodePolyline } from '@/lib/polylineDecoder';
 import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
 import { haversineKm } from '@/lib/explorationUtils';
+import { parseLocalDate } from '@/utils/localDate';
 
 export interface ZoneActivity {
   activityId: number;
@@ -45,7 +46,7 @@ function cellKey(lat: number, lon: number): string {
 }
 
 function formatDate(isoStr: string): string {
-  const d = new Date(isoStr);
+  const d = parseLocalDate(isoStr);
   const months = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',

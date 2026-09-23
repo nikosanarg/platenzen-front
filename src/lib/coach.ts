@@ -1,6 +1,7 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 const DECAY = 0.9; // per day — 21 km today vs 19.1 km "effective" yesterday
 
@@ -57,7 +58,7 @@ function computeWeightedLoad(runs: Activity[]): {
   let lastTs = 0;
 
   for (const a of runs) {
-    const ts = new Date(a.start_date_local).getTime();
+    const ts = parseLocalDate(a.start_date_local).getTime();
     const daysAgo = (now - ts) / 86400000;
     if (daysAgo > 14) continue;
 

@@ -24,15 +24,26 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-/** Una corrida de `km` ubicada `days` días antes de ahora. */
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+/**
+ * Una corrida de `km` ubicada `days` días antes de ahora. `start_date_local`
+ * imita el formato real de Strava: la hora de pared con un "Z" engañoso, no
+ * un instante UTC verdadero — si acá fuera UTC de verdad, la fixture no
+ * ejercitaría el mismo parseo que una actividad real.
+ */
 function runDaysAgo(days: number, km: number, id = 1, over: Partial<Activity> = {}): Activity {
-  const iso = new Date(NOW.getTime() - days * 86400000).toISOString();
+  const instant = new Date(NOW.getTime() - days * 86400000);
+  const local = `${instant.getFullYear()}-${pad(instant.getMonth() + 1)}-${pad(instant.getDate())}`
+    + `T${pad(instant.getHours())}:${pad(instant.getMinutes())}:${pad(instant.getSeconds())}Z`;
   return activity({
     id,
     distance: km * 1000,
     moving_time: Math.round(km * 300),
-    start_date: iso,
-    start_date_local: iso,
+    start_date: instant.toISOString(),
+    start_date_local: local,
     ...over,
   });
 }

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeRoles } from '@/lib/roles';
-import { BranchId, computeBranchTree, computeBranchDecay, DIAS_DECAIMIENTO } from '@/lib/branchTree';
+import { BranchId, computeBranchTree, computeBranchDecay } from '@/lib/branchTree';
 import { computeCoreRecord } from '@/lib/coreRecord';
 import { formatRecordTime } from '@/lib/recordHistory';
 import { computeLongestWeeklyStreak } from '@/utils/streaks';
@@ -32,8 +32,6 @@ import {
   StatValue,
   StatLabel,
   VisualPanel,
-  RadarNote,
-  RadarNoteDot,
   ActivitySection,
   SwitchChip,
 } from './styled';
@@ -80,7 +78,6 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const persona = buildPersonaDescription(roles.primary, stats, Math.round(consistencia));
 
   const decayPcts = decay.branches.map(b => b.pct);
-  const enRiesgo = tree.branches.filter((b, i) => b.pct - decayPcts[i] > 0.5);
 
   return (
     <Card>
@@ -126,9 +123,9 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             </StatCard>
 
             <StatCard>
-              <StatIcon $emphasis><IconFlame size={18} color="currentColor" /></StatIcon>
+              <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
               <StatBody>
-                <StatValue $emphasis>{longestStreak}</StatValue>
+                <StatValue>{longestStreak}</StatValue>
                 <StatLabel>Semanas al hilo</StatLabel>
               </StatBody>
             </StatCard>
@@ -141,16 +138,6 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
             <AdnChartWrapper>
               <BranchProfile tree={tree} decay={decayPcts} dominantId={dominante.id} />
             </AdnChartWrapper>
-            <RadarNote>
-              {enRiesgo.length > 0 ? (
-                <>
-                  <RadarNoteDot />
-                  Dónde quedarías si dejaras de correr {DIAS_DECAIMIENTO} días.
-                </>
-              ) : (
-                'Tu progreso no vence en el próximo mes.'
-              )}
-            </RadarNote>
           </VisualPanel>
         </VisualCol>
 

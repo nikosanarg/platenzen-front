@@ -4,6 +4,7 @@ import { computeAchievements } from '@/lib/achievements';
 import { countDistinctStartingPlaces } from '@/lib/explorationUtils';
 import { MARATHON_KM } from '@/lib/distances';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 export interface RunnerDNA {
   resistencia: number;  // 0–100
@@ -33,7 +34,7 @@ function getRuns12mo(activities: Activity[]): Activity[] {
   const ms = cutoff.getTime();
   return activities.filter(a =>
     isRunning(a) &&
-    new Date(a.start_date_local).getTime() >= ms
+    parseLocalDate(a.start_date_local).getTime() >= ms
   );
 }
 
@@ -43,7 +44,7 @@ function getRuns30d(activities: Activity[]): Activity[] {
   const ms = cutoff.getTime();
   return activities.filter(a =>
     isRunning(a) &&
-    new Date(a.start_date_local).getTime() >= ms
+    parseLocalDate(a.start_date_local).getTime() >= ms
   );
 }
 

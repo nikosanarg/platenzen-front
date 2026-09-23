@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import type { BranchId, BranchSnapshot, Tier, TreeSnapshot } from '@/lib/branchTree';
+import { DIAS_DECAIMIENTO } from '@/lib/branchTree';
 import {
   IconFlame, IconRoute, IconTrendUp, IconCalendar, IconCompass, IconMountain,
 } from '@/components/Icon';
@@ -175,6 +176,30 @@ const ReqStrong = styled.strong`
   font-weight: 700;
 `;
 
+/** Contenido del tooltip que explica el gráfico, al hacer hover en el área pintada. */
+const HelpList = styled.ul`
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+`;
+
+const HelpItem = styled.li`
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding-left: 0.85rem;
+  position: relative;
+
+  &::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+`;
+
 function polygon(fracs: number[]): string {
   return fracs
     .map((f, i) => {
@@ -201,6 +226,7 @@ interface Props {
 const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
   const [hovered, setHovered] = useState<Selected | null>(null);
   const [pinned, setPinned] = useState<Selected | null>(null);
+  const [areaHover, setAreaHover] = useState(false);
   const active = pinned ?? hovered;
 
   const { branches, maxLevel } = tree;
@@ -238,13 +264,21 @@ const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
           />
         )}
 
-        {/* Estado actual: la superficie pintada */}
+        {/* Estado actual: la superficie pintada. Hover/foco explica el gráfico. */}
         <polygon
           points={polygon(fracs)}
           fill="rgba(var(--accent-rgb),0.20)"
           stroke="var(--accent)"
           strokeWidth={1.75}
           strokeLinejoin="round"
+          tabIndex={0}
+          role="img"
+          aria-label="Cómo leer este gráfico"
+          style={{ cursor: 'help' }}
+          onMouseEnter={() => setAreaHover(true)}
+          onMouseLeave={() => setAreaHover(false)}
+          onFocus={() => setAreaHover(true)}
+          onBlur={() => setAreaHover(false)}
         />
 
         {/* Los nodos del árbol, encima de la superficie */}
@@ -313,6 +347,23 @@ const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
               </ReqValue>
             </ReqRow>
           ))}
+        </TooltipBox>
+      )}
+
+      {!active && areaHover && (
+        <TooltipBox role="status" $left={50} $top={88} $flip="down" $anchor="middle">
+          <TooltipHead>
+            <TooltipTier>Cómo leer este gráfico</TooltipTier>
+          </TooltipHead>
+          <HelpList>
+            <HelpItem>El área pintada es tu nivel actual en cada rama, sobre 100%.</HelpItem>
+            <HelpItem>El eje dorado es la rama que te da el título de arriba.</HelpItem>
+            <HelpItem>
+              {hayCaida
+                ? `La línea punteada roja muestra dónde quedarías si dejás de correr ${DIAS_DECAIMIENTO} días.`
+                : 'Tu progreso no vence en el próximo mes: nada decae todavía.'}
+            </HelpItem>
+          </HelpList>
         </TooltipBox>
       )}
     </Wrap>

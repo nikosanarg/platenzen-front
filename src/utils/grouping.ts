@@ -1,6 +1,7 @@
 import { Activity } from '@/types/activity';
 import { MonthlyStats, WeeklyStats, DayStats } from '@/types/stats';
 import { metersToKm } from './units';
+import { parseLocalDate } from './localDate';
 
 const MONTH_LABELS: string[] = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
@@ -23,13 +24,16 @@ export function getWeekKey(date: Date): string {
 export function groupByMonth(activities: Activity[]): MonthlyStats[] {
   const map = new Map<string, MonthlyStats>();
   for (const act of activities) {
-    const d = new Date(act.start_date_local);
+    const d = parseLocalDate(act.start_date_local);
     const key = getMonthKey(d);
     const label = `${MONTH_LABELS[d.getMonth()]} ${d.getFullYear()}`;
     const existing = map.get(key) ?? { month: key, label, distance: 0, count: 0, time: 0 };
     existing.distance += metersToKm(act.distance);
     existing.count += 1;
-    existing.time += act.moving_time;
+    // Sólo el tiempo de actividades con distancia entra al ritmo del mes: una
+    // salida de fútbol o un entrenamiento sin GPS suma minutos sin sumar km,
+    // y eso infla el ritmo del mes sin que corresponda.
+    if (act.distance > 0) existing.time += act.moving_time;
     map.set(key, existing);
   }
   return Array.from(map.values()).sort((a, b) => a.month.localeCompare(b.month));
@@ -38,7 +42,7 @@ export function groupByMonth(activities: Activity[]): MonthlyStats[] {
 export function groupByWeek(activities: Activity[]): WeeklyStats[] {
   const map = new Map<string, WeeklyStats>();
   for (const act of activities) {
-    const d = new Date(act.start_date_local);
+    const d = parseLocalDate(act.start_date_local);
     const key = getWeekKey(d);
     const existing = map.get(key) ?? { week: key, label: key, distance: 0, count: 0 };
     existing.distance += metersToKm(act.distance);
@@ -51,8 +55,7 @@ export function groupByWeek(activities: Activity[]): WeeklyStats[] {
 export function groupByDay(activities: Activity[]): DayStats[] {
   const map = new Map<string, DayStats>();
   for (const act of activities) {
-    const d = new Date(act.start_date_local);
-    const key = d.toISOString().slice(0, 10);
+    const key = act.start_date_local.slice(0, 10);
     const existing = map.get(key) ?? { date: key, count: 0, distance: 0 };
     existing.count += 1;
     existing.distance += metersToKm(act.distance);

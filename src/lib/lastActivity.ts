@@ -5,6 +5,7 @@ import { computeRunnerDNA } from '@/lib/runnerDNA';
 import { computeAchievements } from '@/lib/achievements';
 import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 const SIMILAR_ACTIVITY_THRESHOLD_KM = 5;
 const MIN_PACE_DIFF_SECONDS = 1;
@@ -70,7 +71,7 @@ function formatDuration(seconds: number): string {
 }
 
 function formatDate(isoStr: string): string {
-  const d = new Date(isoStr);
+  const d = parseLocalDate(isoStr);
   const months = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',

@@ -2,6 +2,7 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM, MARATHON_KM, formatKmExact } from '@/lib/distances';
 import { isRunning, isTrailRun } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 export type AchievementCategory = 'distance' | 'volume' | 'consistency' | 'speed' | 'exploration';
 
@@ -135,11 +136,11 @@ interface WeekGroup {
 function groupByWeek(acts: Activity[]): WeekGroup[] {
   const map = new Map<string, number>();
   for (const a of acts) {
-    const d = new Date(a.start_date_local);
+    const d = parseLocalDate(a.start_date_local);
     const diff = (d.getDay() + 6) % 7;
     const mon = new Date(d);
     mon.setDate(d.getDate() - diff);
-    const key = mon.toISOString().slice(0, 10);
+    const key = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
     map.set(key, (map.get(key) ?? 0) + 1);
   }
   return Array.from(map.entries())

@@ -10,6 +10,7 @@ import { computeFormShape } from '@/lib/formShape';
 import { computeCoachRecommendation } from '@/lib/coach';
 import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 // ── Public shapes ────────────────────────────────────────────────────────────
 
@@ -87,20 +88,20 @@ function paceSecPerKm(a: Activity): number {
 }
 
 function formatDateTime(iso: string): string {
-  const d = new Date(iso);
+  const d = parseLocalDate(iso);
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}`;
 }
 
 function formatDate(iso: string): string {
-  const d = new Date(iso);
+  const d = parseLocalDate(iso);
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** "HOY", "AYER", "ANTEAYER" o la fecha, para el cartel de última actividad. */
 function recencyLabel(iso: string): string {
-  const day = new Date(iso);
+  const day = parseLocalDate(iso);
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diffDays = Math.round((startOfDay(new Date()) - startOfDay(day)) / 86400000);
 
@@ -135,7 +136,7 @@ function ordinal(n: number): string {
 function kmOnDay(runs: Activity[], day: Date): number {
   const target = day.toDateString();
   return runs
-    .filter(a => new Date(a.start_date_local).toDateString() === target)
+    .filter(a => parseLocalDate(a.start_date_local).toDateString() === target)
     .reduce((sum, a) => sum + a.distance, 0) / 1000;
 }
 

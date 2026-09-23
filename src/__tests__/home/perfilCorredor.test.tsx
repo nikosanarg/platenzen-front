@@ -48,8 +48,8 @@ afterEach(() => {
 });
 
 const HINT_FIJO = /habilidades desbloqueadas/;
-/** El pie del radar, en cualquiera de sus dos redacciones. */
-const PIE_RADAR = /Dónde quedarías si dejaras de correr|Tu progreso no vence/;
+/** La explicación del pie del radar, en cualquiera de sus dos redacciones. */
+const PIE_RADAR = /dónde quedarías si dejás de correr|Tu progreso no vence/;
 
 it('no hay conmutador: no existen las pestañas Radar ni Árbol', () => {
   renderCard();
@@ -57,11 +57,26 @@ it('no hay conmutador: no existen las pestañas Radar ni Árbol', () => {
   expect(screen.queryByRole('tab')).not.toBeInTheDocument();
 });
 
-it('dibuja los 18 nodos del árbol y el pie del radar en la misma pantalla', () => {
+it('dibuja los 18 nodos del árbol', () => {
   renderCard();
 
   expect(screen.getAllByRole('button', { name: /nivel [123]/ })).toHaveLength(18);
-  expect(screen.getByText(PIE_RADAR)).toBeInTheDocument();
+});
+
+it('la explicación del gráfico no es texto fijo: aparece como tooltip al pasar el mouse por el área pintada', () => {
+  renderCard();
+
+  expect(screen.queryByText(PIE_RADAR)).not.toBeInTheDocument();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+  const area = screen.getByRole('img', { name: 'Cómo leer este gráfico' });
+  fireEvent.mouseEnter(area);
+
+  const tooltip = screen.getByRole('status');
+  expect(within(tooltip).getByText(PIE_RADAR)).toBeInTheDocument();
+
+  fireEvent.mouseLeave(area);
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
 
 it('no queda el texto fijo de "N de 18 habilidades desbloqueadas"', () => {

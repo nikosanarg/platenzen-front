@@ -6,6 +6,7 @@ import { ACTIVITY_SORTS, ActivitySortKey, sortActivities } from '@/lib/activityH
 import { formatDistance } from '@/utils/units';
 import { secPerKmToString, mpsToSecPerKm } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import {
   Root,
@@ -49,7 +50,7 @@ interface HistorialActividadesProps {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
 }
 

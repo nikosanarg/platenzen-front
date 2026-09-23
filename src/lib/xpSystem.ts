@@ -3,6 +3,7 @@ import { ProcessedStats } from '@/types/stats';
 import { computeAchievements } from '@/lib/achievements';
 import { HALF_MARATHON_KM, MARATHON_KM } from '@/lib/distances';
 import { isRunning } from '@/lib/sports';
+import { parseLocalDate } from '@/utils/localDate';
 
 // Fibonacci-based level thresholds, scaled by 200 XP per fib unit
 // fib: 1,1,2,3,5,8,13,21,34,55,89,144,233,377,610
@@ -76,7 +77,7 @@ function get12MonthRuns(activities: Activity[]): Activity[] {
   cutoff.setFullYear(cutoff.getFullYear() - 1);
   const cutoffMs = cutoff.getTime();
   return activities.filter(a => {
-    const d = new Date(a.start_date_local).getTime();
+    const d = parseLocalDate(a.start_date_local).getTime();
     return d >= cutoffMs && isRunning(a);
   });
 }
@@ -124,11 +125,11 @@ interface WeekGroup {
 function groupByWeek(activities: Activity[]): WeekGroup[] {
   const map = new Map<string, WeekGroup>();
   for (const a of activities) {
-    const d = new Date(a.start_date_local);
+    const d = parseLocalDate(a.start_date_local);
     const diff = (d.getDay() + 6) % 7;
     const mon = new Date(d);
     mon.setDate(d.getDate() - diff);
-    const key = mon.toISOString().slice(0, 10);
+    const key = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
     const entry = map.get(key) ?? { week: key, distance: 0, count: 0 };
     entry.distance += a.distance / 1000;
     entry.count++;
