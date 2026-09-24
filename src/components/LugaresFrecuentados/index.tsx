@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Activity } from '@/types/activity';
 import { computeWorldMap, clusterZones, formatPaceStr, ZoneCluster } from '@/lib/worldMap';
 import { SectionTitle } from '@/components/Dashboard/styled';
-import Modal from '@/components/Modal';
+import { Modal } from 'kaizen-lib/ui';
 import TuMundo from '@/components/TuMundo';
 import StatCard from '@/components/StatCard';
 import { Root, PlaceList, PlaceRank, PlaceVisits, MoreRow, MoreLink } from './styled';
@@ -72,11 +72,16 @@ const LugaresFrecuentados: React.FC<LugaresFrecuentadosProps> = ({ activities })
         </MoreRow>
       )}
 
-      {seleccionado && (
-        <Modal title="Tu Mundo" onClose={() => setSeleccionado(null)} maxWidth="760px">
+      <Modal
+        open={seleccionado !== null}
+        onClose={() => setSeleccionado(null)}
+        title="Tu Mundo"
+        maxWidth="760px"
+      >
+        {seleccionado && (
           <TuMundo activities={activities} initialClusterId={seleccionado} showHeading={false} />
-        </Modal>
-      )}
+        )}
+      </Modal>
     </Root>
   );
 };
