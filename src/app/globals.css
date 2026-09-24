@@ -79,6 +79,10 @@
   --kz-surface-active: var(--bg-input);
   --kz-danger: var(--error);
   --kz-danger-soft: rgba(var(--error-rgb), 0.15);
+  --kz-success: var(--success);
+  --kz-success-soft: rgba(var(--success-rgb), 0.15);
+  --kz-warning: var(--warning);
+  --kz-warning-soft: rgba(var(--warning-rgb), 0.15);
   --kz-ring: var(--accent);
 }
 

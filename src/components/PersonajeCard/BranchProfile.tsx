@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
+import { Badge } from 'kaizen-lib/ui';
 import type { BranchId, BranchSnapshot, Tier, TreeSnapshot } from '@/lib/branchTree';
 import { DIAS_DECAIMIENTO } from '@/lib/branchTree';
 import {
@@ -137,18 +138,6 @@ const TooltipBranch = styled.span`
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-`;
-
-const TooltipBadge = styled.span<{ $unlocked: boolean }>`
-  font-size: 0.58rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.08rem 0.35rem;
-  border-radius: 999px;
-  color: ${({ $unlocked }) => ($unlocked ? 'var(--success)' : 'var(--text-muted)')};
-  background: ${({ $unlocked }) =>
-    $unlocked ? 'rgba(var(--success-rgb), 0.12)' : 'var(--bg-secondary)'};
 `;
 
 const ReqRow = styled.div`
@@ -333,9 +322,9 @@ const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
             <TooltipBranch>
               {active.branch.name} · nivel {active.tier.level}
             </TooltipBranch>
-            <TooltipBadge $unlocked={active.tier.unlocked}>
+            <Badge tone={active.tier.unlocked ? 'success' : 'neutral'}>
               {active.tier.unlocked ? 'Desbloqueado' : 'Pendiente'}
-            </TooltipBadge>
+            </Badge>
           </TooltipHead>
           {active.tier.requirements.map(r => (
             <ReqRow key={r.label}>

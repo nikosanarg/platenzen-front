@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { Badge } from 'kaizen-lib/ui';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeCoachAnalisis } from '@/lib/coachAnalisis';
@@ -20,7 +21,7 @@ import {
   InsightList, InsightItem, InsightIcon,
   HighlightGrid, HighlightCardBox, HighlightTop, HighlightIcon,
   HighlightValue, HighlightLabel, HighlightSub,
-  ImpactoStrip, XPBig, XPChip, DNAChip, LevelUpBadge,
+  ImpactoStrip, XPBig, XPChip, DNAChip,
   AchievementChip, ActivitiesSection,
   RibbonBanner, RibbonLabel, RibbonRecency,
 } from './styled';
@@ -221,9 +222,9 @@ const CoachAnalisis: React.FC<Props> = ({ activities, stats }) => {
         <ImpactoStrip>
           <XPBig>+{impacto.xpEarned} XP</XPBig>
           {impacto.prevLevel !== null && (
-            <LevelUpBadge>
+            <Badge tone="accent" bordered>
               Nivel {impacto.prevLevel} → {impacto.currentLevel}
-            </LevelUpBadge>
+            </Badge>
           )}
           {impacto.xpDetails.map(d => (
             <XPChip key={d.label}>{d.label}</XPChip>

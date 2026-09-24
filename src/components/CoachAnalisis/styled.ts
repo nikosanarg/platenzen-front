@@ -358,19 +358,6 @@ export const DNAChip = styled.div<{ $positive: boolean }>`
   color: ${({ $positive }) => $positive ? 'var(--positive)' : 'var(--error)'};
 `;
 
-export const LevelUpBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent);
-  background: var(--accent-muted);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-`;
-
 export const AchievementChip = styled.div`
   font-size: 0.72rem;
   font-weight: 600;
