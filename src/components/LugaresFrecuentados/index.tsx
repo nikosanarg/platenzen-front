@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Activity } from '@/types/activity';
-import { computeWorldMap, clusterZones, formatPaceStr, ZoneCluster } from '@/lib/worldMap';
+import { useLugares, Lugar } from '@/hooks/useLugares';
+import { formatPaceStr } from '@/lib/worldMap';
 import { SectionTitle } from '@/components/Dashboard/styled';
-import { Modal } from 'kaizen-lib/ui';
-import TuMundo from '@/components/TuMundo';
 import StatCard from '@/components/StatCard';
-import { Root, PlaceList, PlaceRank, PlaceVisits, MoreRow, MoreLink } from './styled';
+import { Root, PlaceList, PlaceRank, PlaceVisits, PlaceKm, MoreRow, MoreLink } from './styled';
 
 interface LugaresFrecuentadosProps {
   activities: Activity[];
@@ -17,71 +17,56 @@ interface LugaresFrecuentadosProps {
 const TOP = 3;
 
 /** La salida más larga del lugar, para el segundo renglón de la fila. */
-function salidaMasLarga(cluster: ZoneCluster) {
-  return cluster.activities.reduce(
+function salidaMasLarga(lugar: Lugar) {
+  return lugar.activities.reduce(
     (max, a) => (a.distanceKm > max.distanceKm ? a : max),
-    cluster.activities[0],
+    lugar.activities[0],
   );
 }
 
 /**
  * La tercera lista de la sidebar: dónde corrés, no sólo cuánto ni cuándo. Es
- * el mismo agrupado de zonas que dibuja "Tu Mundo" (`clusterZones`), leído
- * como ranking en vez de como mapa.
+ * el mismo agrupado de zonas que dibuja "Tu Mundo" (`useLugares`), leído
+ * como ranking en vez de como mapa — con el mismo nombre para cada lugar en
+ * las dos pantallas.
  *
- * Tocar un lugar abre el mapa grande en un modal, centrado y seleccionado en
- * ese lugar — una consulta rápida. "Ver más" lleva a la tab "Mapa", con el
- * mapa completo: todas las zonas, con zoom y arrastre libres.
+ * Tocar un lugar lleva a la tab "Mapa" ya centrada y seleccionada ahí: el
+ * mapa completo, con panel de detalle, zoom y arrastre libres, en vez de un
+ * mapa chico embebido en un modal.
  */
 const LugaresFrecuentados: React.FC<LugaresFrecuentadosProps> = ({ activities }) => {
-  const todos = useMemo(() => {
-    const data = computeWorldMap(activities);
-    return data ? clusterZones(data.zones) : [];
-  }, [activities]);
+  const router = useRouter();
+  const lugares = useLugares(activities);
+  const top = lugares.slice(0, TOP);
 
-  const clusters = todos.slice(0, TOP);
-  const [seleccionado, setSeleccionado] = useState<string | null>(null);
-
-  if (clusters.length === 0) return null;
+  if (top.length === 0) return null;
 
   return (
     <Root>
       <SectionTitle>Lugares más frecuentados</SectionTitle>
       <PlaceList>
-        {clusters.map((cluster, idx) => {
-          const larga = salidaMasLarga(cluster);
+        {top.map((lugar, idx) => {
+          const larga = salidaMasLarga(lugar);
           return (
             <StatCard
-              key={cluster.id}
-              onClick={() => setSeleccionado(cluster.id)}
+              key={lugar.id}
+              onClick={() => router.push(`/mapa?lugar=${encodeURIComponent(lugar.id)}`)}
               leftVisual={<PlaceRank>#{idx + 1}</PlaceRank>}
-              title={`${cluster.distanceKm} km acumulados`}
+              title={lugar.nombre}
               subtitles={[
-                `${formatPaceStr(cluster.bestPaceSecPerKm)} · ${cluster.lastVisit}`,
+                `${formatPaceStr(lugar.bestPaceSecPerKm)} · ${lugar.lastVisit}`,
                 `${larga.distanceKm.toFixed(1)} km · ${larga.date}`,
               ]}
-              primaryValue={<PlaceVisits>{cluster.visitCount}×</PlaceVisits>}
+              primaryValue={<PlaceVisits>{lugar.visitCount}×</PlaceVisits>}
+              secondaryValue={<PlaceKm>{lugar.distanceKm} km</PlaceKm>}
             />
           );
         })}
       </PlaceList>
 
-      {todos.length > TOP && (
-        <MoreRow>
-          <MoreLink href="/mapa">Ver más en el mapa ↗</MoreLink>
-        </MoreRow>
-      )}
-
-      <Modal
-        open={seleccionado !== null}
-        onClose={() => setSeleccionado(null)}
-        title="Tu Mundo"
-        maxWidth="760px"
-      >
-        {seleccionado && (
-          <TuMundo activities={activities} initialClusterId={seleccionado} showHeading={false} />
-        )}
-      </Modal>
+      <MoreRow>
+        <MoreLink href="/mapa">Ver más en el mapa ↗</MoreLink>
+      </MoreRow>
     </Root>
   );
 };

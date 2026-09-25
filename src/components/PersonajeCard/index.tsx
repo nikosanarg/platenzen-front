@@ -23,6 +23,7 @@ import {
   LevelBadge,
   CoreRecord,
   CoreRecordValue,
+  CoreRecordJoin,
   CoreRecordLabel,
   PersonaText,
   StatsGrid,
@@ -138,7 +139,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           {coreRecord && (
             <CoreRecord>
               <CoreRecordValue>
-                {coreRecord.label} en {formatRecordTime(coreRecord.timeSeconds)}
+                {coreRecord.label} <CoreRecordJoin>en</CoreRecordJoin> {formatRecordTime(coreRecord.timeSeconds)}
               </CoreRecordValue>
               <CoreRecordLabel>tu mejor marca</CoreRecordLabel>
             </CoreRecord>

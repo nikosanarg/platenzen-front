@@ -15,7 +15,7 @@ export const Card = styled.div<{ $featured: boolean; $withStravaBadge: boolean }
   width: 100%;
   background: var(--bg-card);
   border: 1px solid ${({ $featured }) => ($featured ? 'rgba(var(--gold-rgb), 0.22)' : 'transparent')};
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: ${({ $withStravaBadge }) => ($withStravaBadge ? '0.55rem 1.6rem 0.55rem 0.85rem' : '0.55rem 0.85rem')};
   text-align: left;
   text-decoration: none;
@@ -63,6 +63,7 @@ export const LeftVisual = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-num);
   font-size: 1.125rem;
   font-weight: 700;
 `;
@@ -109,6 +110,7 @@ export const RightVisual = styled.div`
 `;
 
 export const PrimaryValue = styled.div`
+  font-family: var(--font-num);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);

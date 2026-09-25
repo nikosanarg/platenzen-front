@@ -155,6 +155,7 @@ export const StatItem = styled.div`
 `;
 
 export const StatValue = styled.div`
+  font-family: var(--font-num);
   font-size: 1.4rem;
   font-weight: 800;
   color: var(--text-primary);
@@ -189,7 +190,7 @@ export const MapContainer = styled.div`
   aspect-ratio: 4 / 3;
   max-height: 450px;
   background: var(--bg-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -269,7 +270,7 @@ export const HighlightCardBox = styled.div`
   gap: 0.15rem;
   min-width: 0;
   background: var(--bg-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: 0.7rem 0.8rem;
 `;
 
@@ -292,6 +293,7 @@ export const HighlightIcon = styled.div<{ $tone: InsightTone }>`
 `;
 
 export const HighlightValue = styled.div<{ $tone: InsightTone }>`
+  font-family: var(--font-num);
   font-size: 0.95rem;
   font-weight: 800;
   color: ${({ $tone }) => toneColor($tone)};
@@ -333,6 +335,7 @@ export const ImpactoStrip = styled.div`
 
 
 export const XPBig = styled.div`
+  font-family: var(--font-num);
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--gold);
@@ -342,7 +345,7 @@ export const XPChip = styled.div`
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius);
   border: 1px solid rgba(var(--chart-2-rgb), 0.3);
   background: rgba(var(--chart-2-rgb), 0.08);
   color: var(--chart-2);
@@ -352,7 +355,7 @@ export const DNAChip = styled.div<{ $positive: boolean }>`
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius);
   border: 1px solid ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.3)' : 'rgba(var(--error-rgb), 0.3)'};
   background: ${({ $positive }) => $positive ? 'rgba(var(--positive-rgb), 0.06)' : 'rgba(var(--error-rgb), 0.06)'};
   color: ${({ $positive }) => $positive ? 'var(--positive)' : 'var(--error)'};
@@ -362,7 +365,7 @@ export const AchievementChip = styled.div`
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.2rem 0.625rem;
-  border-radius: 4px;
+  border-radius: var(--radius);
   border: 1px solid rgba(var(--gold-rgb), 0.4);
   background: rgba(var(--gold-rgb), 0.08);
   color: var(--gold);

@@ -54,7 +54,7 @@ export const OAuthButton = styled.a`
   background: var(--accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.875rem 1.5rem;

@@ -157,8 +157,7 @@ export const RoleDropdownList = styled.ul`
   padding: 0.35rem;
   list-style: none;
   background: var(--bg-deep);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
 `;
 
@@ -173,7 +172,7 @@ export const RoleDropdownOptionButton = styled.button<{ $active: boolean }>`
   text-align: left;
   background: none;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: 0.5rem 0.7rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -215,6 +214,7 @@ export const CoreRecord = styled.p`
 `;
 
 export const CoreRecordValue = styled.span`
+  font-family: var(--font-num);
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--accent);
@@ -223,6 +223,12 @@ export const CoreRecordValue = styled.span`
   @media (max-width: 600px) {
     font-size: 1.15rem;
   }
+`;
+
+/** El conector "en" entre distancia y tiempo: la única palabra en un valor numérico. */
+export const CoreRecordJoin = styled.span`
+  font-family: var(--font);
+  font-weight: 400;
 `;
 
 export const CoreRecordLabel = styled.span`
@@ -278,7 +284,7 @@ export const StatCard = styled.div`
 export const StatIcon = styled.div`
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,6 +301,7 @@ export const StatBody = styled.div`
 `;
 
 export const StatValue = styled.div`
+  font-family: var(--font-num);
   font-size: 1.23rem;
   font-weight: 800;
   color: var(--text-primary);

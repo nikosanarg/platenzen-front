@@ -2,30 +2,49 @@
 
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { Activity } from '@/types/activity';
-import { computeWorldMap, clusterZones, formatPaceStr } from '@/lib/worldMap';
+import { useLugares, Lugar } from '@/hooks/useLugares';
+import { computeRouteLayer, summarizeCluster, formatPaceStr, RouteLine } from '@/lib/worldMap';
 import {
   TILE_SIZE,
   latLonToWorldPx,
   worldPxToLatLon,
 } from '@/lib/osmTiles';
 import { SectionTitle } from '@/components/Dashboard/styled';
+import { IconChevronUp, IconTrendUp, IconTrendDown, IconTrendFlat } from '@/components/Icon';
+import StatCard from '@/components/StatCard';
 import {
   Root,
+  MapHint,
+  Layout,
   HeatmapContainer,
   HeatmapSvg,
+  MarkerGroup,
   Tooltip,
-  DetailPanel,
+  EmptyState,
+  ZoomControls,
+  ZoomButton,
+  Sidebar,
+  SidebarHeader,
+  SidebarTitle,
+  SortSwitch,
+  SortButton,
+  PlaceScroll,
+  PlaceRank,
+  BackButton,
+  DetailScroll,
   DetailTitle,
   DetailStats,
   DetailStat,
   DetailStatValue,
   DetailStatLabel,
-  RecentActivities,
+  TrendRow,
+  TrendPace,
+  ActivitiesLabel,
+  ActivityList,
   ActivityRow,
-  EmptyState,
-  ZoomControls,
-  ZoomButton,
-  MapHint,
+  ActivityRowName,
+  ActivityRowStats,
+  ShowAllButton,
 } from './styled';
 
 const SVG_W = 600;
@@ -34,6 +53,8 @@ const SVG_H = 360;
 /**
  * Zoom de arranque: a esta escala el viewport abarca ~2 km de ancho, que es
  * nivel barrio — la escala a la que "donde corri" se puede leer en el mapa.
+ * Es también el zoom al que se encuadra un lugar elegido desde la lista: el
+ * radio de un lugar (`RADIO_ZONA_KM` en worldMap.ts) es del mismo orden.
  */
 const ZOOM_INICIAL = 15;
 
@@ -41,6 +62,18 @@ const ZOOM_INICIAL = 15;
 // responde "por donde corro", no "en que pais estuve".
 const ZOOM_MIN = 10;
 const ZOOM_MAX = 17;
+
+/** Cuántas salidas de un lugar entran en el detalle antes de pedir "ver todas". */
+const ACTIVIDADES_VISIBLES = 10;
+
+/** Cuántos lugares llevan su nombre siempre visible en el mapa: el resto sólo en el tooltip. */
+const ETIQUETAS_VISIBLES = 5;
+
+const OPACIDAD_BASE = 0.22;
+const OPACIDAD_LUGAR = 0.6;
+const OPACIDAD_APAGADA = 0.05;
+
+type OrdenLista = 'visitas' | 'km';
 
 interface TooltipState {
   x: number;
@@ -56,39 +89,46 @@ interface Vista {
 
 interface TuMundoProps {
   activities: Activity[];
-  /** El lugar a mostrar de entrada, cuando se llega desde un click en la lista de la sidebar. */
+  /** El lugar a mostrar de entrada, cuando se llega desde un link con `?lugar=`. */
   initialClusterId?: string;
-  /** El modal que lo embebe ya trae su propio título; acá se apaga el propio. */
-  showHeading?: boolean;
 }
 
-const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHeading = true }) => {
-  const data = useMemo(() => computeWorldMap(activities), [activities]);
+function pathD(points: [number, number][], project: (wx: number, wy: number) => [number, number]): string {
+  let d = '';
+  for (let i = 0; i < points.length; i++) {
+    const [px, py] = project(points[i][0], points[i][1]);
+    d += `${i === 0 ? 'M' : 'L'}${px.toFixed(1)},${py.toFixed(1)}`;
+  }
+  return d;
+}
+
+const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId }) => {
+  const lugares = useLugares(activities);
+  const rutas = useMemo(() => computeRouteLayer(activities), [activities]);
+
   const [vistaUsuario, setVistaUsuario] = useState<Vista | null>(null);
   const [seleccionado, setSeleccionado] = useState<string | null>(initialClusterId ?? null);
+  const [actividadResaltada, setActividadResaltada] = useState<number | null>(null);
+  const [ordenPor, setOrdenPor] = useState<OrdenLista>('visitas');
+  const [mostrarTodas, setMostrarTodas] = useState(false);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const arrastreRef = useRef<{ x: number; y: number } | null>(null);
 
-  // El agrupado NO depende del zoom: ver el comentario de `clusterZones`.
-  // Si dependiera, acercarse partiria un lugar en sus celdas de 1 km y la lista
-  // volveria a repetir la misma salida en varias filas.
-  const clusters = useMemo(() => (data ? clusterZones(data.zones) : []), [data]);
-
-  // Encuadre inicial: el lugar pedido (si se llega desde la sidebar) o el
+  // Encuadre inicial: el lugar pedido (si se llega con `?lugar=`) o el
   // territorio mas frecuentado. Se **deriva**, no se asigna en un efecto —
   // así la primera pintura ya sale bien encuadrada, sin un fotograma
   // intermedio con el mapa en otro lado.
   const vistaInicial = useMemo<Vista | null>(() => {
-    if (!data || data.zones.length === 0) return null;
-    const pedido = initialClusterId ? clusters.find(c => c.id === initialClusterId) : undefined;
+    if (lugares.length === 0) return null;
+    const pedido = initialClusterId ? lugares.find(l => l.id === initialClusterId) : undefined;
     // Sin pedido explicito, centrado en el lugar mas frecuentado, no en el
     // centro geometrico de todo lo recorrido: con salidas en dos ciudades, ese
     // centro cae en el medio del campo, donde no se corrio nunca.
-    const principal = pedido ?? [...data.zones].sort((a, b) => b.visitCount - a.visitCount)[0];
+    const principal = pedido ?? lugares[0];
     return { centerLat: principal.lat, centerLon: principal.lon, zoom: ZOOM_INICIAL };
-  }, [data, clusters, initialClusterId]);
+  }, [lugares, initialClusterId]);
 
   // Mientras el usuario no toque nada manda el encuadre inicial; apenas mueve o
   // hace zoom, manda el suyo.
@@ -105,9 +145,9 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHea
   );
 
   /**
-   * Píxel de pantalla para un punto del mapa. Mercator, la misma proyección que
-   * usan los tiles: con cualquier otra, los puntos se despegan del mapa a medida
-   * que uno se aleja.
+   * Píxel de pantalla para un punto lat/lon del mapa. Mercator, la misma
+   * proyección que usan los tiles: con cualquier otra, los puntos se
+   * despegan del mapa a medida que uno se aleja.
    */
   const project = useCallback(
     (lat: number, lon: number): [number, number] => {
@@ -115,6 +155,22 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHea
       const [cx, cy] = latLonToWorldPx(vista.centerLat, vista.centerLon, vista.zoom);
       const [px, py] = latLonToWorldPx(lat, lon, vista.zoom);
       return [px - cx + SVG_W / 2, py - cy + SVG_H / 2];
+    },
+    [vista]
+  );
+
+  /**
+   * Igual que `project`, pero para puntos ya proyectados a píxeles de mundo a
+   * zoom 0 (`RouteLine.points`): multiplicar por 2^zoom y restar el origen es
+   * aritmética simple, sin trigonometría — es lo que hace que dibujar cientos
+   * de recorridos en cada frame de un arrastre no cueste caro.
+   */
+  const projectZoom0 = useCallback(
+    (wx0: number, wy0: number): [number, number] => {
+      if (!vista) return [0, 0];
+      const escala = Math.pow(2, vista.zoom);
+      const [cx, cy] = latLonToWorldPx(vista.centerLat, vista.centerLon, vista.zoom);
+      return [wx0 * escala - cx + SVG_W / 2, wy0 * escala - cy + SVG_H / 2];
     },
     [vista]
   );
@@ -211,12 +267,19 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHea
     return () => svg.removeEventListener('wheel', alRodar);
   }, [aCoordsSvg, cambiarZoom]);
 
-  const alPresionar = (e: React.MouseEvent) => {
+  /**
+   * Arrastre con Pointer Events (no Mouse Events): un solo camino para mouse
+   * y para dedo, y `setPointerCapture` sostiene el arrastre aunque el dedo o
+   * el cursor salgan del SVG — sin eso, el mapa no se movía al arrastrar en
+   * pantallas táctiles.
+   */
+  const alPresionar = (e: React.PointerEvent<SVGSVGElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
     arrastreRef.current = { x: e.clientX, y: e.clientY };
     setArrastrando(true);
   };
 
-  const alMover = (e: React.MouseEvent) => {
+  const alMover = (e: React.PointerEvent<SVGSVGElement>) => {
     const arrastre = arrastreRef.current;
     if (!arrastre) return;
 
@@ -241,145 +304,350 @@ const TuMundo: React.FC<TuMundoProps> = ({ activities, initialClusterId, showHea
     setArrastrando(false);
   };
 
-  if (!data || data.zones.length === 0) {
+  const seleccionarLugar = useCallback((lugar: Lugar) => {
+    setSeleccionado(lugar.id);
+    setActividadResaltada(null);
+    setMostrarTodas(false);
+    setVistaUsuario({ centerLat: lugar.lat, centerLon: lugar.lon, zoom: ZOOM_INICIAL });
+  }, []);
+
+  const volverALista = useCallback(() => {
+    setSeleccionado(null);
+    setActividadResaltada(null);
+    setMostrarTodas(false);
+  }, []);
+
+  const alClickMarcador = (lugar: Lugar) => {
+    if (seleccionado === lugar.id) volverALista();
+    else seleccionarLugar(lugar);
+  };
+
+  if (lugares.length === 0) {
     return (
       <Root>
-        {showHeading && <SectionTitle>Tu Mundo</SectionTitle>}
+        <SectionTitle>Tu Mundo</SectionTitle>
         <EmptyState>Necesitás actividades con recorrido registrado para ver tu mundo.</EmptyState>
       </Root>
     );
   }
 
-  const maxVisitas = clusters[0]?.visitCount ?? 1;
-  const detalle = clusters.find(c => c.id === seleccionado) ?? null;
+  const maxVisitas = lugares[0]?.visitCount ?? 1;
+  const detalle = lugares.find(l => l.id === seleccionado) ?? null;
+  const resumen = detalle ? summarizeCluster(detalle) : null;
+  const etiquetados = new Set(lugares.slice(0, ETIQUETAS_VISIBLES).map(l => l.id));
+  if (seleccionado) etiquetados.add(seleccionado);
+
+  // Reparto de recorridos en tres capas de dibujo (atrás → adelante): el
+  // resto apagado, los del lugar elegido, y encima la salida puntual que se
+  // haya tocado en la lista — así lo que importa siempre queda arriba.
+  const idsDelLugar = detalle ? new Set(detalle.activities.map(a => a.activityId)) : null;
+  const rutasFondo: RouteLine[] = [];
+  const rutasLugar: RouteLine[] = [];
+  let rutaResaltada: RouteLine | null = null;
+  for (const r of rutas) {
+    if (actividadResaltada !== null && r.activityId === actividadResaltada) {
+      rutaResaltada = r;
+    } else if (idsDelLugar?.has(r.activityId)) {
+      rutasLugar.push(r);
+    } else {
+      rutasFondo.push(r);
+    }
+  }
+
+  const listaOrdenada = [...lugares].sort((a, b) =>
+    ordenPor === 'km' ? b.distanceKm - a.distanceKm : b.visitCount - a.visitCount
+  );
+
+  const actividadesDetalle = detalle
+    ? mostrarTodas
+      ? detalle.activities
+      : detalle.activities.slice(0, ACTIVIDADES_VISIBLES)
+    : [];
 
   return (
     <Root>
-      {showHeading && <SectionTitle>Tu Mundo</SectionTitle>}
-      <MapHint>Tocá una zona para verla en detalle. Arrastrá para moverte y usá la rueda para acercarte.</MapHint>
+      <SectionTitle>Tu Mundo</SectionTitle>
+      <MapHint>Arrastrá para moverte · rueda o +/− para acercarte.</MapHint>
 
-      <HeatmapContainer>
-        <HeatmapSvg
-          ref={svgRef}
-          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          aria-label="Mapa de zonas recorridas"
-          onMouseDown={alPresionar}
-          onMouseMove={alMover}
-          onMouseUp={soltarArrastre}
-          onMouseLeave={() => {
-            soltarArrastre();
-            setTooltip(null);
-          }}
-          style={{ cursor: arrastrando ? 'grabbing' : 'grab' }}
-        >
-          <rect width={SVG_W} height={SVG_H} fill="var(--bg-primary)" rx="8" />
+      <Layout>
+        <HeatmapContainer>
+          <HeatmapSvg
+            ref={svgRef}
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            aria-label="Mapa de zonas recorridas"
+            onPointerDown={alPresionar}
+            onPointerMove={alMover}
+            onPointerUp={soltarArrastre}
+            onPointerCancel={soltarArrastre}
+            onPointerLeave={() => setTooltip(null)}
+            style={{ cursor: arrastrando ? 'grabbing' : 'grab' }}
+          >
+            <rect width={SVG_W} height={SVG_H} fill="var(--bg-primary)" rx="8" />
 
-          {tiles.map(tile => (
-            <image
-              key={tile.key}
-              href={tile.url}
-              x={tile.x}
-              y={tile.y}
-              width={TILE_SIZE}
-              height={TILE_SIZE}
-              preserveAspectRatio="none"
-              style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
-            />
-          ))}
+            {tiles.map(tile => (
+              <image
+                key={tile.key}
+                href={tile.url}
+                x={tile.x}
+                y={tile.y}
+                width={TILE_SIZE}
+                height={TILE_SIZE}
+                preserveAspectRatio="none"
+                style={{ filter: 'brightness(0.35) saturate(0.5)', opacity: 0.85 }}
+              />
+            ))}
 
-          {clusters.map(cluster => {
-            const [cx, cy] = project(cluster.lat, cluster.lon);
-            // Fuera del viewport no se dibuja: con zoom alto son la mayoría.
-            if (cx < -60 || cx > SVG_W + 60 || cy < -60 || cy > SVG_H + 60) return null;
+            {/* Recorridos: la calle que se corre más veces suma opacidad y se ve más clara. */}
+            <g style={{ mixBlendMode: 'screen' }}>
+              {rutasFondo.map(r => (
+                <path
+                  key={r.activityId}
+                  d={pathD(r.points, projectZoom0)}
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={detalle ? OPACIDAD_APAGADA : OPACIDAD_BASE}
+                />
+              ))}
+              {rutasLugar.map(r => (
+                <path
+                  key={r.activityId}
+                  d={pathD(r.points, projectZoom0)}
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth={2.25}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={OPACIDAD_LUGAR}
+                />
+              ))}
+              {rutaResaltada && (
+                <path
+                  d={pathD(rutaResaltada.points, projectZoom0)}
+                  fill="none"
+                  stroke="var(--gold)"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={1}
+                />
+              )}
+            </g>
 
-            const intensidad = cluster.visitCount / maxVisitas;
-            const r = 6 + intensidad * 14;
-            const activo = seleccionado === cluster.id;
+            {listaOrdenada.map(lugar => {
+              const [cx, cy] = project(lugar.lat, lugar.lon);
+              // Fuera del viewport no se dibuja: con zoom alto son la mayoría.
+              if (cx < -60 || cx > SVG_W + 60 || cy < -60 || cy > SVG_H + 60) return null;
 
-            return (
-              <g key={cluster.id}>
-                <circle cx={cx} cy={cy} r={r + 6} fill={`rgba(252, 76, 2, ${intensidad * 0.15})`} />
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={r}
-                  fill={`rgba(252, 76, 2, ${0.3 + intensidad * 0.5})`}
-                  stroke={activo ? '#fc4c02' : 'transparent'}
-                  strokeWidth={activo ? 2 : 0}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSeleccionado(prev => (prev === cluster.id ? null : cluster.id))}
+              const intensidad = lugar.visitCount / maxVisitas;
+              const r = 6 + intensidad * 14;
+              const activo = seleccionado === lugar.id;
+              const apagado = detalle !== null && !activo;
+
+              return (
+                <MarkerGroup
+                  key={lugar.id}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={activo}
+                  aria-label={`${lugar.nombre}: ${lugar.visitCount} salida${lugar.visitCount !== 1 ? 's' : ''}, ${lugar.distanceKm} km`}
+                  style={{ cursor: 'pointer', opacity: apagado ? 0.35 : 1 }}
+                  onClick={() => alClickMarcador(lugar)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      alClickMarcador(lugar);
+                    }
+                  }}
                   onMouseEnter={e => {
                     const coords = aCoordsSvg(e.clientX, e.clientY);
                     if (!coords) return;
                     setTooltip({
                       x: ((coords[0] + 12) / SVG_W) * 100,
                       y: ((coords[1] - 36) / SVG_H) * 100,
-                      text: `${cluster.visitCount} salida${cluster.visitCount !== 1 ? 's' : ''} · ${cluster.distanceKm} km`,
+                      text: `${lugar.nombre} · ${lugar.visitCount} salida${lugar.visitCount !== 1 ? 's' : ''} · ${lugar.distanceKm} km`,
                     });
                   }}
                   onMouseLeave={() => setTooltip(null)}
-                />
-              </g>
-            );
-          })}
-        </HeatmapSvg>
+                >
+                  <circle cx={cx} cy={cy} r={r + 6} fill={`rgba(252, 76, 2, ${intensidad * 0.15})`} />
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={r}
+                    fill={`rgba(252, 76, 2, ${0.3 + intensidad * 0.5})`}
+                    stroke={activo ? '#fc4c02' : 'transparent'}
+                    strokeWidth={activo ? 2 : 0}
+                  />
+                  {etiquetados.has(lugar.id) && (
+                    <text
+                      x={cx}
+                      y={cy - r - 6}
+                      textAnchor="middle"
+                      fill="var(--text-primary)"
+                      fontFamily="var(--font)"
+                      fontSize={10}
+                      fontWeight={activo ? 700 : 500}
+                      style={{ paintOrder: 'stroke', stroke: 'var(--bg-primary)', strokeWidth: 3 }}
+                    >
+                      {lugar.nombre}
+                    </text>
+                  )}
+                </MarkerGroup>
+              );
+            })}
+          </HeatmapSvg>
 
-        <ZoomControls>
-          <ZoomButton
-            type="button"
-            onClick={() => cambiarZoom(1)}
-            aria-label="Acercar"
-            disabled={(vista?.zoom ?? 0) >= ZOOM_MAX}
-          >
-            +
-          </ZoomButton>
-          <ZoomButton
-            type="button"
-            onClick={() => cambiarZoom(-1)}
-            aria-label="Alejar"
-            disabled={(vista?.zoom ?? 0) <= ZOOM_MIN}
-          >
-            −
-          </ZoomButton>
-        </ZoomControls>
+          <ZoomControls>
+            <ZoomButton
+              type="button"
+              onClick={() => cambiarZoom(1)}
+              aria-label="Acercar"
+              disabled={(vista?.zoom ?? 0) >= ZOOM_MAX}
+            >
+              +
+            </ZoomButton>
+            <ZoomButton
+              type="button"
+              onClick={() => cambiarZoom(-1)}
+              aria-label="Alejar"
+              disabled={(vista?.zoom ?? 0) <= ZOOM_MIN}
+            >
+              −
+            </ZoomButton>
+          </ZoomControls>
 
-        {tooltip && (
-          <Tooltip $visible style={{ left: `${tooltip.x}%`, top: `${tooltip.y}%` }}>
-            {tooltip.text}
-          </Tooltip>
-        )}
-      </HeatmapContainer>
+          {tooltip && (
+            <Tooltip $visible style={{ left: `${tooltip.x}%`, top: `${tooltip.y}%` }}>
+              {tooltip.text}
+            </Tooltip>
+          )}
+        </HeatmapContainer>
 
-      {detalle && (
-        <DetailPanel>
-          <DetailTitle>Detalle de zona</DetailTitle>
-          <DetailStats>
-            <DetailStat>
-              <DetailStatValue>{detalle.visitCount}</DetailStatValue>
-              <DetailStatLabel>Entrenamientos</DetailStatLabel>
-            </DetailStat>
-            <DetailStat>
-              <DetailStatValue>{detalle.distanceKm} km</DetailStatValue>
-              <DetailStatLabel>Distancia acumulada</DetailStatLabel>
-            </DetailStat>
-            <DetailStat>
-              <DetailStatValue>{formatPaceStr(detalle.bestPaceSecPerKm)}</DetailStatValue>
-              <DetailStatLabel>Mejor marca</DetailStatLabel>
-            </DetailStat>
-            <DetailStat>
-              <DetailStatValue>{detalle.lastVisit}</DetailStatValue>
-              <DetailStatLabel>Última visita</DetailStatLabel>
-            </DetailStat>
-          </DetailStats>
-          <RecentActivities>
-            {detalle.activities.slice(0, 5).map(act => (
-              <ActivityRow key={act.activityId}>
-                {act.name} — {act.distanceKm.toFixed(1)} km
-              </ActivityRow>
-            ))}
-          </RecentActivities>
-        </DetailPanel>
-      )}
+        <Sidebar role="region" aria-label="Lugares del mapa">
+          {detalle ? (
+            <>
+              <BackButton type="button" onClick={volverALista}>
+                <IconChevronUp size={13} />
+                Lugares
+              </BackButton>
+
+              <DetailScroll>
+                <DetailTitle>{detalle.nombre}</DetailTitle>
+
+                <DetailStats>
+                  <DetailStat>
+                    <DetailStatValue>{detalle.visitCount}</DetailStatValue>
+                    <DetailStatLabel>Entrenamientos</DetailStatLabel>
+                  </DetailStat>
+                  <DetailStat>
+                    <DetailStatValue>{detalle.distanceKm} km</DetailStatValue>
+                    <DetailStatLabel>Distancia acumulada</DetailStatLabel>
+                  </DetailStat>
+                  <DetailStat>
+                    <DetailStatValue>{formatPaceStr(detalle.bestPaceSecPerKm)}</DetailStatValue>
+                    <DetailStatLabel>Mejor ritmo</DetailStatLabel>
+                  </DetailStat>
+                  <DetailStat>
+                    <DetailStatValue>{detalle.lastVisit}</DetailStatValue>
+                    <DetailStatLabel>Última visita</DetailStatLabel>
+                  </DetailStat>
+                  <DetailStat>
+                    <DetailStatValue>{resumen!.firstVisit}</DetailStatValue>
+                    <DetailStatLabel>Primera visita</DetailStatLabel>
+                  </DetailStat>
+                  <DetailStat>
+                    <DetailStatValue>{resumen!.longestRun.distanceKm.toFixed(1)} km</DetailStatValue>
+                    <DetailStatLabel>Salida más larga</DetailStatLabel>
+                  </DetailStat>
+                </DetailStats>
+
+                {resumen!.paceTrend && (() => {
+                  const { early, late } = resumen!.paceTrend!;
+                  const mejora = late < early;
+                  const empeora = late > early;
+                  const tono = mejora ? 'positive' : empeora ? 'warning' : 'neutral';
+                  const Icono = mejora ? IconTrendUp : empeora ? IconTrendDown : IconTrendFlat;
+                  return (
+                    <TrendRow $tone={tono}>
+                      <Icono size={14} color="currentColor" />
+                      Ritmo acá: <TrendPace>{formatPaceStr(early)}</TrendPace> →{' '}
+                      <TrendPace>{formatPaceStr(late)}</TrendPace> (primeras 5 vs. últimas 5)
+                    </TrendRow>
+                  );
+                })()}
+
+                <div>
+                  <ActivitiesLabel>Salidas</ActivitiesLabel>
+                  <ActivityList>
+                    {actividadesDetalle.map(act => (
+                      <ActivityRow
+                        key={act.activityId}
+                        type="button"
+                        $active={actividadResaltada === act.activityId}
+                        aria-pressed={actividadResaltada === act.activityId}
+                        onClick={() =>
+                          setActividadResaltada(prev => (prev === act.activityId ? null : act.activityId))
+                        }
+                      >
+                        <ActivityRowName title={act.name}>{act.name}</ActivityRowName>
+                        <ActivityRowStats>
+                          {act.distanceKm.toFixed(1)} km · {formatPaceStr(act.paceSecPerKm)}
+                        </ActivityRowStats>
+                      </ActivityRow>
+                    ))}
+                  </ActivityList>
+                  {!mostrarTodas && detalle.activities.length > ACTIVIDADES_VISIBLES && (
+                    <ShowAllButton type="button" onClick={() => setMostrarTodas(true)}>
+                      Ver las {detalle.activities.length} salidas
+                    </ShowAllButton>
+                  )}
+                </div>
+              </DetailScroll>
+            </>
+          ) : (
+            <>
+              <SidebarHeader>
+                <SidebarTitle>Lugares</SidebarTitle>
+                <SortSwitch role="group" aria-label="Ordenar lugares">
+                  <SortButton
+                    type="button"
+                    $active={ordenPor === 'visitas'}
+                    aria-pressed={ordenPor === 'visitas'}
+                    onClick={() => setOrdenPor('visitas')}
+                  >
+                    Salidas
+                  </SortButton>
+                  <SortButton
+                    type="button"
+                    $active={ordenPor === 'km'}
+                    aria-pressed={ordenPor === 'km'}
+                    onClick={() => setOrdenPor('km')}
+                  >
+                    Km
+                  </SortButton>
+                </SortSwitch>
+              </SidebarHeader>
+
+              <PlaceScroll>
+                {listaOrdenada.map((lugar, idx) => (
+                  <StatCard
+                    key={lugar.id}
+                    onClick={() => seleccionarLugar(lugar)}
+                    leftVisual={<PlaceRank>#{idx + 1}</PlaceRank>}
+                    title={lugar.nombre}
+                    subtitles={[`${formatPaceStr(lugar.bestPaceSecPerKm)} · ${lugar.lastVisit}`]}
+                    primaryValue={`${lugar.visitCount}×`}
+                    secondaryValue={`${lugar.distanceKm} km`}
+                  />
+                ))}
+              </PlaceScroll>
+            </>
+          )}
+        </Sidebar>
+      </Layout>
     </Root>
   );
 };

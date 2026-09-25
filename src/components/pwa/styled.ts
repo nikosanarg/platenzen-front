@@ -17,7 +17,6 @@ const AvisoFlotante = styled.div`
   margin: 0 auto;
   padding: 14px 16px;
   background: var(--bg-card);
-  border: 1px solid var(--border-light);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   color: var(--text-primary);
@@ -34,7 +33,7 @@ export const InstallButton = styled.button`
   background: var(--accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -62,7 +61,7 @@ export const InstallInlineButton = styled.button`
   background: transparent;
   color: var(--text-secondary);
   border: 1px dashed var(--border-light);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -99,7 +98,7 @@ export const UpdateButton = styled.button`
   background: var(--accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;

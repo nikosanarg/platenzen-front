@@ -40,7 +40,7 @@ export const SortTab = styled.button<{ $active: boolean }>`
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   border: 1px solid ${({ $active }) => $active ? 'rgba(var(--accent-rgb), 0.35)' : 'var(--border)'};
   background: ${({ $active }) => $active ? 'var(--accent-muted)' : 'transparent'};
@@ -109,6 +109,7 @@ export const RowName = styled.h4`
 `;
 
 export const RowStats = styled.span`
+  font-family: var(--font-num);
   font-size: 0.72rem;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -127,7 +128,7 @@ const pageButtonBase = `
   min-width: 1.6rem;
   height: 1.6rem;
   padding: 0 0.3rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;

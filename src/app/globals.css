@@ -9,8 +9,8 @@
   --border: #2a2a35;
   --border-light: #333340;
   --text-primary: #f0f0f5;
-  --text-secondary: #9090a8;
-  --text-muted: #606078;
+  --text-secondary: #b4b4c6;
+  --text-muted: #8b8ba3;
   --accent: #fc4c02;
   --accent-rgb: 252, 76, 2;
   --accent-hover: #ff6a2a;
@@ -34,7 +34,7 @@
   --xp-rgb: 251, 191, 36;
   --bg-deep: #08080a;
   --text-on-accent: #fff;
-  --text-secondary-rgb: 144, 144, 168;
+  --text-secondary-rgb: 180, 180, 198;
   --role-gradient: linear-gradient(90deg, var(--accent) 0%, #f97316 28%, var(--gold) 58%, #7bd938 82%, var(--success) 100%);
   --chart-1: #fc4c02;
   --chart-2: #3b82f6;
@@ -59,14 +59,25 @@
   --heat-80: #ff702c;
   --heat-90: #ff3c16;
   --heat-100: #ff0000;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius: 8px;
+  /*
+   * Elevación sin borde: en un fondo casi negro una sombra sola no se nota,
+   * así que la superficie se separa con tres capas juntas — un highlight
+   * superior fino (el "canto" que agarra la luz), la sombra de caída, y el
+   * fondo de card un tono más claro que --bg-primary (ver --bg-card).
+   */
+  --shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 32px rgba(0, 0, 0, 0.55);
+  --font: var(--font-yantramanav), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Sólo para valores numéricos (km, ritmos, XP, conteos) — nunca párrafos. */
+  --font-num: var(--font-asimovian), var(--font);
 
   /* kaizen-lib: sólo se pisa lo que hace a la marca — el resto (relieve,
-     radios, tipografía, motion) cae al default de `kaizen-lib/tokens.css`. */
+     radios, motion) cae al default de `kaizen-lib/tokens.css`. La tipografía
+     sí se pisa: sin esto los componentes de kaizen-lib caen a system-ui y
+     desentonan con Yantramanav en el resto de la pantalla. */
+  --kz-font-family: var(--font);
   --kz-accent: var(--accent);
   --kz-accent-hover: var(--accent-hover);
   --kz-accent-active: var(--accent-hover);

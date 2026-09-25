@@ -91,7 +91,7 @@ const AttributeChip = styled.button<{ $active: boolean }>`
   padding: 0.375rem 0.25rem;
   background: ${({ $active }) => $active ? 'rgba(var(--accent-rgb), 0.1)' : 'transparent'};
   border: 1px solid ${({ $active }) => $active ? 'var(--accent)' : 'var(--border)'};
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.15s;
 
@@ -110,6 +110,7 @@ const AttributeName = styled.div`
 `;
 
 const AttributeValue = styled.div<{ $value: number }>`
+  font-family: var(--font-num);
   font-size: 0.85rem;
   font-weight: 700;
   color: ${({ $value }) =>
@@ -120,8 +121,8 @@ const AttributeValue = styled.div<{ $value: number }>`
 
 const TooltipBox = styled.div`
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 0.75rem 0.875rem;
   font-size: 0.75rem;
   color: var(--text-secondary);

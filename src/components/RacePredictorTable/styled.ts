@@ -66,6 +66,7 @@ export const PredictorRow = styled.div`
 `;
 
 export const DistanceLabel = styled.div`
+  font-family: var(--font-num);
   font-size: 0.82rem;
   color: var(--text-secondary);
 `;
@@ -75,6 +76,7 @@ export const TimeCell = styled.div`
 `;
 
 export const TimeValue = styled.div`
+  font-family: var(--font-num);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -94,6 +96,7 @@ export const EmptyTime = styled.div`
 `;
 
 export const PredictedValue = styled.div`
+  font-family: var(--font-num);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -108,7 +111,7 @@ export const PredictorNote = styled.div`
   padding: 1rem 1.25rem;
   background: var(--bg-secondary);
   border-left: 3px solid var(--border-light);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.835rem;
   color: var(--text-secondary);
   line-height: 1.65;

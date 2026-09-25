@@ -1,9 +1,26 @@
 import type { Metadata, Viewport } from 'next';
+import { Yantramanav, Asimovian } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
 import RegistroServiceWorker from '@/components/pwa/RegistroServiceWorker';
 import { InstalacionPWAProvider } from '@/components/pwa/useInstalacionPWA';
 import AppBackground from '@/components/AppBackground';
 import './globals.css';
+
+const yantramanav = Yantramanav({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-yantramanav',
+  display: 'swap',
+});
+
+// Asimovian sólo existe en peso 400 — es la fuente de los valores numéricos
+// (km, ritmos, XP), nunca de párrafos largos.
+const asimovian = Asimovian({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-asimovian',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Platenzen — Estadísticas de running',
@@ -35,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${yantramanav.variable} ${asimovian.variable}`}>
       <body>
         <StyledComponentsRegistry>
           <AppBackground />

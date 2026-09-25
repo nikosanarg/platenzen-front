@@ -13,7 +13,7 @@ export const TabsRow = styled.div`
   display: flex;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 1.5rem;
   width: fit-content;
@@ -105,6 +105,7 @@ export const CombinedCell = styled.div`
 `;
 
 export const BeforeValue = styled.span<{ $positive: boolean | null }>`
+  font-family: var(--font-num);
   font-weight: 500;
   color: ${({ $positive }) =>
     $positive === null
@@ -121,6 +122,7 @@ export const VsText = styled.span`
 `;
 
 export const AfterValue = styled.span<{ $positive: boolean | null }>`
+  font-family: var(--font-num);
   font-weight: 700;
   color: ${({ $positive }) =>
     $positive === null
@@ -131,6 +133,7 @@ export const AfterValue = styled.span<{ $positive: boolean | null }>`
 `;
 
 export const DeltaBadge = styled.div<{ $positive: boolean | null }>`
+  font-family: var(--font-num);
   font-size: 0.72rem;
   font-weight: 700;
   color: ${({ $positive }) =>
@@ -143,7 +146,7 @@ export const ConclusionBox = styled.div`
   padding: 1rem 1.25rem;
   background: var(--bg-secondary);
   border-left: 3px solid var(--border-light);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.835rem;
   color: var(--text-secondary);
   line-height: 1.65;

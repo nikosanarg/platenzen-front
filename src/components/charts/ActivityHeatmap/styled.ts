@@ -122,11 +122,10 @@ export const HeatmapTooltip = styled.div`
   background: rgba(20, 22, 28, 0.98);
   color: #fff;
   font-size: 0.82rem;
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 6px 12px;
   pointer-events: none;
-  box-shadow: 0 2px 12px 0 #0008;
+  box-shadow: var(--shadow);
   z-index: 10;
   white-space: nowrap;
-  border: 1px solid #222;
 `;

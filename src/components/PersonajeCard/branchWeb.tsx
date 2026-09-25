@@ -88,7 +88,6 @@ interface Props {
  */
 const BranchWeb: React.FC<Props> = ({ branches, dominantId, children }) => {
   const n = branches.length;
-  const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 
   return (
     <svg viewBox="0 0 300 300" style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
@@ -162,7 +161,7 @@ const BranchWeb: React.FC<Props> = ({ branches, dominantId, children }) => {
               fill={esDominante ? 'var(--gold)' : 'rgba(var(--text-secondary-rgb),0.85)'}
               fontSize={LABEL_H}
               fontWeight={esDominante ? '700' : '400'}
-              fontFamily={font}
+              fontFamily="var(--font)"
             >
               {b.name}
             </text>
@@ -174,7 +173,7 @@ const BranchWeb: React.FC<Props> = ({ branches, dominantId, children }) => {
               fill={esDominante ? 'var(--gold)' : '#e8e8f0'}
               fontSize={VALUE_H}
               fontWeight="700"
-              fontFamily={font}
+              fontFamily="var(--font-num)"
             >
               {Math.round(b.pct)}%
             </text>

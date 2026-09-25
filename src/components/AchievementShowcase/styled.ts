@@ -49,7 +49,7 @@ export const AchievementCardShell = styled.div<{ $tier: 'gold' | 'silver' | null
       &::after {
         content: '';
         position: absolute;
-        border-radius: calc(var(--radius-sm) + 8px);
+        border-radius: calc(var(--radius) + 8px);
         pointer-events: none;
         z-index: 0;
       }
@@ -99,7 +99,7 @@ export const ViewModeSwitch = styled.div`
   align-self: flex-end;
   gap: 0.35rem;
   padding: 0.25rem;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-secondary);
 
@@ -112,7 +112,7 @@ export const ViewModeButton = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
   color: ${({ $active }) => ($active ? 'var(--text-on-accent)' : 'var(--text-secondary)')};
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.4rem 0.85rem;
   font-size: 0.8rem;
   font-weight: 600;
@@ -194,8 +194,7 @@ export const AchievementCard = styled.article<{
   $tier: 'gold' | 'silver' | null;
 }>`
   background: var(--bg-card);
-  border: 1px solid ${({ $unlocked }) => ($unlocked ? 'rgba(var(--positive-rgb), 0.35)' : 'var(--border)')};
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: ${({ $viewMode }) => ($viewMode === 'list' ? '0.55rem' : '0.72rem')};
   /* Tapa la parte interna del halo, que sólo debe verse por fuera del borde */
   position: relative;
@@ -210,21 +209,20 @@ export const AchievementCard = styled.article<{
   opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.7)};
   box-shadow: ${({ $unlocked, $tier }) =>
     $tier
-      ? FRESHNESS_TIERS[$tier].cardShadow
+      ? `${FRESHNESS_TIERS[$tier].cardShadow}, var(--shadow-sm)`
       : $unlocked
-        ? '0 0 0 1px rgba(var(--success-rgb), 0.22), 0 0 18px rgba(var(--success-rgb), 0.16)'
-        : 'none'};
-  transition: border-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+        ? '0 0 0 1px rgba(var(--success-rgb), 0.22), 0 0 18px rgba(var(--success-rgb), 0.16), var(--shadow-sm)'
+        : 'var(--shadow-sm)'};
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    border-color: var(--border-light);
     opacity: 1;
     box-shadow: ${({ $unlocked, $tier }) =>
       $tier
-        ? FRESHNESS_TIERS[$tier].cardShadow
+        ? `${FRESHNESS_TIERS[$tier].cardShadow}, var(--shadow-hover)`
         : $unlocked
-          ? '0 0 0 1px rgba(var(--positive-rgb), 0.32), 0 0 22px rgba(var(--positive-rgb), 0.22)'
-          : 'none'};
+          ? '0 0 0 1px rgba(var(--positive-rgb), 0.32), 0 0 22px rgba(var(--positive-rgb), 0.22), var(--shadow-hover)'
+          : 'var(--shadow-hover)'};
   }
 
   @media (max-width: 600px) {

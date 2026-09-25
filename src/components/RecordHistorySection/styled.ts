@@ -28,6 +28,7 @@ export const ActivityName = styled.span`
 `;
 
 export const ImprovementText = styled.span`
+  font-family: var(--font-num);
   color: var(--positive);
   font-weight: 600;
 `;
@@ -40,7 +41,7 @@ export const NoRecord = styled.div`
   color: var(--text-muted);
   font-style: italic;
   background: var(--bg-card);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: 0.55rem 0.85rem;
   box-shadow: var(--shadow-sm);
 `;

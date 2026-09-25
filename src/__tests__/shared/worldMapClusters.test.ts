@@ -10,16 +10,41 @@
  * acercarse partiría un lugar en sus celdas y las filas repetidas volverían
  * justo a la escala en la que uno mira de cerca.
  */
-import { clusterZones, MapZone, RADIO_ZONA_KM, ZoneActivity } from '@/lib/worldMap';
+import {
+  clusterZones,
+  computeRouteLayer,
+  summarizeCluster,
+  MapZone,
+  RADIO_ZONA_KM,
+  ZoneActivity,
+  ZoneCluster,
+} from '@/lib/worldMap';
+import { latLonToWorldPx } from '@/lib/osmTiles';
+import { encodePolyline } from '@/lib/polylineEncoder';
+import { activity } from '@/__tests__/helpers/activity';
 
-function actividad(id: number, km = 10, fecha = '2026-07-02'): ZoneActivity {
+function actividad(id: number, km = 10, fecha = '2026-07-02', paceSecPerKm = 300): ZoneActivity {
   return {
     activityId: id,
     name: `Salida ${id}`,
     date: fecha,
     dateIso: `${fecha}T10:00:00Z`,
     distanceKm: km,
-    paceSecPerKm: 300,
+    paceSecPerKm,
+  };
+}
+
+/** Un lugar armado a mano, con sus salidas ya en el orden que `clusterZones` garantiza: de más reciente a más antigua. */
+function lugar(actividades: ZoneActivity[]): ZoneCluster {
+  return {
+    id: 'lugar-test',
+    lat: -32.95,
+    lon: -60.65,
+    visitCount: actividades.length,
+    distanceKm: actividades.reduce((s, a) => s + a.distanceKm, 0),
+    lastVisit: actividades[0]?.date ?? '',
+    bestPaceSecPerKm: Math.min(...actividades.map(a => a.paceSecPerKm)),
+    activities: actividades,
   };
 }
 
@@ -156,5 +181,110 @@ describe('datos del lugar', () => {
 
   it('devuelve lista vacía si no hay celdas', () => {
     expect(clusterZones([])).toEqual([]);
+  });
+});
+
+describe('computeRouteLayer', () => {
+  const dosPuntos = encodePolyline([
+    [-32.95, -60.65],
+    [-32.951, -60.651],
+  ]);
+
+  it('devuelve una línea por actividad de running con recorrido', () => {
+    const runs = [activity({ id: 1, map: { summary_polyline: dosPuntos } })];
+
+    const lineas = computeRouteLayer(runs);
+
+    expect(lineas).toHaveLength(1);
+    expect(lineas[0].activityId).toBe(1);
+    expect(lineas[0].points).toHaveLength(2);
+  });
+
+  it('proyecta cada punto a píxeles de mundo a zoom 0, la misma proyección que los tiles', () => {
+    const runs = [activity({ id: 1, map: { summary_polyline: dosPuntos } })];
+
+    const [linea] = computeRouteLayer(runs);
+
+    expect(linea.points[0]).toEqual(latLonToWorldPx(-32.95, -60.65, 0));
+  });
+
+  it('ignora actividades que no son de running', () => {
+    const runs = [activity({ id: 1, type: 'Ride', sport_type: 'Ride', map: { summary_polyline: dosPuntos } })];
+
+    expect(computeRouteLayer(runs)).toHaveLength(0);
+  });
+
+  it('ignora actividades sin polyline', () => {
+    const runs = [activity({ id: 1 })];
+
+    expect(computeRouteLayer(runs)).toHaveLength(0);
+  });
+
+  it('ignora un polyline de un solo punto: no hay línea que trazar', () => {
+    const unPunto = encodePolyline([[-32.95, -60.65]]);
+    const runs = [activity({ id: 1, map: { summary_polyline: unPunto } })];
+
+    expect(computeRouteLayer(runs)).toHaveLength(0);
+  });
+});
+
+describe('summarizeCluster', () => {
+  it('la primera visita es la más antigua de la lista, no la primera del arreglo', () => {
+    // `activities` viene de más reciente a más antigua, como lo entrega `clusterZones`.
+    const resumen = summarizeCluster(lugar([
+      actividad(3, 10, '2026-08-09'),
+      actividad(2, 10, '2026-05-01'),
+      actividad(1, 10, '2026-01-15'),
+    ]));
+
+    expect(resumen.firstVisit).toBe('2026-01-15');
+  });
+
+  it('la salida más larga es la de mayor distancia, sin importar su posición', () => {
+    const resumen = summarizeCluster(lugar([
+      actividad(3, 8, '2026-08-09'),
+      actividad(2, 21.1, '2026-05-01'),
+      actividad(1, 10, '2026-01-15'),
+    ]));
+
+    expect(resumen.longestRun.activityId).toBe(2);
+    expect(resumen.longestRun.distanceKm).toBe(21.1);
+  });
+
+  it('sin al menos 6 salidas, no hay tendencia de ritmo', () => {
+    const cincoActividades = Array.from({ length: 5 }, (_, i) => actividad(i + 1, 10, '2026-01-01'));
+
+    expect(summarizeCluster(lugar(cincoActividades)).paceTrend).toBeNull();
+  });
+
+  it('con 6 salidas o más, compara el ritmo de las primeras 5 contra las últimas 5', () => {
+    // Orden de más reciente a más antigua: las primeras 5 del arreglo son las
+    // últimas cronológicamente (300 s/km), y las últimas 5 del arreglo son las
+    // primeras cronológicamente (360 s/km) — mejoró el ritmo con el tiempo.
+    const actividades = [
+      ...Array.from({ length: 5 }, (_, i) => actividad(i + 1, 10, '2026-08-01', 300)),
+      actividad(6, 10, '2026-01-01', 360),
+      actividad(7, 10, '2026-01-02', 360),
+      actividad(8, 10, '2026-01-03', 360),
+      actividad(9, 10, '2026-01-04', 360),
+      actividad(10, 10, '2026-01-05', 360),
+    ];
+
+    const { paceTrend } = summarizeCluster(lugar(actividades));
+
+    expect(paceTrend).toEqual({ early: 360, late: 300 });
+  });
+
+  it('deja afuera del promedio las salidas sin ritmo registrado', () => {
+    const actividades = [
+      actividad(1, 10, '2026-08-05', 0),
+      ...Array.from({ length: 5 }, (_, i) => actividad(i + 2, 10, '2026-07-0' + (i + 1), 300)),
+      actividad(7, 10, '2026-01-01', 360),
+    ];
+
+    const { paceTrend } = summarizeCluster(lugar(actividades));
+
+    // La actividad sin ritmo (0) no entra al promedio de "recientes".
+    expect(paceTrend?.late).toBe(300);
   });
 });

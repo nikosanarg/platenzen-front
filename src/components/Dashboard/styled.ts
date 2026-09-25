@@ -52,7 +52,7 @@ export const HeaderLeft = styled.div`
 export const HeaderLogo = styled.div`
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -101,7 +101,7 @@ export const HeaderNav = styled.nav`
 
 export const HeaderNavLink = styled(Link)<{ $active: boolean }>`
   padding: 0.4rem 0.7rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: 0.82rem;
   font-weight: ${({ $active }) => ($active ? '700' : '500')};
   color: ${({ $active }) => ($active ? 'var(--accent-hover)' : 'var(--text-muted)')};

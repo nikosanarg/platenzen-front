@@ -16,9 +16,18 @@ export const PlaceRank = styled.span`
 
 /** Mismo tamaño que `PlaceRank`/`DistanceLabel`: los tres son el dato principal de su columna. */
 export const PlaceVisits = styled.div`
+  font-family: var(--font-num);
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--accent);
+  white-space: nowrap;
+`;
+
+/** Apilado debajo de `PlaceVisits` en la misma columna: los km totales del lugar. */
+export const PlaceKm = styled.div`
+  font-family: var(--font-num);
+  font-size: 0.72rem;
+  color: var(--text-muted);
   white-space: nowrap;
 `;
 
@@ -34,7 +43,7 @@ export const MoreLink = styled(Link)`
   color: var(--text-secondary);
   background: var(--bg-card);
   border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: 0.45rem 1.1rem;
   text-decoration: none;
 

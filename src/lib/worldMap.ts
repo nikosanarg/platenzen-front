@@ -4,6 +4,7 @@ import { splitPace } from '@/utils/pace';
 import { isRunning } from '@/lib/sports';
 import { haversineKm } from '@/lib/explorationUtils';
 import { parseLocalDate } from '@/utils/localDate';
+import { latLonToWorldPx } from '@/lib/osmTiles';
 
 export interface ZoneActivity {
   activityId: number;
@@ -303,6 +304,80 @@ export function clusterZones(zones: MapZone[], radiusKm = RADIO_ZONA_KM): ZoneCl
       activities: actividades,
     };
   }).sort((a, b) => b.visitCount - a.visitCount);
+}
+
+export interface RouteLine {
+  activityId: number;
+  /**
+   * El recorrido en píxeles de "mundo" a zoom 0 — la misma proyección
+   * Mercator que los tiles. Para dibujarlo a cualquier zoom real alcanza con
+   * multiplicar por 2^zoom (`latLonToWorldPx` escala linealmente con `n`),
+   * así que no hace falta rehacer la trigonometría de la proyección en cada
+   * frame de un arrastre o un zoom.
+   */
+  points: [number, number][];
+}
+
+/**
+ * Cada salida, como línea dibujable. Es la capa que reemplaza a los círculos
+ * sueltos: las calles que se recorren más veces suman opacidad y se ven más
+ * claras — el "dónde corro" en vez del "dónde clusterizo".
+ */
+export function computeRouteLayer(activities: Activity[]): RouteLine[] {
+  const lines: RouteLine[] = [];
+
+  for (const run of activities) {
+    if (!isRunning(run) || !run.map?.summary_polyline) continue;
+
+    let coords: [number, number][];
+    try {
+      coords = decodePolyline(run.map.summary_polyline);
+    } catch {
+      continue;
+    }
+    if (coords.length < 2) continue;
+
+    lines.push({
+      activityId: run.id,
+      points: coords.map(([lat, lon]) => latLonToWorldPx(lat, lon, 0)),
+    });
+  }
+
+  return lines;
+}
+
+/** A partir de cuántas salidas un lugar tiene "tendencia": menos que esto es ruido, no progreso. */
+const TREND_MIN_ACTIVITIES = 6;
+const TREND_SAMPLE = 5;
+
+export interface ClusterSummary {
+  firstVisit: string;
+  longestRun: ZoneActivity;
+  /** `null` con menos de `TREND_MIN_ACTIVITIES` salidas: no hay antes/después que comparar. */
+  paceTrend: { early: number; late: number } | null;
+}
+
+/**
+ * La historia de un lugar más allá del conteo: cuándo se pisó por primera
+ * vez, la salida más larga, y si el ritmo ahí mejoró.
+ */
+export function summarizeCluster(cluster: ZoneCluster): ClusterSummary {
+  // `cluster.activities` viene ordenado de más reciente a más antigua.
+  const acts = cluster.activities;
+  const firstVisit = acts[acts.length - 1]?.date ?? '';
+  const longestRun = acts.reduce((max, a) => (a.distanceKm > max.distanceKm ? a : max), acts[0]);
+
+  let paceTrend: ClusterSummary['paceTrend'] = null;
+  if (acts.length >= TREND_MIN_ACTIVITIES) {
+    const avg = (xs: ZoneActivity[]) => xs.reduce((s, a) => s + a.paceSecPerKm, 0) / xs.length;
+    const recientes = acts.slice(0, TREND_SAMPLE).filter(a => a.paceSecPerKm > 0);
+    const antiguas = acts.slice(-TREND_SAMPLE).filter(a => a.paceSecPerKm > 0);
+    if (recientes.length > 0 && antiguas.length > 0) {
+      paceTrend = { early: Math.round(avg(antiguas)), late: Math.round(avg(recientes)) };
+    }
+  }
+
+  return { firstVisit, longestRun, paceTrend };
 }
 
 export function formatPaceStr(secPerKm: number): string {

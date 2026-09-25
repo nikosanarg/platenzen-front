@@ -112,11 +112,10 @@ const TooltipBox = styled.div<{ $left: number; $top: number; $flip: 'up' | 'down
   width: 210px;
   max-width: 60vw;
   background: rgba(12, 14, 20, 0.97);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: 0.65rem 0.75rem;
   pointer-events: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow);
 `;
 
 const TooltipHead = styled.div`
