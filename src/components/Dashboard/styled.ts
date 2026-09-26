@@ -140,6 +140,7 @@ export const CacheInfo = styled.span`
  */
 export const DashboardContent = styled.main`
   position: relative;
+  flex: 1;
   max-width: 1400px;
   margin: 0 auto;
   padding: 1.75rem 1.5rem 2.5rem;
@@ -241,13 +242,15 @@ export const FullWidthChart = styled.div`
 
 /**
  * Sin caja oscura propia: antes tapaba sólo 60vh con un rectángulo plano, y
- * donde terminaba se veía un corte recto contra el fondo de la app. Ahora
- * ocupa el resto real de la pantalla (`flex: 1` del `DashboardRoot` en
- * columna) y en vez de oscurecer de más, desenfoca el fondo que ya se ve
- * detrás — sin borde que se note donde termina.
+ * donde terminaba se veía un corte recto contra el fondo de la app. `fixed` +
+ * `inset: 0` la ata a la ventana, no al contenido — cubre el 100% de lo
+ * visible pase lo que pase con el alto de lo que haya alrededor, y en vez de
+ * oscurecer de más, desenfoca el fondo que ya se ve detrás. El header queda
+ * arriba porque su z-index es mayor.
  */
 export const LoadingOverlay = styled.div`
-  flex: 1;
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
