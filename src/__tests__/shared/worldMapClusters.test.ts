@@ -23,7 +23,14 @@ import { latLonToWorldPx } from '@/lib/osmTiles';
 import { encodePolyline } from '@/lib/polylineEncoder';
 import { activity } from '@/__tests__/helpers/activity';
 
-function actividad(id: number, km = 10, fecha = '2026-07-02', paceSecPerKm = 300): ZoneActivity {
+function actividad(
+  id: number,
+  km = 10,
+  fecha = '2026-07-02',
+  paceSecPerKm = 300,
+  startLat = -32.95,
+  startLon = -60.65
+): ZoneActivity {
   return {
     activityId: id,
     name: `Salida ${id}`,
@@ -31,6 +38,8 @@ function actividad(id: number, km = 10, fecha = '2026-07-02', paceSecPerKm = 300
     dateIso: `${fecha}T10:00:00Z`,
     distanceKm: km,
     paceSecPerKm,
+    startLat,
+    startLon,
   };
 }
 
@@ -160,11 +169,12 @@ describe('datos del lugar', () => {
     expect(grupos[0].lastVisit).toBe('2026-08-09');
   });
 
-  it('se centra donde más se corrió, no en el promedio simple', () => {
-    const muchas = Array.from({ length: 10 }, (_, i) => actividad(i + 1));
+  it('se centra donde arrancan más salidas, no en el punto medio entre dos puntos', () => {
+    const muchas = Array.from({ length: 10 }, (_, i) => actividad(i + 1, 10, '2026-07-02', 300, -32.950, -60.650));
+    const pocas = [actividad(99, 10, '2026-07-02', 300, -32.962, -60.650)];
     const grupos = clusterZones([
       celda('frecuente', -32.950, -60.650, muchas),
-      celda('ocasional', -32.962, -60.650, [actividad(99)]),
+      celda('ocasional', -32.962, -60.650, pocas),
     ]);
 
     expect(grupos[0].lat).toBeGreaterThan(-32.953);

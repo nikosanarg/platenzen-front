@@ -32,7 +32,7 @@ export const Layout = styled.div`
 `;
 
 /** Alto compartido por el mapa y la lista: que la sidebar no quede más alta ni más baja que el mapa. */
-export const MAP_HEIGHT = '560px';
+export const MAP_HEIGHT = '660px';
 
 export const HeatmapContainer = styled(Panel)`
   overflow: hidden;

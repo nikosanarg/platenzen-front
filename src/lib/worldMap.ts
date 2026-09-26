@@ -13,6 +13,9 @@ export interface ZoneActivity {
   dateIso: string;    // ISO string for sorting
   distanceKm: number;
   paceSecPerKm: number;
+  /** Dónde arrancó esta salida — es lo que decide dónde se dibuja el lugar (ver `clusterZones`). */
+  startLat: number;
+  startLon: number;
 }
 
 export interface MapZone {
@@ -86,6 +89,7 @@ export function computeWorldMap(activities: Activity[]): WorldMapData | null {
 
     const km = run.distance / 1000;
     const paceSecPerKm = run.average_speed > 0 ? 1000 / run.average_speed : 0;
+    const [startLat, startLon] = coords[0];
 
     // Track which cells this activity touches
     const touchedCells = new Set<string>();
@@ -117,6 +121,8 @@ export function computeWorldMap(activities: Activity[]): WorldMapData | null {
             dateIso: run.start_date_local,
             distanceKm: km,
             paceSecPerKm,
+            startLat,
+            startLon,
           });
         }
       }
@@ -288,10 +294,11 @@ export function clusterZones(zones: MapZone[], radiusKm = RADIO_ZONA_KM): ZoneCl
     const totalKm = actividades.reduce((s, a) => s + a.distanceKm, 0);
     const ritmos = actividades.filter(a => a.paceSecPerKm > 0).map(a => a.paceSecPerKm);
 
-    // El centro se pondera por visitas: el grupo se dibuja donde más se corrió.
-    const pesoTotal = zonas.reduce((s, z) => s + z.visitCount, 0) || zonas.length;
-    const lat = zonas.reduce((s, z) => s + z.lat * z.visitCount, 0) / pesoTotal;
-    const lon = zonas.reduce((s, z) => s + z.lon * z.visitCount, 0) / pesoTotal;
+    // El centro es el promedio de dónde arranca cada salida, no de todo el
+    // recorrido: lo que importa para reconocer un lugar es dónde se para uno
+    // a empezar, no el centro de masa de las calles que cruza corriendo.
+    const lat = actividades.reduce((s, a) => s + a.startLat, 0) / actividades.length;
+    const lon = actividades.reduce((s, a) => s + a.startLon, 0) / actividades.length;
 
     return {
       id: zonas.map(z => z.id).join('|'),
