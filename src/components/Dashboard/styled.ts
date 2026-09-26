@@ -8,6 +8,8 @@ import styled from 'styled-components';
  */
 export const DashboardRoot = styled.div`
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 `;
 
 /**
@@ -237,14 +239,28 @@ export const FullWidthChart = styled.div`
   grid-column: 1 / -1;
 `;
 
+/**
+ * Sin caja oscura propia: antes tapaba sólo 60vh con un rectángulo plano, y
+ * donde terminaba se veía un corte recto contra el fondo de la app. Ahora
+ * ocupa el resto real de la pantalla (`flex: 1` del `DashboardRoot` en
+ * columna) y en vez de oscurecer de más, desenfoca el fondo que ya se ve
+ * detrás — sin borde que se note donde termina.
+ */
 export const LoadingOverlay = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  gap: 1rem;
-  background: rgba(6, 7, 10, 0.78);
+  gap: 0.75rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+`;
+
+export const LoadingRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 `;
 
 export const LoadingText = styled.p`

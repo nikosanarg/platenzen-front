@@ -18,6 +18,7 @@ import {
   CacheInfo,
   DashboardContent,
   LoadingOverlay,
+  LoadingRow,
   LoadingText,
   LoadingCount,
   Spinner,
@@ -136,8 +137,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {loading ? (
         <LoadingOverlay>
-          <Spinner />
-          <LoadingText>Cargando actividades de Strava</LoadingText>
+          <LoadingRow>
+            <Spinner style={{ width: 20, height: 20 }} />
+            <LoadingText>Cargando actividades</LoadingText>
+          </LoadingRow>
           {loadingCount > 0 && <LoadingCount>{loadingCount} actividades encontradas...</LoadingCount>}
         </LoadingOverlay>
       ) : (
