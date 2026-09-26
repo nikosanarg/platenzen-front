@@ -113,7 +113,11 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Interfaz
 
-- Componentes propios con styled-components 6 (SSR registry configurado).
+- Componentes propios con styled-components 6 (SSR registry configurado), más
+  `kaizen-lib` (paquete npm compartido con otros fronts del usuario: tokens y componentes
+  de UI). Antes de crear un componente o token nuevo, revisar si `kaizen-lib/ui` o
+  `kaizen-lib/tokens` ya lo resuelve y usarlo o evaluarlo como alternativa — es la
+  invariante "Reutilizar antes de crear" del harness aplicada a esta librería puntual.
 - Gráficos con Recharts.
 - Tono factual, sin lenguaje motivacional.
 
