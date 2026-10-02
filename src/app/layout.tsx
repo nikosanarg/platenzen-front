@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Yantramanav, Asimovian } from 'next/font/google';
+import { Yantramanav, Aldrich } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
 import RegistroServiceWorker from '@/components/pwa/RegistroServiceWorker';
 import { InstalacionPWAProvider } from '@/components/pwa/useInstalacionPWA';
@@ -13,12 +13,12 @@ const yantramanav = Yantramanav({
   display: 'swap',
 });
 
-// Asimovian sólo existe en peso 400 — es la fuente de los valores numéricos
+// Aldrich sólo existe en peso 400 — es la fuente de los valores numéricos
 // (km, ritmos, XP), nunca de párrafos largos.
-const asimovian = Asimovian({
+const aldrich = Aldrich({
   subsets: ['latin'],
   weight: '400',
-  variable: '--font-asimovian',
+  variable: '--font-aldrich',
   display: 'swap',
 });
 
@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${yantramanav.variable} ${asimovian.variable}`}>
+    <html lang="es" className={`${yantramanav.variable} ${aldrich.variable}`}>
       <body>
         <StyledComponentsRegistry>
           <AppBackground />
