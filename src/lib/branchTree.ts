@@ -553,3 +553,17 @@ export function computeBranchDecay(activities: Activity[], now: Date = new Date(
   later.setDate(later.getDate() + DIAS_DECAIMIENTO);
   return computeBranchTree(activities, later);
 }
+
+/**
+ * La rama que da el título: la más avanzada, y a igual nivel la más completa.
+ * Es la elección automática — la Home deja cambiarla entre las empatadas por
+ * nivel (ver `PersonajeCard`); la ficha pública muestra ésta.
+ */
+export function ramaDominante(tree: TreeSnapshot): BranchSnapshot {
+  return [...tree.branches].sort((a, b) => (b.level - a.level) || (b.pct - a.pct))[0];
+}
+
+/** El nombre del nivel alcanzado en la rama, o "Corredor" si todavía no hay ninguno. */
+export function tituloDeRama(branch: BranchSnapshot): string {
+  return branch.level > 0 ? branch.tiers[branch.level - 1].name : 'Corredor';
+}

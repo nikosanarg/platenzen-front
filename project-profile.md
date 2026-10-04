@@ -43,8 +43,14 @@ src/                             páginas y componentes
 
 El acceso a Strava pasa siempre por las rutas de servidor. **No hay backend propio ni base
 de datos**: los tokens viven en cookies del dispositivo y el historial de actividades en
-`localStorage`. Es una restricción de producto, no una etapa pendiente — la pantalla de
-conexión promete que nada se guarda en servidores.
+`localStorage`. El historial crudo no sale nunca del dispositivo. La pantalla de conexión
+promete que nada se guarda en servidores.
+
+El ranking (`/ranking`) y las fichas públicas (`/hero`) van a cambiar eso en parte: una API
+propia que recibe datos **derivados** (la ficha ya calculada y agregados por día), nunca
+actividades ni trazas. Está planificada y sin implementar: ver `docs/plan-api-ranking.md`,
+que incluye las decisiones que siguen abiertas. Hasta entonces, las dos vistas muestran
+sólo los datos propios.
 
 La PWA (`public/sw.js` + `src/app/manifest.ts`) es una capa de distribución: **el service
 worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
@@ -57,7 +63,7 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | `npx jest` (49 suites, 734 tests) |
+| Tests | `npx jest` (58 suites, 819 tests) |
 | Cobertura | `npm run test:coverage` |
 | Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
@@ -123,9 +129,9 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Tests
 
-Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **49
-suites, 734 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
-`comparative/`, `achievements/`, `providers/`, `api/`, `shared/`), con una factory de
+Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **58
+suites, 819 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+`comparative/`, `achievements/`, `ranking/`, `providers/`, `api/`, `shared/`), con una factory de
 actividades en `helpers/activity.ts`.
 
 El coverage se mide sólo sobre la capa de cálculo (`src/lib`, `src/utils`, `src/hooks`),

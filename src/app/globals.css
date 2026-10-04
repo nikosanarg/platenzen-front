@@ -29,6 +29,11 @@
   --gold: #f5c518;
   --gold-rgb: 245, 197, 24;
   --gold-muted: #c9a42a;
+  /* Plata y bronce de las ligas del ranking; el oro es --gold. */
+  --silver: #c3c7d1;
+  --silver-rgb: 195, 199, 209;
+  --bronze: #cd8a4f;
+  --bronze-rgb: 205, 138, 79;
   /* Ámbar de XP y medalla en logros. */
   --xp: #fbbf24;
   --xp-rgb: 251, 191, 36;

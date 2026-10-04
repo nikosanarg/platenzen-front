@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconRun, IconMedal, IconCalendar, IconCompass } from '@/components/Icon';
+import { IconRun, IconMedal, IconCalendar, IconCompass, IconTrophy } from '@/components/Icon';
 
 /**
  * Las secciones de la app, compartidas por la nav de la topbar (desktop) y la
@@ -18,6 +18,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/achievements', label: 'Logros', Icon: IconMedal },
   { href: '/comparative', label: 'Comparar', Icon: IconCalendar },
   { href: '/mapa', label: 'Mapa', Icon: IconCompass },
+  { href: '/ranking', label: 'Ranking', Icon: IconTrophy },
 ];
 
 /**

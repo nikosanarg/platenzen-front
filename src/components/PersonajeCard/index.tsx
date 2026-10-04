@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeRoles } from '@/lib/roles';
-import { BranchId, computeBranchTree, computeBranchDecay } from '@/lib/branchTree';
+import { BranchId, computeBranchTree, computeBranchDecay, ramaDominante, tituloDeRama } from '@/lib/branchTree';
 import { computeCoreRecord } from '@/lib/coreRecord';
 import { formatRecordTime } from '@/lib/recordHistory';
 import { computeLongestWeeklyStreak } from '@/utils/streaks';
@@ -88,18 +88,14 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const coreRecord = useMemo(() => computeCoreRecord(activities), [activities]);
 
   /**
-   * La rama dominante da el título: la más avanzada, y a igual nivel la más
-   * completa. Pero el empate que habilita el cambio es por NIVEL solo: dos
-   * ramas en el mismo nivel siguen siendo la misma "distancia" del próximo
-   * nivel (ninguna llegó al 100%), aunque una vaya con 75% y la otra con
-   * 50% dentro de ese tramo — el porcentaje sólo desempata cuál se muestra
-   * primero, no cuáles se pueden elegir.
+   * La rama dominante da el título (`ramaDominante`). Pero el empate que
+   * habilita el cambio es por NIVEL solo: dos ramas en el mismo nivel siguen
+   * siendo la misma "distancia" del próximo nivel (ninguna llegó al 100%),
+   * aunque una vaya con 75% y la otra con 50% dentro de ese tramo — el
+   * porcentaje sólo desempata cuál se muestra primero, no cuáles se pueden
+   * elegir.
    */
-  const dominanteAuto = useMemo(
-    () =>
-      [...tree.branches].sort((a, b) => (b.level - a.level) || (b.pct - a.pct))[0],
-    [tree],
-  );
+  const dominanteAuto = useMemo(() => ramaDominante(tree), [tree]);
   const empatados = useMemo(() => {
     if (dominanteAuto.level === 0) return [dominanteAuto];
     const candidatos = tree.branches.filter(b => b.level === dominanteAuto.level);
@@ -109,10 +105,10 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
   const [elegidoId, setElegidoId] = useState<BranchId | null>(null);
   const dominante = empatados.find(b => b.id === elegidoId) ?? empatados[0];
 
-  const titulo = dominante.level > 0 ? dominante.tiers[dominante.level - 1].name : 'Corredor';
+  const titulo = tituloDeRama(dominante);
   const opcionesRama = empatados.map(b => ({
     id: b.id,
-    label: b.level > 0 ? b.tiers[b.level - 1].name : 'Corredor',
+    label: tituloDeRama(b),
     pct: b.pct,
   }));
 

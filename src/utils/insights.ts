@@ -1,6 +1,7 @@
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
+import { Voz } from '@/types/voz';
 
 const WEEKDAY_NAMES_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
@@ -9,11 +10,17 @@ export interface SmartInsight {
   text: string;
 }
 
+/**
+ * `voz` cambia sólo la redacción: qué frases salen y con qué números es la
+ * misma decisión para el dueño y para quien mira su ficha pública.
+ */
 export function generateSmartInsights(
   activities: Activity[],
-  stats: ProcessedStats
+  stats: ProcessedStats,
+  voz: Voz = 'propia'
 ): SmartInsight[] {
   const insights: SmartInsight[] = [];
+  const propia = voz === 'propia';
 
   // 1. Best day of week (most frequent)
   if (stats.weekdayDistribution.length > 0) {
@@ -22,7 +29,7 @@ export function generateSmartInsights(
     if (top.count >= 3) {
       insights.push({
         id: 'top_day',
-        text: `Los ${WEEKDAY_NAMES_ES[top.day]}s son tu día de más salidas (${top.count})`,
+        text: `Los ${WEEKDAY_NAMES_ES[top.day]}s son ${propia ? 'tu' : 'su'} día de más salidas (${top.count})`,
       });
     }
   }
@@ -36,12 +43,12 @@ export function generateSmartInsights(
       if (pct >= 10) {
         insights.push({
           id: 'distance_growth',
-          text: `Corrés ${pct}% más que hace 3 meses (${Math.round(recent3km)} km vs ${Math.round(prev3km)} km)`,
+          text: `${propia ? 'Corrés' : 'Corre'} ${pct}% más que hace 3 meses (${Math.round(recent3km)} km vs ${Math.round(prev3km)} km)`,
         });
       } else if (pct <= -10) {
         insights.push({
           id: 'distance_decline',
-          text: `Tu volumen bajó un ${Math.abs(pct)}% respecto a los 3 meses anteriores. Puede ser una fase de recuperación`,
+          text: `${propia ? 'Tu' : 'Su'} volumen bajó un ${Math.abs(pct)}% respecto a los 3 meses anteriores. Puede ser una fase de recuperación`,
         });
       }
     }
@@ -59,12 +66,12 @@ export function generateSmartInsights(
       if (currentMonth.distance === maxEver) {
         insights.push({
           id: 'record_month',
-          text: `Tu volumen actual es el más alto del historial: ${Math.round(currentMonth.distance)} km este mes`,
+          text: `${propia ? 'Tu' : 'Su'} volumen actual es el más alto ${propia ? 'del' : 'de su'} historial: ${Math.round(currentMonth.distance)} km este mes`,
         });
       } else {
         insights.push({
           id: 'record_month',
-          text: `Tu volumen más alto fue de ${Math.round(maxEver)} km en un mes anterior. Este mes llevás ${Math.round(currentMonth.distance)} km`,
+          text: `${propia ? 'Tu' : 'Su'} volumen más alto fue de ${Math.round(maxEver)} km en un mes anterior. Este mes ${propia ? 'llevás' : 'lleva'} ${Math.round(currentMonth.distance)} km`,
         });
       }
     }
@@ -77,7 +84,7 @@ export function generateSmartInsights(
   if (active >= recentQuantity / 2) {
     insights.push({
       id: 'consistency_streak',
-      text: `Entrenaste ${active} semanas de las últimas ${recentQuantity} semanas`,
+      text: `${propia ? 'Entrenaste' : 'Entrenó'} ${active} semanas de las últimas ${recentQuantity} semanas`,
     });
   }
 
@@ -92,7 +99,7 @@ export function generateSmartInsights(
       const label = m > 0 ? `${m} min ${s > 0 ? s + ' seg' : ''}` : `${s} seg`;
       insights.push({
         id: 'pace_improved',
-        text: `Tu ritmo mejoró ${label} por km desde tus primeras salidas registradas`,
+        text: `${propia ? 'Tu' : 'Su'} ritmo mejoró ${label} por km desde ${propia ? 'tus' : 'sus'} primeras salidas registradas`,
       });
     }
   }
@@ -101,12 +108,12 @@ export function generateSmartInsights(
   if (stats.longestActivity >= HALF_MARATHON_KM) {
     insights.push({
       id: 'long_run',
-      text: `Ya alcanzaste una distancia de media maratón o más (${Math.round(stats.longestActivity * 10) / 10} km)`,
+      text: `Ya ${propia ? 'alcanzaste' : 'alcanzó'} una distancia de media maratón o más (${Math.round(stats.longestActivity * 10) / 10} km)`,
     });
   } else if (stats.longestActivity >= 10) {
     insights.push({
       id: 'long_run',
-      text: `Tu carrera más larga es de ${Math.round(stats.longestActivity * 10) / 10} km`,
+      text: `${propia ? 'Tu' : 'Su'} carrera más larga es de ${Math.round(stats.longestActivity * 10) / 10} km`,
     });
   }
 

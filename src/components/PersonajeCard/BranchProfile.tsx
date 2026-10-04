@@ -5,6 +5,7 @@ import styled, { keyframes, css } from 'styled-components';
 import { Badge } from 'kaizen-lib/ui';
 import type { BranchId, BranchSnapshot, Tier, TreeSnapshot } from '@/lib/branchTree';
 import { DIAS_DECAIMIENTO } from '@/lib/branchTree';
+import type { Voz } from '@/types/voz';
 import {
   IconFlame, IconRoute, IconTrendUp, IconCalendar, IconCompass, IconMountain,
 } from '@/components/Icon';
@@ -209,9 +210,12 @@ interface Props {
   decay?: number[];
   /** La rama que da el título de la card: su eje sale dorado en la telaraña. */
   dominantId?: BranchId;
+  /** A quién le habla la ayuda del gráfico: al dueño, o a quien mira su ficha pública. */
+  voz?: Voz;
 }
 
-const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
+const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId, voz = 'propia' }) => {
+  const propia = voz === 'propia';
   const [hovered, setHovered] = useState<Selected | null>(null);
   const [pinned, setPinned] = useState<Selected | null>(null);
   const [areaHover, setAreaHover] = useState(false);
@@ -344,13 +348,16 @@ const BranchProfile: React.FC<Props> = ({ tree, decay, dominantId }) => {
             <TooltipTier>Cómo leer este gráfico</TooltipTier>
           </TooltipHead>
           <HelpList>
-            <HelpItem>El área pintada es tu nivel actual en cada rama, sobre 100%.</HelpItem>
-            <HelpItem>El eje dorado es la rama que te da el título de arriba.</HelpItem>
-            <HelpItem>
-              {hayCaida
-                ? `La línea punteada roja muestra dónde quedarías si dejás de correr ${DIAS_DECAIMIENTO} días.`
-                : 'Tu progreso no vence en el próximo mes: nada decae todavía.'}
-            </HelpItem>
+            <HelpItem>El área pintada es {propia ? 'tu' : 'su'} nivel actual en cada rama, sobre 100%.</HelpItem>
+            <HelpItem>El eje dorado es la rama que {propia ? 'te' : 'le'} da el título de arriba.</HelpItem>
+            {/* Sin proyección no se afirma nada sobre el decaimiento: no se calculó. */}
+            {decay !== undefined && (
+              <HelpItem>
+                {hayCaida
+                  ? `La línea punteada roja muestra dónde quedarías si dejás de correr ${DIAS_DECAIMIENTO} días.`
+                  : 'Tu progreso no vence en el próximo mes: nada decae todavía.'}
+              </HelpItem>
+            )}
           </HelpList>
         </TooltipBox>
       )}

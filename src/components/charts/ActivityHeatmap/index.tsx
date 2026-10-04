@@ -20,8 +20,12 @@ const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'S
 const TOOLTIP_WIDTH = 118;
 const TOOLTIP_HEIGHT = 52;
 
+const DIAS_ANIO = 365;
+
 interface ActivityHeatmapProps {
   data: DayStats[];
+  /** Cuántos días hacia atrás desde hoy. La Home muestra el año; la ficha pública, 90 días. */
+  days?: number;
 }
 
 type HeatmapTooltipState = {
@@ -37,10 +41,10 @@ function buildDistanceGrid(data: DayStats[]): Map<string, number> {
   return distanceMap;
 }
 
-function getWeeksInLastYear(): string[][] {
+function getWeeksInLastDays(days: number): string[][] {
   const today = new Date();
   const start = new Date(today);
-  start.setFullYear(start.getFullYear() - 1);
+  start.setDate(start.getDate() - days);
   start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // alinear a lunes
 
   const weeks: string[][] = [];
@@ -98,8 +102,8 @@ function isFutureDate(date: string): boolean {
   return date > today;
 }
 
-const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
-  const weeks = React.useMemo(() => getWeeksInLastYear(), []);
+const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, days = DIAS_ANIO }) => {
+  const weeks = React.useMemo(() => getWeeksInLastDays(days), [days]);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = React.useState<HeatmapTooltipState>(null);
 
@@ -131,7 +135,14 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
               ))}
             </HeatmapMonthsRow>
 
-            <HeatmapGrid role="grid" aria-label="Mapa anual de actividad por día">
+            <HeatmapGrid
+              role="grid"
+              aria-label={
+                days === DIAS_ANIO
+                  ? 'Mapa anual de actividad por día'
+                  : `Mapa de actividad por día, últimos ${days} días`
+              }
+            >
               {weeks.map((week, weekIdx) => (
                 <HeatmapWeekColumn key={`week-${weekIdx}`}>
                   {week.map((date) => {

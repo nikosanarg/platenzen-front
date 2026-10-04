@@ -133,3 +133,11 @@ export const IconDownload: React.FC<Props> = ({ size = 20, color = 'currentColor
     <path d="M3 13v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const IconTrophy: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <path d="M6 3.5h8v4a4 4 0 0 1-8 0v-4z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M6 5H3.5v1a2.5 2.5 0 0 0 2.6 2.5M14 5h2.5v1a2.5 2.5 0 0 1-2.6 2.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 11.5v3M7 16.5h6" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);

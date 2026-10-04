@@ -241,3 +241,34 @@ describe('salida más larga', () => {
     expect(textOf(statsWith({ longestActivity: 21 }), 'long_run')).not.toContain('media maratón');
   });
 });
+
+describe('voz de tercero', () => {
+  // Todas las observaciones a la vez: si alguna se quedara en segunda persona,
+  // la ficha pública le hablaría al que la mira como si fuera el dueño.
+  const todas = statsWith({
+    weekdayDistribution: [{ day: 0, label: 'Dom', count: 27 }],
+    monthly: months(
+      ['2026-02', 40], ['2026-03', 40], ['2026-04', 40],
+      ['2026-05', 10], ['2026-06', 10], ['2026-07', 10],
+    ),
+    weekly: weeks(32),
+    paceEvolution: paces(400, 400, 400, 400, 400, 300, 300, 300, 300, 300),
+    longestActivity: 26.2,
+  });
+
+  it('mismas observaciones que para el dueño, en otra persona', () => {
+    const propias = generateSmartInsights([], todas).map(i => i.id);
+    const tercero = generateSmartInsights([], todas, 'tercero').map(i => i.id);
+    expect(tercero).toEqual(propias);
+  });
+
+  it('ninguna frase le habla al lector', () => {
+    const textos = generateSmartInsights([], todas, 'tercero').map(i => i.text);
+    expect(textos.length).toBeGreaterThan(0);
+    for (const t of textos) {
+      expect(t).not.toMatch(/\b(tu|tus|corrés|llevás|entrenaste|alcanzaste)\b/i);
+    }
+    expect(textos).toContain('Los domingos son su día de más salidas (27)');
+    expect(textos).toContain('Entrenó 32 semanas de las últimas 32 semanas');
+  });
+});

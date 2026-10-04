@@ -286,6 +286,20 @@ export const Spinner = styled.div`
   }
 `;
 
+/* ── Páginas de una sola pieza ─────────────────────────────────── */
+
+/**
+ * Columna de hasta 1100px para las páginas de una sola pieza (ranking, ficha).
+ * `DashboardContent` toma el ancho que le pide su contenido; un `width` fijo le
+ * pediría 1100px también en un teléfono. Una pista `minmax(0, 1100px)` pide
+ * hasta 1100 pero puede achicarse a cero, así que en pantalla angosta cede.
+ */
+export const PageColumn = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1100px);
+  justify-content: center;
+`;
+
 /* ── Historia: contenido principal + sidebar de listas ────────────── */
 
 /**
