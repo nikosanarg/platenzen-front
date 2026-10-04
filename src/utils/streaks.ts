@@ -1,4 +1,5 @@
-import { DayStats, WeeklyStats } from '@/types/stats';
+import { DayStats } from '@/types/stats';
+import { localDateKey } from './localDate';
 
 function dateAddDays(dateStr: string, days: number): string {
   const d = new Date(dateStr);
@@ -22,20 +23,6 @@ export function getCurrentStreak(daily: DayStats[]): number {
   return streak;
 }
 
-// Week key = Monday ISO date
-function getMonday(date: Date): string {
-  const d = new Date(date);
-  const day = d.getDay();
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
-  return d.toISOString().slice(0, 10);
-}
-
-function prevWeekKey(weekKey: string): string {
-  const d = new Date(weekKey);
-  d.setDate(d.getDate() - 7);
-  return d.toISOString().slice(0, 10);
-}
-
 /**
  * Monday-anchored week index for a `YYYY-MM-DD` date, computed from date
  * components (timezone-safe). Consecutive weeks differ by exactly 1, across
@@ -50,20 +37,26 @@ function weekIndexFromDate(dateStr: string): number {
 
 /**
  * Consecutive active weeks ending at the most recent active week.
- * Current week counts only if it already has ≥1 activity.
- * Minimum to display: 2 weeks.
+ * Current week counts only if it already has ≥1 activity — while it is still
+ * running, an empty current week doesn't break the streak yet.
+ *
+ * Takes `daily` (not `weekly`) for the same reason as the longest streak:
+ * the week index comes from date components, so it doesn't depend on the
+ * key format of `groupByWeek` or on the process timezone.
  */
-export function computeWeeklyStreak(weekly: WeeklyStats[]): number {
-  const activeWeeks = new Set(weekly.filter(w => w.count > 0).map(w => w.week));
+export function computeWeeklyStreak(daily: DayStats[], now: Date = new Date()): number {
+  const activeWeeks = new Set(
+    daily.filter(d => d.count > 0).map(d => weekIndexFromDate(d.date))
+  );
   if (!activeWeeks.size) return 0;
 
-  const todayWeek = getMonday(new Date());
-  let w = activeWeeks.has(todayWeek) ? todayWeek : prevWeekKey(todayWeek);
+  const todayWeek = weekIndexFromDate(localDateKey(now));
+  let w = activeWeeks.has(todayWeek) ? todayWeek : todayWeek - 1;
 
   let streak = 0;
   while (activeWeeks.has(w)) {
     streak++;
-    w = prevWeekKey(w);
+    w--;
   }
   return streak;
 }

@@ -12,13 +12,10 @@ import {
   getCurrentStreak,
   getLongestStreak,
 } from '@/utils/streaks';
-import { DayStats, WeeklyStats } from '@/types/stats';
+import { DayStats } from '@/types/stats';
 
 const days = (...dates: string[]): DayStats[] =>
   dates.map((date) => ({ date, count: 1, distance: 5 }));
-
-const weeks = (...mondays: string[]): WeeklyStats[] =>
-  mondays.map((week) => ({ week, label: week, distance: 5, count: 1 }));
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -83,25 +80,39 @@ describe('getLongestStreak', () => {
 describe('computeWeeklyStreak', () => {
   it('devuelve 0 sin semanas activas', () => {
     expect(computeWeeklyStreak([])).toBe(0);
-    expect(computeWeeklyStreak([{ week: '2026-07-13', label: '', distance: 0, count: 0 }])).toBe(0);
+    expect(computeWeeklyStreak([{ date: '2026-07-13', count: 0, distance: 0 }])).toBe(0);
   });
 
   it('cuenta las semanas consecutivas que terminan en la actual', () => {
-    expect(computeWeeklyStreak(weeks('2026-06-29', '2026-07-06', '2026-07-13'))).toBe(3);
+    expect(computeWeeklyStreak(days('2026-06-29', '2026-07-06', '2026-07-13'))).toBe(3);
   });
 
   it('cuenta la semana actual sólo si ya tiene actividad', () => {
     // Sin la semana del 13, la racha arranca en la anterior y sigue valiendo.
-    expect(computeWeeklyStreak(weeks('2026-06-29', '2026-07-06'))).toBe(2);
+    expect(computeWeeklyStreak(days('2026-06-29', '2026-07-06'))).toBe(2);
   });
 
   it('una semana vacía en el medio corta la racha', () => {
-    expect(computeWeeklyStreak(weeks('2026-06-22', '2026-07-06', '2026-07-13'))).toBe(2);
+    expect(computeWeeklyStreak(days('2026-06-22', '2026-07-06', '2026-07-13'))).toBe(2);
   });
 
   it('un domingo pertenece a la semana que arrancó el lunes anterior', () => {
     jest.setSystemTime(new Date('2026-07-19T12:00:00Z')); // domingo
-    expect(computeWeeklyStreak(weeks('2026-07-06', '2026-07-13'))).toBe(2);
+    expect(computeWeeklyStreak(days('2026-07-06', '2026-07-13'))).toBe(2);
+  });
+
+  it('una salida en cualquier día de la semana la mantiene activa', () => {
+    // Jueves, martes y lunes: tres semanas distintas, ninguna arranca en lunes salvo la actual.
+    expect(computeWeeklyStreak(days('2026-07-02', '2026-07-07', '2026-07-13'))).toBe(3);
+  });
+
+  it('cruza el cambio de año sin cortar la racha', () => {
+    jest.setSystemTime(new Date('2026-01-07T12:00:00Z'));
+    expect(computeWeeklyStreak(days('2025-12-24', '2025-12-31', '2026-01-06'))).toBe(3);
+  });
+
+  it('acepta el momento de referencia explícito', () => {
+    expect(computeWeeklyStreak(days('2026-03-02', '2026-03-09'), new Date(2026, 2, 11))).toBe(2);
   });
 });
 

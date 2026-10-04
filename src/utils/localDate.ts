@@ -18,3 +18,13 @@ export function parseLocalDate(iso: string): Date {
   const [h, mi, s] = timePart.split(':').map(Number);
   return new Date(y, mo - 1, d, h, mi, Math.trunc(s || 0));
 }
+
+/**
+ * La clave `YYYY-MM-DD` del día de calendario local de `d` — la misma forma
+ * que `start_date_local.slice(0, 10)` y que `DayStats.date`. No usa
+ * `toISOString`, que la daría en UTC y correría el día después de las 21 en
+ * Argentina.
+ */
+export function localDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
