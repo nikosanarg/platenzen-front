@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { bottomNavOffset } from 'kaizen-lib/ui';
 
 /**
  * Los tres avisos flotantes del ciclo de vida de la PWA (instalar, iOS,
@@ -11,7 +12,7 @@ import styled from 'styled-components';
 const AvisoFlotante = styled.div`
   position: fixed;
   /* Por encima de la barra inferior del dashboard cuando está visible. */
-  bottom: calc(20px + var(--bottom-nav-offset, 0px));
+  bottom: calc(20px + ${bottomNavOffset});
   left: 16px;
   right: 16px;
   max-width: 400px;
@@ -28,7 +29,7 @@ const AvisoFlotante = styled.div`
 
 export const InstallButton = styled.button`
   position: fixed;
-  bottom: calc(20px + var(--bottom-nav-offset, 0px));
+  bottom: calc(20px + ${bottomNavOffset});
   right: 16px;
   padding: 12px 18px;
   background: var(--accent);

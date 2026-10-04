@@ -1,11 +1,12 @@
 /**
  * Barra de secciones inferior (mobile).
  *
- * Lo que se fija: que muestre las mismas secciones que la topbar —salen de
- * `NAV_ITEMS`, no de una copia— y que marque como activa la de la ruta actual.
- * Que se vea sólo en el teléfono es CSS: jsdom no evalúa media queries, así
- * que la barra queda en su `display: none` de base y se consulta con
- * `hidden: true`.
+ * La barra en sí —visibilidad por ancho, offset, foco, marca del activo— es de
+ * `kaizen-lib` y se testea allá. Lo que se fija acá es lo que decide este
+ * repo: que muestre las mismas secciones que la topbar —salen de `NAV_ITEMS`,
+ * no de una copia— y cuál marca como activa. Que se vea sólo en el teléfono
+ * es CSS: jsdom no evalúa media queries, así que la barra queda en su
+ * `display: none` de base y se consulta con `hidden: true`.
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -22,37 +23,38 @@ function enRuta(ruta: string) {
   return render(<BottomNav />);
 }
 
+function activas() {
+  return screen
+    .getAllByRole('link', { hidden: true })
+    .filter(link => link.getAttribute('aria-current') === 'page')
+    .map(link => link.textContent);
+}
+
 describe('BottomNav', () => {
-  it('muestra las cuatro secciones de la topbar, con su destino', () => {
+  it('muestra las secciones de la topbar, en su orden y con su destino', () => {
     enRuta('/');
 
     const links = screen.getAllByRole('link', { hidden: true });
-    expect(links.map(l => l.getAttribute('href'))).toEqual(NAV_ITEMS.map(i => i.href));
-    expect(screen.getByRole('link', { name: 'Progreso', hidden: true })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Logros', hidden: true })).toHaveAttribute('href', '/achievements');
-    expect(screen.getByRole('link', { name: 'Comparar', hidden: true })).toHaveAttribute('href', '/comparative');
-    expect(screen.getByRole('link', { name: 'Mapa', hidden: true })).toHaveAttribute('href', '/mapa');
+    expect(links.map(l => [l.textContent, l.getAttribute('href')])).toEqual(
+      NAV_ITEMS.map(i => [i.label, i.href]),
+    );
   });
 
   it('marca como actual sólo la sección de la ruta', () => {
     enRuta('/achievements');
 
-    expect(screen.getByRole('link', { name: 'Logros', hidden: true })).toHaveAttribute('aria-current', 'page');
-    for (const nombre of ['Progreso', 'Comparar', 'Mapa']) {
-      expect(screen.getByRole('link', { name: nombre, hidden: true })).not.toHaveAttribute('aria-current');
-    }
+    expect(activas()).toEqual(['Logros']);
   });
 
   it('no marca Progreso en otra sección aunque `/` sea prefijo de su ruta', () => {
     enRuta('/mapa');
 
-    expect(screen.getByRole('link', { name: 'Mapa', hidden: true })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Progreso', hidden: true })).not.toHaveAttribute('aria-current');
+    expect(activas()).toEqual(['Mapa']);
   });
 
-  it('es una navegación con nombre accesible', () => {
-    enRuta('/');
+  it('no marca ninguna en una ruta que no es sección', () => {
+    enRuta('/achievements/detalle');
 
-    expect(screen.getByRole('navigation', { hidden: true })).toHaveAttribute('aria-label', 'Secciones');
+    expect(activas()).toEqual([]);
   });
 });

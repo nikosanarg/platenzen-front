@@ -1,15 +1,10 @@
 import Link from 'next/link';
-import styled, { createGlobalStyle } from 'styled-components';
+import styled from 'styled-components';
+import { bottomNavOffset } from 'kaizen-lib/ui';
+import { CORTE_MOVIL_PX } from './navItems';
 
-/**
- * Corte en el que las secciones pasan de la topbar a la barra inferior. Es el
- * mismo en `HeaderNav`, `DashboardHeader` y `BottomNavBar`: si uno se moviera
- * solo, habría un ancho con las secciones en los dos lados o en ninguno.
- */
-const MOVIL = '(max-width: 640px)';
-
-/** Alto de contenido de la barra inferior; el inset del dispositivo va aparte. */
-const ALTO_BOTTOM_NAV = '3.5rem';
+/** Corte en el que las secciones pasan de la topbar a la barra inferior (`BottomNav`). */
+const MOVIL = `(max-width: ${CORTE_MOVIL_PX}px)`;
 
 /**
  * Sin fondo propio: deja ver el fondo de la app (`AppBackground`, montado en
@@ -29,7 +24,7 @@ export const DashboardRoot = styled.div`
  * los costados, así el centro de la nav coincide con el centro del header
  * sin importar cuánto pesen el logo o los botones de acción.
  *
- * En el teléfono la nav sale de la topbar (pasa a `BottomNavBar`) y quedan
+ * En el teléfono la nav sale de la topbar (pasa a `BottomNav`) y quedan
  * sólo logo y acciones, en una fila.
  */
 export const DashboardHeader = styled.header`
@@ -94,7 +89,7 @@ export const HeaderRight = styled.div`
  * Las tabs de la Home viven en la topbar: no hay una segunda franja sticky.
  * Columna propia en el grid del header —ver `DashboardHeader`— así queda
  * centrada de verdad, no pegada al logo. En el teléfono se oculta: ahí las
- * mismas secciones (`NAV_ITEMS`) las muestra `BottomNavBar`.
+ * mismas secciones (`NAV_ITEMS`) las muestra `BottomNav`.
  */
 export const HeaderNav = styled.nav`
   grid-area: nav;
@@ -144,8 +139,8 @@ export const DashboardContent = styled.main`
   flex: 1;
   max-width: 1400px;
   margin: 0 auto;
-  /* El offset vale 0 salvo con la barra inferior visible: ver BottomNavOffset. */
-  padding: 1.75rem 1.5rem calc(2.5rem + var(--bottom-nav-offset, 0px));
+  /* El offset vale 0 salvo con la barra inferior visible. */
+  padding: 1.75rem 1.5rem calc(2.5rem + ${bottomNavOffset});
   display: flex;
   flex-direction: column;
   gap: 2.25rem;
@@ -184,7 +179,7 @@ export const DashboardContent = styled.main`
   }
 
   @media (max-width: 600px) {
-    padding: 1.25rem 1rem calc(2rem + var(--bottom-nav-offset, 0px));
+    padding: 1.25rem 1rem calc(2rem + ${bottomNavOffset});
     gap: 1.85rem;
   }
 `;
@@ -327,84 +322,4 @@ export const HistoriaSidebar = styled.aside`
     position: sticky;
     top: 5.5rem;
   }
-`;
-
-/**
- * Lo que ocupa la barra inferior —alto más el inset del dispositivo—,
- * publicado en `:root` sólo mientras `BottomNav` está montada y en el corte
- * donde se ve. `DashboardContent` y los avisos flotantes de la PWA (que viven
- * fuera del dashboard, en el layout raíz) lo suman con fallback `0px`: en
- * desktop y en la pantalla de conexión no cambia nada.
- */
-export const BottomNavOffset = createGlobalStyle`
-  @media ${MOVIL} {
-    :root {
-      --bottom-nav-offset: calc(${ALTO_BOTTOM_NAV} + env(safe-area-inset-bottom, 0px));
-    }
-  }
-`;
-
-/**
- * Mismo fondo que la topbar: son las dos piezas fijas del marco de la app.
- * El inset inferior se suma como padding, no al alto: en una PWA instalada en
- * un teléfono con indicador de inicio la barra se estira por debajo sin que
- * sus ítems queden debajo del indicador.
- */
-export const BottomNavBar = styled.nav`
-  display: none;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-
-  @media ${MOVIL} {
-    display: flex;
-  }
-`;
-
-export const BottomNavLink = styled(Link)<{ $active: boolean }>`
-  position: relative;
-  flex: 1 1 0;
-  min-width: 0;
-  height: ${ALTO_BOTTOM_NAV};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  color: ${({ $active }) => ($active ? 'var(--accent-hover)' : 'var(--text-muted)')};
-  font-weight: ${({ $active }) => ($active ? '700' : '500')};
-  text-decoration: none;
-  transition: color 0.15s;
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
-  }
-
-  /* La sección activa no se marca sólo por color: una franja corta arriba del
-     ítem, pegada al borde de la barra. */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 25%;
-    right: 25%;
-    height: 2px;
-    border-radius: 0 0 2px 2px;
-    background: ${({ $active }) => ($active ? 'var(--accent)' : 'transparent')};
-  }
-`;
-
-export const BottomNavLabel = styled.span`
-  font-size: 0.72rem;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 `;

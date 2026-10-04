@@ -1,43 +1,35 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { NAV_ITEMS, isNavItemActive } from './navItems';
-import { BottomNavBar, BottomNavLink, BottomNavLabel, BottomNavOffset } from './styled';
+import { BottomNav as BarraInferior } from 'kaizen-lib/ui';
+import { NAV_ITEMS, CORTE_MOVIL_PX, isNavItemActive } from './navItems';
 
 /**
- * Barra de secciones fija abajo, sólo en el teléfono: ahí reemplaza a la nav
- * de la topbar, que se oculta en el mismo corte (ver `HeaderNav`). Se queda
- * siempre montada y se apaga por CSS, igual que la nav de arriba, para que
- * las dos cambien juntas sin depender de medir la ventana desde JS.
- *
- * `BottomNavOffset` publica en `:root` cuánto ocupa la barra mientras está
- * montada y visible: el contenido y los avisos flotantes de la PWA se corren
- * hacia arriba con ese valor en vez de quedar tapados.
+ * Las secciones de la app en la barra inferior de `kaizen-lib`, sólo en el
+ * teléfono: ahí reemplaza a la nav de la topbar, que se oculta en el mismo
+ * corte (ver `HeaderNav`). La barra, su visibilidad y el offset que publica
+ * para no tapar contenido son de la librería; acá se decide qué secciones hay
+ * y cuál está activa.
  */
 const BottomNav: React.FC = () => {
   const pathname = usePathname();
+  const activa = NAV_ITEMS.find(item => isNavItemActive(pathname, item.href));
 
   return (
-    <>
-      <BottomNavOffset />
-      <BottomNavBar aria-label="Secciones">
-        {NAV_ITEMS.map(item => {
-          const active = isNavItemActive(pathname, item.href);
-          return (
-            <BottomNavLink
-              key={item.href}
-              href={item.href}
-              $active={active}
-              aria-current={active ? 'page' : undefined}
-            >
-              <item.Icon size={22} color="currentColor" />
-              <BottomNavLabel>{item.label}</BottomNavLabel>
-            </BottomNavLink>
-          );
-        })}
-      </BottomNavBar>
-    </>
+    <BarraInferior
+      items={NAV_ITEMS.map(item => ({
+        id: item.href,
+        label: item.label,
+        icon: <item.Icon size={22} color="currentColor" />,
+        href: item.href,
+      }))}
+      activeId={activa?.href ?? null}
+      maxWidth={CORTE_MOVIL_PX}
+      ariaLabel="Secciones"
+      linkAs={Link}
+    />
   );
 };
 

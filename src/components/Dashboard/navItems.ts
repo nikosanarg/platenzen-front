@@ -21,6 +21,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 /**
+ * Ancho, en px, hasta el que las secciones viven en la barra inferior y no en
+ * la topbar. Lo usan las dos navs: si una se moviera sola, habría un ancho con
+ * las secciones en los dos lados o en ninguno.
+ */
+export const CORTE_MOVIL_PX = 640;
+
+/**
  * Coincidencia exacta: la URL es la única fuente de verdad de la sección
  * activa. No se compara por prefijo porque `/` lo sería de todas.
  */
