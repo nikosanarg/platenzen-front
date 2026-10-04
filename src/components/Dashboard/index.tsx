@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import { IconButton, Relieve } from 'kaizen-lib/ui';
 import { IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
 import { useBotonInstalacionInline } from '@/components/pwa/useInstalacionPWA';
+import BottomNav from './BottomNav';
+import { NAV_ITEMS, isNavItemActive } from './navItems';
 import {
   DashboardRoot,
   DashboardHeader,
@@ -23,14 +25,6 @@ import {
   LoadingCount,
   Spinner,
 } from './styled';
-
-/** Una tab por ruta: la URL es la unica fuente de verdad de la tab activa. */
-const HOME_TABS = [
-  { href: '/', label: 'Progreso' },
-  { href: '/achievements', label: 'Logros' },
-  { href: '/comparative', label: 'Comparar' },
-  { href: '/mapa', label: 'Mapa' },
-] as const;
 
 interface DashboardProps {
   loading: boolean;
@@ -88,8 +82,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           <HeaderTitle>Platenzen</HeaderTitle>
         </HeaderLeft>
         <HeaderNav aria-label="Secciones">
-          {HOME_TABS.map(tab => {
-            const isActive = pathname === tab.href;
+          {NAV_ITEMS.map(tab => {
+            const isActive = isNavItemActive(pathname, tab.href);
             return (
               <HeaderNavLink
                 key={tab.href}
@@ -146,6 +140,8 @@ const Dashboard: React.FC<DashboardProps> = ({
       ) : (
         <DashboardContent>{children}</DashboardContent>
       )}
+
+      <BottomNav />
     </DashboardRoot>
   );
 };

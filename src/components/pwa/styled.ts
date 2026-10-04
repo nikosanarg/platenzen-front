@@ -10,7 +10,8 @@ import styled from 'styled-components';
  */
 const AvisoFlotante = styled.div`
   position: fixed;
-  bottom: 20px;
+  /* Por encima de la barra inferior del dashboard cuando está visible. */
+  bottom: calc(20px + var(--bottom-nav-offset, 0px));
   left: 16px;
   right: 16px;
   max-width: 400px;
@@ -27,7 +28,7 @@ const AvisoFlotante = styled.div`
 
 export const InstallButton = styled.button`
   position: fixed;
-  bottom: 20px;
+  bottom: calc(20px + var(--bottom-nav-offset, 0px));
   right: 16px;
   padding: 12px 18px;
   background: var(--accent);
