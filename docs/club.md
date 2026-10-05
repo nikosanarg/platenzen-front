@@ -56,6 +56,8 @@ corredor no vuelva a abrir la app.
 - **Nombre**: el que el corredor elige (único en el club, sin distinguir mayúsculas), o un
   alias de fantasía que se asigna al registrarse ("pepino357619": una palabra sencilla y
   seis dígitos). País opcional.
+- **@usuario**: opcional, va en la URL de la ficha (`/hero/<usuario>`). Minúsculas, único,
+  y no puede tener la forma de un alias ni ser una ruta. Sin usuario, la URL usa el alias.
 - **Nada sensible ni directo de Strava**: todo lo publicado es derivado, calculado o
   saneado.
 
@@ -64,9 +66,12 @@ corredor no vuelva a abrir la app.
 | Ruta | Qué es |
 |---|---|
 | `/ranking` | La tabla del club. Sin el club disponible, muestra sólo la fila propia calculada en el dispositivo |
-| `/perfil` | Alta (con aceptación de acuerdos) para quien no está; nombre, país, privacidad y baja para quien sí |
+| `/profile` | Alta (con aceptación de acuerdos) para quien no está; usuario, nombre, país, privacidad y baja para quien sí |
 | `/hero` | La ficha propia tal como la ve otra persona, con el link público |
-| `/hero/[id]` | La ficha pública de un corredor. Fuera del login: es el link que se comparte |
+| `/hero/[clave]` | La ficha pública de un corredor, por su @usuario (`/hero/nsande`); su alias o su id también sirven. Fuera del login: es el link que se comparte |
+
+`/mapa` y `/perfil` redirigen a `/map` y `/profile` (`next.config.ts`): las rutas pasaron a
+inglés y las viejas pueden estar en marcadores o en la PWA instalada.
 | `/acuerdos` | Los acuerdos del club. Fuera del login: se leen antes de aceptar |
 
 ## Lo que tiene que seguir coincidiendo con platenzen-api
@@ -76,6 +81,21 @@ corredor no vuelva a abrir la app.
 | `src/lib/ranking.ts`, `computeWeeklyStreak` | `src/domain/ranking/ranking.ts` |
 | `src/lib/paises.ts` | `src/domain/corredor/paises.ts` |
 | `src/lib/club/acuerdos.ts` (y el texto de `/acuerdos`) | `src/domain/corredor/acuerdos.ts` |
+
+## Corredores de ejemplo
+
+`scripts/club-ejemplo.ts` siembra 13 corredores inventados, repartidos en las tres ligas
+y con las tres visibilidades. Sus actividades son falsas pero pasan por el adapter de
+Strava y por `construirPublicacion`, y entran a la API como cualquier corredor:
+
+```bash
+npx tsx --env-file=.env.local scripts/club-ejemplo.ts           # sembrar o resembrar
+npx tsx --env-file=.env.local scripts/club-ejemplo.ts --borrar  # quitarlos
+```
+
+Usa `PLATENZEN_API_URL` y `PLATENZEN_SERVER_SECRET`: escribe en la base a la que apunte esa
+API. Sus identidades son `sha256("platenzen-ejemplo:<clave>")`, así que `--borrar` no puede
+tocar a un corredor real.
 
 ## Límite conocido
 

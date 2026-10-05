@@ -65,11 +65,12 @@ describe('perfil', () => {
 
   it('el alta manda la versión vigente de los acuerdos', async () => {
     fetchMock.mockResolvedValue(json(201, { data: { id: 'x' } }));
-    await registrarse({ nombreVisible: null, pais: 'UY', visibilidad: 'publica' }, token);
+    await registrarse({ usuario: null, nombreVisible: null, pais: 'UY', visibilidad: 'publica' }, token);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/club/corredores/me');
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toEqual({
+      usuario: null,
       nombreVisible: null,
       pais: 'UY',
       visibilidad: 'publica',
@@ -79,7 +80,7 @@ describe('perfil', () => {
 
   it('un error de negocio llega con su código', async () => {
     fetchMock.mockResolvedValue(json(409, { error: 'NOMBRE_EN_USO', message: 'Ese nombre ya lo eligió otro corredor' }));
-    await expect(registrarse({ nombreVisible: 'Ana', pais: null, visibilidad: 'publica' }, token)).rejects.toMatchObject({
+    await expect(registrarse({ usuario: null, nombreVisible: 'Ana', pais: null, visibilidad: 'publica' }, token)).rejects.toMatchObject({
       code: 'NOMBRE_EN_USO',
       status: 409,
     });

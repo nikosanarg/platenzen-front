@@ -41,19 +41,21 @@ const HeroView: React.FC<HeroViewProps> = ({ activities, stats }) => {
   if (club.estado === 'sin-registro') {
     nota = (
       <>
-        Así la vería otra persona. Todavía no se publicó: <Link href="/perfil">sumate al ranking</Link>.
+        Así la vería otra persona. Todavía no se publicó: <Link href="/profile">sumate al ranking</Link>.
       </>
     );
   } else if (perfil && perfil.visibilidad === 'publica') {
     nota = (
       <>
-        Así ve tu ficha otra persona. Este es su link público: <Link href={`/hero/${perfil.id}`}>/hero/{perfil.id}</Link>
+        Así ve tu ficha otra persona. Este es su link público:{' '}
+        <Link href={`/hero/${perfil.enlace}`}>platenzen.com/hero/{perfil.enlace}</Link>. El @usuario se
+        elige en tu <Link href="/profile">perfil del club</Link>.
       </>
     );
   } else if (perfil) {
     nota = (
       <>
-        Así se vería tu ficha. Hoy no la mostrás: lo podés cambiar en tu <Link href="/perfil">perfil del club</Link>.
+        Así se vería tu ficha. Hoy no la mostrás: lo podés cambiar en tu <Link href="/profile">perfil del club</Link>.
       </>
     );
   }

@@ -78,7 +78,7 @@ it('quien eligió "sólo ranking" aparece sin ficha para abrir', () => {
 
 it('la ficha se carga al abrirla y se muestra en un modal', async () => {
   const profile = buildHeroProfile([], computeStats([]), new Date(2026, 6, 15), 'Ana');
-  const cargarFicha = jest.fn(async () => ({ profile, pais: null, publicadaAt: '2026-07-14T10:00:00Z' }));
+  const cargarFicha = jest.fn(async () => ({ profile, pais: null, publicadaAt: '2026-07-14T10:00:00Z', enlace: 'ana' }));
   render(<RankingView entries={ENTRIES} cargarFicha={cargarFicha} />);
 
   fireEvent.click(screen.getByRole('button', { name: 'Ver la ficha de Ana' }));
@@ -87,6 +87,7 @@ it('la ficha se carga al abrirla y se muestra en un modal', async () => {
 
   expect(await within(dialog).findByText('Corredor')).toBeInTheDocument();
   expect(within(dialog).getByText(/Actualizada el/)).toBeInTheDocument();
+  expect(within(dialog).getByRole('link', { name: 'platenzen.com/hero/ana' })).toHaveAttribute('href', '/hero/ana');
   expect(cargarFicha).toHaveBeenCalledWith('Ana');
 
   fireEvent.click(within(dialog).getByRole('button', { name: 'Cerrar' }));

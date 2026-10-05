@@ -47,7 +47,7 @@ describe('BottomNav', () => {
   });
 
   it('no marca Progreso en otra sección aunque `/` sea prefijo de su ruta', () => {
-    enRuta('/mapa');
+    enRuta('/map');
 
     expect(activas()).toEqual(['Mapa']);
   });

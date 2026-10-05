@@ -81,6 +81,34 @@ export const Input = styled.input`
   ${control}
 `;
 
+/** El usuario se lee como la dirección que va a ser: el dominio fijo, a la izquierda. */
+export const ConPrefijo = styled.div`
+  display: flex;
+  align-items: stretch;
+
+  input {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+`;
+
+export const Prefijo = styled.span`
+  display: flex;
+  align-items: center;
+  padding: 0 0.6rem;
+  border: 1px solid var(--border-light);
+  border-right: 0;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+
+  @media (max-width: 420px) {
+    display: none;
+  }
+`;
+
 export const Select = styled.select`
   ${control}
 `;

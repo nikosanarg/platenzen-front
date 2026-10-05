@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import styled, { css } from 'styled-components';
 import { Panel } from '@/components/Panel';
 
@@ -145,4 +146,12 @@ export const Cta = styled.div`
     color: var(--accent);
     font-weight: 600;
   }
+`;
+
+/** El link para compartir la ficha que se está mirando. */
+export const LinkFicha = styled(Link)`
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--accent);
 `;

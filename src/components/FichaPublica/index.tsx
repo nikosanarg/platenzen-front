@@ -23,12 +23,12 @@ type EstadoFicha =
  * nada. "No existe" y "no la muestra" se dicen igual a propósito: decir cuál
  * de las dos es ya contaría algo de alguien que eligió no mostrarse.
  */
-const FichaPublica: React.FC<{ id: string }> = ({ id }) => {
+const FichaPublica: React.FC<{ clave: string }> = ({ clave }) => {
   const [estado, setEstado] = useState<EstadoFicha>({ estado: 'cargando' });
 
   useEffect(() => {
     let vigente = true;
-    obtenerFicha(id)
+    obtenerFicha(clave)
       .then(ficha => {
         if (vigente) setEstado(ficha ? { estado: 'lista', ficha } : { estado: 'no-existe' });
       })
@@ -38,7 +38,7 @@ const FichaPublica: React.FC<{ id: string }> = ({ id }) => {
     return () => {
       vigente = false;
     };
-  }, [id]);
+  }, [clave]);
 
   if (estado.estado === 'cargando') return <Estado role="status">Cargando la ficha…</Estado>;
   if (estado.estado === 'no-existe') return <Estado>Esta ficha no existe o no es pública.</Estado>;

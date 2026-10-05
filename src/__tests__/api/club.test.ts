@@ -110,6 +110,19 @@ describe('proxy /api/club/*', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('la ficha pública se pide por usuario, sin sesión', async () => {
+    fetchMock.mockResolvedValue(json(200, { data: {} }));
+    const res = await GET(pedido('/api/club/corredores/nsande'), ctx('corredores', 'nsande'));
+    expect(res.status).toBe(200);
+    expect(fetchMock.mock.calls[0][0]).toBe('http://api.test/corredores/nsande');
+  });
+
+  it('una clave con caracteres raros no se reenvía', async () => {
+    const res = await GET(pedido('/api/club/corredores/a%20b'), ctx('corredores', 'a b'));
+    expect(res.status).toBe(404);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('las rutas /me exigen la cookie del club', async () => {
     const res = await GET(pedido('/api/club/corredores/me'), ctx('corredores', 'me'));
     expect(res.status).toBe(401);

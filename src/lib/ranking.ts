@@ -88,6 +88,8 @@ export interface RankingEntry extends ResumenVentana {
   pais?: string | null;
   /** La fila de quien mira. */
   esPropio?: boolean;
+  /** Lo que va en `/hero/<enlace>`: el usuario o el alias. Sin él (fila local), no hay ficha pública. */
+  enlace?: string;
   /** Si la fila abre una ficha: el corredor puede aparecer en la tabla sin mostrarla. */
   fichaVisible?: boolean;
 }

@@ -65,7 +65,7 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | `npx jest` (62 suites, 860 tests) |
+| Tests | `npx jest` (62 suites, 865 tests) |
 | Cobertura | `npm run test:coverage` |
 | Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
@@ -146,7 +146,7 @@ es un cambio aparte, no algo a colar en otra tarea.
 ## Tests
 
 Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **62
-suites, 860 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+suites, 865 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
 `comparative/`, `achievements/`, `ranking/`, `providers/`, `api/`, `shared/`), con una factory de
 actividades en `helpers/activity.ts`.
 

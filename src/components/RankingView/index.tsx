@@ -32,6 +32,7 @@ import {
   Propia,
   Fila,
   EstadoModal,
+  LinkFicha,
 } from './styled';
 
 /** Una ficha lista para el modal, con lo que vive fuera de ella. */
@@ -39,6 +40,8 @@ export interface FichaCargada {
   profile: HeroProfile;
   pais?: string | null;
   publicadaAt?: string | null;
+  /** Para el link a la ficha completa (`/hero/<enlace>`). */
+  enlace?: string;
 }
 
 interface RankingViewProps {
@@ -190,6 +193,9 @@ const RankingView: React.FC<RankingViewProps> = ({ entries, cargarFicha, aviso }
           {ficha.estado === 'cargando' && <EstadoModal role="status">Cargando la ficha…</EstadoModal>}
           {ficha.estado === 'no-disponible' && (
             <EstadoModal role="status">Esta ficha no está disponible.</EstadoModal>
+          )}
+          {ficha.estado === 'lista' && ficha.ficha.enlace && (
+            <LinkFicha href={`/hero/${ficha.ficha.enlace}`}>platenzen.com/hero/{ficha.ficha.enlace}</LinkFicha>
           )}
           {ficha.estado === 'lista' && (
             <HeroCard

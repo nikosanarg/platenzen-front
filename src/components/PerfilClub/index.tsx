@@ -96,7 +96,7 @@ const PerfilClub: React.FC = () => {
         </Lead>
         {QUE_SE_PUBLICA}
         <PerfilForm
-          inicial={{ nombreVisible: null, pais: null, visibilidad: 'publica' }}
+          inicial={{ usuario: null, nombreVisible: null, pais: null, visibilidad: 'publica' }}
           alias={null}
           textoBoton="Sumarme"
           pedirAcuerdos
@@ -116,7 +116,7 @@ const PerfilClub: React.FC = () => {
         {perfil.visibilidad === 'publica' && (
           <>
             {' '}
-            <Link href={`/hero/${perfil.id}`}>Ver tu ficha pública</Link>.
+            Tu ficha pública: <Link href={`/hero/${perfil.enlace}`}>platenzen.com/hero/{perfil.enlace}</Link>
           </>
         )}
       </Lead>
@@ -142,7 +142,7 @@ const PerfilClub: React.FC = () => {
       </Estado>
 
       <PerfilForm
-        key={`${perfil.nombreVisible}-${perfil.pais}-${perfil.visibilidad}`}
+        key={`${perfil.usuario}-${perfil.nombreVisible}-${perfil.pais}-${perfil.visibilidad}`}
         inicial={perfil}
         alias={perfil.alias}
         textoBoton="Guardar cambios"

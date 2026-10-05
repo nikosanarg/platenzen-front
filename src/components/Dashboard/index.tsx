@@ -123,8 +123,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             </IconButton>
           </Relieve>
           {/* El perfil del club no es una sección más: se configura una vez y queda. */}
-          <Relieve $prendido={pathname === '/perfil'}>
-            <IconButton as={Link} href="/perfil" label="Perfil del club" active={pathname === '/perfil'}>
+          <Relieve $prendido={pathname === '/profile'}>
+            <IconButton as={Link} href="/profile" label="Perfil del club" active={pathname === '/profile'}>
               <IconUser size={20} color="currentColor" />
             </IconButton>
           </Relieve>

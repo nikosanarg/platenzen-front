@@ -30,6 +30,8 @@ const api = cliente as jest.Mocked<typeof cliente>;
 const PERFIL: cliente.MiPerfil = {
   id: '7b7c3d0e-1111-4222-8333-444455556666',
   alias: 'pepino357619',
+  usuario: null,
+  enlace: 'pepino357619',
   nombre: 'pepino357619',
   nombreVisible: null,
   pais: null,
@@ -78,7 +80,8 @@ it('al sumarse manda el perfil elegido y después publica sus números solo', as
   api.registrarse.mockResolvedValue({ ...PERFIL, nombreVisible: 'Ana', nombre: 'Ana', pais: 'AR' });
   renderPerfil();
 
-  fireEvent.change(await screen.findByLabelText('Nombre visible'), { target: { value: '  Ana ' } });
+  fireEvent.change(await screen.findByLabelText('Usuario'), { target: { value: ' @NSande ' } });
+  fireEvent.change(screen.getByLabelText('Nombre visible'), { target: { value: '  Ana ' } });
   fireEvent.change(screen.getByLabelText('País'), { target: { value: 'AR' } });
   fireEvent.click(screen.getByRole('radio', { name: /Sólo en el ranking/ }));
   fireEvent.click(screen.getByRole('checkbox'));
@@ -87,7 +90,7 @@ it('al sumarse manda el perfil elegido y después publica sus números solo', as
   });
 
   expect(api.registrarse).toHaveBeenCalledWith(
-    { nombreVisible: 'Ana', pais: 'AR', visibilidad: 'solo_ranking' },
+    { usuario: 'nsande', nombreVisible: 'Ana', pais: 'AR', visibilidad: 'solo_ranking' },
     obtenerToken
   );
   expect(await screen.findByText('Perfil del club')).toBeInTheDocument();
@@ -109,6 +112,26 @@ it('un nombre tomado se explica, no se traga', async () => {
   });
 
   expect(screen.getByRole('alert')).toHaveTextContent('Ese nombre ya lo eligió otro corredor.');
+});
+
+it('un usuario tomado se explica', async () => {
+  api.miPerfil.mockResolvedValue(null);
+  api.registrarse.mockRejectedValue(new cliente.ErrorClub('USUARIO_EN_USO', 409));
+  renderPerfil();
+
+  fireEvent.change(await screen.findByLabelText('Usuario'), { target: { value: 'nsande' } });
+  fireEvent.click(screen.getByRole('checkbox'));
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Sumarme' }));
+  });
+
+  expect(screen.getByRole('alert')).toHaveTextContent('Ese usuario ya lo eligió otro corredor.');
+});
+
+it('registrado, muestra el link público con su usuario', async () => {
+  api.miPerfil.mockResolvedValue({ ...PERFIL, usuario: 'nsande', enlace: 'nsande' });
+  renderPerfil();
+  expect(await screen.findByRole('link', { name: 'platenzen.com/hero/nsande' })).toHaveAttribute('href', '/hero/nsande');
 });
 
 it('con los acuerdos desactualizados no publica hasta que los acepte', async () => {

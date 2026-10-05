@@ -52,7 +52,9 @@ const RankingClub: React.FC = () => {
     async (id: string): Promise<FichaCargada | null> => {
       if (id === ID_LOCAL) return { profile: fichaLocal };
       const f = await obtenerFicha(id);
-      return f ? { profile: { ...f.ficha, nombre: f.nombre }, pais: f.pais, publicadaAt: f.publicadaAt } : null;
+      return f
+        ? { profile: { ...f.ficha, nombre: f.nombre }, pais: f.pais, publicadaAt: f.publicadaAt, enlace: f.enlace }
+        : null;
     },
     [fichaLocal]
   );
@@ -97,14 +99,14 @@ const RankingClub: React.FC = () => {
   if (club.estado === 'sin-registro') {
     aviso = (
       <Cta>
-        Tus números todavía no están en la tabla. <Link href="/perfil">Sumate al ranking</Link>
+        Tus números todavía no están en la tabla. <Link href="/profile">Sumate al ranking</Link>
       </Cta>
     );
   } else if (club.estado === 'registrado' && club.perfil.visibilidad === 'oculta') {
     aviso = (
       <Notice role="status">
         Tu perfil está oculto: no aparecés en la tabla. Lo podés cambiar en tu{' '}
-        <Link href="/perfil">perfil del club</Link>.
+        <Link href="/profile">perfil del club</Link>.
       </Notice>
     );
   } else if (club.estado === 'registrado' && publicacion === 'publicando') {

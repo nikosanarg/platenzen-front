@@ -17,7 +17,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Progreso', Icon: IconRun },
   { href: '/achievements', label: 'Logros', Icon: IconMedal },
   { href: '/comparative', label: 'Comparar', Icon: IconCalendar },
-  { href: '/mapa', label: 'Mapa', Icon: IconCompass },
+  { href: '/map', label: 'Mapa', Icon: IconCompass },
   { href: '/ranking', label: 'Ranking', Icon: IconTrophy },
 ];
 

@@ -7,13 +7,14 @@ import { COOKIE_CLUB, configClub, leerSesion, llamarApi } from '@/lib/club/servi
  *
  * - `corredores/me...` exige la cookie del club: la identidad sale de ahí y
  *   nunca del pedido del navegador.
- * - `ranking` y `corredores/<id>` son públicas; si hay cookie, la identidad
+ * - `ranking` y `corredores/<clave>` (id, usuario o alias) son públicas; si hay cookie, la identidad
  *   viaja sólo para que la tabla marque la fila propia.
  */
 
 type Contexto = { params: Promise<{ ruta: string[] }> };
 
-const RE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Un id, un usuario o un alias: lo que puede ir en `/hero/<clave>`. Nunca `me`. */
+const RE_CLAVE = /^[a-z0-9._-]{3,36}$/i;
 
 /** Qué métodos admite cada ruta, y si exige sesión. */
 function permitido(ruta: string[], metodo: string): { privada: boolean } | null {
@@ -23,7 +24,7 @@ function permitido(ruta: string[], metodo: string): { privada: boolean } | null 
   if (b === 'me' && ruta.length === 2 && ['GET', 'POST', 'PATCH', 'DELETE'].includes(metodo)) return { privada: true };
   if (b === 'me' && c === 'acuerdos' && ruta.length === 3 && metodo === 'POST') return { privada: true };
   if (b === 'me' && c === 'publicacion' && ruta.length === 3 && metodo === 'PUT') return { privada: true };
-  if (b && RE_ID.test(b) && ruta.length === 2 && metodo === 'GET') return { privada: false };
+  if (b && b !== 'me' && RE_CLAVE.test(b) && ruta.length === 2 && metodo === 'GET') return { privada: false };
   return null;
 }
 

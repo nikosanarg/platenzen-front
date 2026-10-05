@@ -50,7 +50,7 @@ const LugaresFrecuentados: React.FC<LugaresFrecuentadosProps> = ({ activities })
           return (
             <StatCard
               key={lugar.id}
-              onClick={() => router.push(`/mapa?lugar=${encodeURIComponent(lugar.id)}`)}
+              onClick={() => router.push(`/map?lugar=${encodeURIComponent(lugar.id)}`)}
               leftVisual={<PlaceRank>#{idx + 1}</PlaceRank>}
               title={lugar.nombre}
               subtitles={[
@@ -65,7 +65,7 @@ const LugaresFrecuentados: React.FC<LugaresFrecuentadosProps> = ({ activities })
       </PlaceList>
 
       <MoreRow>
-        <MoreLink href="/mapa">Ver más en el mapa ↗</MoreLink>
+        <MoreLink href="/map">Ver más en el mapa ↗</MoreLink>
       </MoreRow>
     </Root>
   );

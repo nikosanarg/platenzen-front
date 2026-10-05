@@ -1,6 +1,6 @@
 /**
  * La lista de lugares más frecuentados. Tocar un lugar navega a la tab Mapa
- * ya centrada y seleccionada ahí (`/mapa?lugar=<id>`) — el mapa completo, no
+ * ya centrada y seleccionada ahí (`/map?lugar=<id>`) — el mapa completo, no
  * uno chico embebido en un modal.
  */
 import React from 'react';
@@ -65,7 +65,7 @@ describe('lugares más frecuentados', () => {
     fireEvent.click(item);
 
     expect(push).toHaveBeenCalledTimes(1);
-    expect(push.mock.calls[0][0]).toMatch(/^\/mapa\?lugar=/);
+    expect(push.mock.calls[0][0]).toMatch(/^\/map\?lugar=/);
   });
 
   it('muestra sólo el top 3, con link a la tab Mapa', async () => {
@@ -79,7 +79,7 @@ describe('lugares más frecuentados', () => {
     render(<LugaresFrecuentados activities={activities} />);
 
     expect(await screen.findAllByRole('button', { name: /Lugar #\d/ })).toHaveLength(3);
-    expect(screen.getByRole('link', { name: /Ver más/ })).toHaveAttribute('href', '/mapa');
+    expect(screen.getByRole('link', { name: /Ver más/ })).toHaveAttribute('href', '/map');
   });
 
   it('el link a la tab Mapa se ofrece también con pocos lugares', async () => {
@@ -87,7 +87,7 @@ describe('lugares más frecuentados', () => {
     render(<LugaresFrecuentados activities={activities} />);
 
     await screen.findByRole('button', { name: /Lugar #1/ });
-    expect(screen.getByRole('link', { name: /Ver más/ })).toHaveAttribute('href', '/mapa');
+    expect(screen.getByRole('link', { name: /Ver más/ })).toHaveAttribute('href', '/map');
   });
 
   it('la fila muestra ritmo, última visita, la salida más larga y los km acumulados', async () => {

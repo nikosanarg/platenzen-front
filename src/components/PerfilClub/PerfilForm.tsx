@@ -16,6 +16,8 @@ import {
   Leyenda,
   Opcion,
   Opciones,
+  ConPrefijo,
+  Prefijo,
   Select,
 } from './styled';
 
@@ -41,6 +43,12 @@ export function mensajeDeError(e: unknown): string {
       return 'El nombre tiene que tener entre 3 y 30 caracteres: letras, números, espacios, puntos, guiones o guiones bajos.';
     case 'NOMBRE_EN_USO':
       return 'Ese nombre ya lo eligió otro corredor.';
+    case 'USUARIO_INVALIDO':
+      return 'El usuario tiene que tener entre 3 y 30 caracteres: letras sin tilde, números, puntos o guiones bajos, sin empezar ni terminar con punto o guion bajo.';
+    case 'USUARIO_RESERVADO':
+      return 'Ese usuario no se puede usar. Probá con otro.';
+    case 'USUARIO_EN_USO':
+      return 'Ese usuario ya lo eligió otro corredor.';
     case 'PAIS_INVALIDO':
       return 'Elegí un país de la lista.';
     case 'CLUB_NO_DISPONIBLE':
@@ -62,6 +70,7 @@ interface PerfilFormProps {
 
 const PerfilForm: React.FC<PerfilFormProps> = ({ inicial, alias, textoBoton, pedirAcuerdos, onSubmit }) => {
   const id = useId();
+  const [usuario, setUsuario] = useState(inicial.usuario ?? '');
   const [nombre, setNombre] = useState(inicial.nombreVisible ?? '');
   const [pais, setPais] = useState(inicial.pais ?? '');
   const [visibilidad, setVisibilidad] = useState<Visibilidad>(inicial.visibilidad);
@@ -78,7 +87,12 @@ const PerfilForm: React.FC<PerfilFormProps> = ({ inicial, alias, textoBoton, ped
     setEnviando(true);
     setError(null);
     try {
-      await onSubmit({ nombreVisible: nombre.trim() || null, pais: pais || null, visibilidad });
+      await onSubmit({
+        usuario: usuario.trim().replace(/^@/, '').toLowerCase() || null,
+        nombreVisible: nombre.trim() || null,
+        pais: pais || null,
+        visibilidad,
+      });
     } catch (err) {
       setError(mensajeDeError(err));
     } finally {
@@ -88,6 +102,27 @@ const PerfilForm: React.FC<PerfilFormProps> = ({ inicial, alias, textoBoton, ped
 
   return (
     <Form onSubmit={enviar} noValidate>
+      <Campo>
+        <Etiqueta htmlFor={`${id}-usuario`}>Usuario</Etiqueta>
+        <ConPrefijo>
+          <Prefijo aria-hidden="true">platenzen.com/hero/</Prefijo>
+          <Input
+            id={`${id}-usuario`}
+            value={usuario}
+            maxLength={31}
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder={alias ?? 'tu.usuario'}
+            onChange={e => setUsuario(e.target.value)}
+          />
+        </ConPrefijo>
+        <Ayuda>
+          Es la dirección de tu ficha pública.{' '}
+          {alias ? `Si lo dejás vacío, usa tu alias: ${alias}.` : 'Si lo dejás vacío, usa tu nombre al azar.'}
+        </Ayuda>
+      </Campo>
+
       <Campo>
         <Etiqueta htmlFor={`${id}-nombre`}>Nombre visible</Etiqueta>
         <Input

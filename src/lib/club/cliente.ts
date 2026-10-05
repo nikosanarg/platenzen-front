@@ -12,6 +12,8 @@ import { Publicacion } from './publicacion';
 export type Visibilidad = 'publica' | 'solo_ranking' | 'oculta';
 
 export interface PerfilEditable {
+  /** El @usuario: va en la URL de la ficha. `null`: la URL usa el alias. */
+  usuario: string | null;
   nombreVisible: string | null;
   pais: string | null;
   visibilidad: Visibilidad;
@@ -20,6 +22,8 @@ export interface PerfilEditable {
 export interface MiPerfil extends PerfilEditable {
   id: string;
   alias: string;
+  /** Lo que va en `/hero/<enlace>`: el usuario o, si no eligió, el alias. */
+  enlace: string;
   /** Lo que ven los demás: el nombre elegido o el alias. */
   nombre: string;
   acuerdosVersion: string;
@@ -35,6 +39,7 @@ export interface RankingClub {
 
 export interface FichaPublica {
   id: string;
+  enlace: string;
   nombre: string;
   pais: string | null;
   publicadaAt: string;
@@ -155,10 +160,10 @@ export async function obtenerRanking(orden: RankingSortKey): Promise<RankingClub
   return data as RankingClub;
 }
 
-/** `null` si no existe o no muestra su ficha. */
-export async function obtenerFicha(id: string): Promise<FichaPublica | null> {
+/** Por id, usuario o alias. `null` si no existe o no muestra su ficha. */
+export async function obtenerFicha(clave: string): Promise<FichaPublica | null> {
   try {
-    return (await pedir<FichaPublica>(`corredores/${encodeURIComponent(id)}`)).data ?? null;
+    return (await pedir<FichaPublica>(`corredores/${encodeURIComponent(clave)}`)).data ?? null;
   } catch (e) {
     if (e instanceof ErrorClub && e.status === 404) return null;
     throw e;
