@@ -1,7 +1,7 @@
 import { ProcessedStats } from '@/types/stats';
 import { BranchResult } from '@/lib/roles';
+import { diaEnPlural } from '@/utils/weekdays';
 
-const WEEKDAY_NAMES_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
 /** Short identity clause per role (subject implicit). */
 const ROLE_IDENTITY: Record<string, string> = {
@@ -41,7 +41,7 @@ export function buildPersonaDescription(
     .filter((d) => d.count > 0)
     .sort((a, b) => b.count - a.count)[0];
   if (topDay) {
-    behaviors.push(`corre principalmente los ${WEEKDAY_NAMES_ES[topDay.day]}s`);
+    behaviors.push(`corre principalmente los ${diaEnPlural(topDay.day)}`);
   }
 
   behaviors.push(

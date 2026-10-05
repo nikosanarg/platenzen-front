@@ -2,8 +2,9 @@ import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { HALF_MARATHON_KM } from '@/lib/distances';
 import { Voz } from '@/types/voz';
+import { diaEnPlural } from './weekdays';
 
-const WEEKDAY_NAMES_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
 
 export interface SmartInsight {
   id: string;
@@ -29,7 +30,7 @@ export function generateSmartInsights(
     if (top.count >= 3) {
       insights.push({
         id: 'top_day',
-        text: `Los ${WEEKDAY_NAMES_ES[top.day]}s son ${propia ? 'tu' : 'su'} día de más salidas (${top.count})`,
+        text: `Los ${diaEnPlural(top.day)} son ${propia ? 'tu' : 'su'} día de más salidas (${top.count})`,
       });
     }
   }

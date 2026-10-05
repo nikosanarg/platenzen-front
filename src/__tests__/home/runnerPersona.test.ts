@@ -35,7 +35,8 @@ describe('buildPersonaDescription', () => {
   it('nombra el día de la semana dominante, en plural', () => {
     // 2026-07-15 es miércoles.
     const texto = buildPersonaDescription(branch('fondista'), statsOnWeekday('2026-07-15'), 80);
-    expect(texto).toContain('miércoless');
+    expect(texto).toContain('Corre principalmente los miércoles y');
+    expect(texto).not.toContain('miércoless');
   });
 
   it('con salidas en varios días, elige el de más actividades como dominante', () => {
@@ -46,8 +47,8 @@ describe('buildPersonaDescription', () => {
     ]);
     const texto = buildPersonaDescription(branch('fondista'), stats, 80);
 
-    expect(texto).toContain('luness');
-    expect(texto).not.toContain('martess');
+    expect(texto).toContain('los lunes');
+    expect(texto).not.toContain('los martes');
   });
 
   it('omite el día si no hay ninguna salida', () => {

@@ -80,7 +80,7 @@ describe('día de la semana dominante', () => {
     const stats = statsWith({ weekdayDistribution: [{ day: 3, label: 'Mié', count: 3 }] });
 
     expect(ids(stats)).toContain('top_day');
-    expect(textOf(stats, 'top_day')).toContain('miércoless');
+    expect(textOf(stats, 'top_day')).toContain('Los miércoles son');
     expect(textOf(stats, 'top_day')).toContain('(3)');
   });
 
@@ -239,6 +239,17 @@ describe('salida más larga', () => {
 
   it('21 km redondos no cuentan como media maratón', () => {
     expect(textOf(statsWith({ longestActivity: 21 }), 'long_run')).not.toContain('media maratón');
+  });
+});
+
+describe('día dominante en plural', () => {
+  it('de lunes a viernes el plural no agrega s; sábado y domingo sí', () => {
+    const textoPara = (day: number) =>
+      textOf(statsWith({ weekdayDistribution: [{ day, label: '', count: 5 }] }), 'top_day');
+    expect(textoPara(1)).toBe('Los lunes son tu día de más salidas (5)');
+    expect(textoPara(3)).toBe('Los miércoles son tu día de más salidas (5)');
+    expect(textoPara(6)).toBe('Los sábados son tu día de más salidas (5)');
+    expect(textoPara(0)).toBe('Los domingos son tu día de más salidas (5)');
   });
 });
 
