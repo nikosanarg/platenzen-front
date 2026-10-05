@@ -34,23 +34,25 @@ De ahí salen dos criterios que deciden qué entra y qué no:
 ```
 src/app/api/strava/callback/     OAuth de Strava
 src/app/api/strava/refresh/      refresco de token (lee la cookie httpOnly)
-src/app/api/strava/disconnect/   cierre de sesión (borra las cookies)
+src/app/api/strava/disconnect/   cierre de sesión (borra las cookies, también la del club)
+src/app/api/club/sesion/         abre la sesión del club: valida el token con Strava una vez
+src/app/api/club/[...ruta]/      proxy a platenzen-api, con lista cerrada de rutas
+src/lib/club/                    identidad y cookie (servidor), cliente, qué se publica
 src/services/providers/<x>/      un adapter por proveedor: payload crudo → Activity
 src/types/activity.ts            el contrato canónico que consume todo el dominio
 src/lib/                         cálculo: nivel, XP, logros, récords, predicciones
 src/                             páginas y componentes
 ```
 
-El acceso a Strava pasa siempre por las rutas de servidor. **No hay backend propio ni base
-de datos**: los tokens viven en cookies del dispositivo y el historial de actividades en
-`localStorage`. El historial crudo no sale nunca del dispositivo. La pantalla de conexión
-promete que nada se guarda en servidores.
+El acceso a Strava pasa siempre por las rutas de servidor. **El historial de actividades
+no sale nunca del dispositivo**: los tokens viven en cookies y en `localStorage`, y el
+historial en `localStorage`.
 
-El ranking (`/ranking`) y las fichas públicas (`/hero`) van a cambiar eso en parte: una API
-propia que recibe datos **derivados** (la ficha ya calculada y agregados por día), nunca
-actividades ni trazas. Está planificada y sin implementar: ver `docs/plan-api-ranking.md`,
-que incluye las decisiones que siguen abiertas. Hasta entonces, las dos vistas muestran
-sólo los datos propios.
+El club (ranking por ligas, fichas públicas) tiene backend propio, `platenzen-api`, que
+recibe sólo datos **derivados**: la ficha ya calculada, running sumado por día y semanas
+activas. Nunca actividades, trazas, nombres de salidas ni datos de la cuenta de Strava. Es
+opcional: sin las variables del club la app funciona igual. Cómo viaja la identidad, qué
+se publica y las decisiones del PO: `docs/club.md`.
 
 La PWA (`public/sw.js` + `src/app/manifest.ts`) es una capa de distribución: **el service
 worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
@@ -63,7 +65,7 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 |---|---|
 | Lint | `npm run lint` |
 | Build | `npm run build` |
-| Tests | `npx jest` (58 suites, 819 tests) |
+| Tests | `npx jest` (62 suites, 860 tests) |
 | Cobertura | `npm run test:coverage` |
 | Suite de verificación antes de cerrar | `npx tsc --noEmit && npm run lint && npx jest && npm run build` |
 | Levantar local | `npm run dev` |
@@ -72,6 +74,11 @@ worker nunca intercepta `/api`**, porque ahí viaja el OAuth.
 Requiere credenciales de la API de Strava en variables de entorno, salvo en modo mock
 (`NEXT_PUBLIC_STRAVA_AUTH_MODE=mock`), que entra al dashboard sin OAuth y con la fixture.
 Ver `src/lib/authMode.ts` y el README.
+
+El club es opcional: `PLATENZEN_API_URL`, `PLATENZEN_SERVER_SECRET`,
+`PLATENZEN_IDENTIDAD_SECRET` y `CLUB_SESION_SECRET`. Sin las cuatro, las pantallas del
+club dicen que no está disponible y el resto de la app no cambia. Para probarlo local hace
+falta platenzen-api levantada con el mismo `PLATENZEN_SERVER_SECRET`.
 
 **`npm ci` falla**: el `package-lock.json` está desincronizado con `package.json` en
 dependencias transitorias opcionales (`@emnapi/*`). Usá `npm install`. Regenerar el lock
@@ -86,6 +93,15 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Zonas sensibles
 
+- **La identidad del club.** `PLATENZEN_IDENTIDAD_SECRET` **no se rota**: si cambia, cada
+  corredor pasa a ser otro y pierde su perfil. La identidad sale siempre de la cookie
+  `pz_club`, nunca de algo que mande el navegador, y el proxy sólo reenvía rutas de su
+  lista. Ver `docs/club.md`.
+- **Reglas espejo de platenzen-api**: `src/lib/ranking.ts` (con `computeWeeklyStreak`),
+  `src/lib/paises.ts` y `src/lib/club/acuerdos.ts`. Un cambio de un solo lado hace que la
+  tabla y el teléfono del corredor digan cosas distintas.
+- **Lo que se publica** (`src/lib/club/publicacion.ts`) es la promesa de privacidad del
+  club: nada que no sea derivado. Los nombres de las salidas no salen del dispositivo.
 - **Los cálculos son la promesa del producto.** Nivel, XP, umbrales de logros, récords
   proyectados, predicciones y porcentaje de consistencia salen de datos reales. Una fórmula
   mal hecha le miente al corredor sobre su progreso. Todo cambio de fórmula lleva
@@ -129,8 +145,8 @@ es un cambio aparte, no algo a colar en otra tarea.
 
 ## Tests
 
-Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **58
-suites, 819 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
+Jest + Testing Library, configurado en `jest.config.cjs`. Se corre con `npx jest`: **62
+suites, 860 tests**. Los tests viven en `src/__tests__/`, agrupados por zona (`home/`,
 `comparative/`, `achievements/`, `ranking/`, `providers/`, `api/`, `shared/`), con una factory de
 actividades en `helpers/activity.ts`.
 
@@ -153,4 +169,4 @@ Sin reglas propias declaradas. Aplica `commit.md` del harness.
 
 ## Responsabilidades que no aplican
 
-- `database` — no hay base propia; los datos vienen de Strava.
+- `database` — la base del club es de platenzen-api; acá no hay esquema ni acceso a datos persistidos.

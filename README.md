@@ -62,7 +62,7 @@ En ambos casos el token se guarda en `localStorage` de tu navegador. No se sube 
 ---
 
 ### Autenticación
-Flujo OAuth estándar de Strava. El servidor intercambia el código por tokens (`/api/strava/callback`). El access token se renueva automáticamente antes de expirar usando el refresh token vía `/api/strava/refresh`. Ningún token se persiste en servidor — solo en `localStorage` del cliente.
+Flujo OAuth estándar de Strava. El servidor intercambia el código por tokens (`/api/strava/callback`). El access token se renueva automáticamente antes de expirar usando el refresh token vía `/api/strava/refresh`. Ningún token se persiste en servidor — solo en `localStorage` del cliente (el refresh token, en una cookie `httpOnly`).
 
 ### Datos
 Se hace paginación completa sobre `/athlete/activities` (200 actividades por request). El resultado se cachea en `localStorage` con TTL de 6 días, que es el máximo que se conserva. Al entrar, si la cache tiene **una hora o más**, se vuelve a pedir a Strava automáticamente; con menos, se usa tal cual y no se toca la API, que es lo que mantiene el consumo dentro de los rate limits. Si esa actualización falla (sin red, sesión vencida), se muestra la cache vieja con su antigüedad ("Actualizado hace 3h") en lugar de un error; un permiso faltante (`scope_missing`) sí se muestra como error. El usuario puede forzar la actualización manual en cualquier momento.
@@ -75,6 +75,18 @@ STRAVA_CLIENT_ID=...
 STRAVA_CLIENT_SECRET=...
 NEXT_PUBLIC_STRAVA_CLIENT_ID=...
 ```
+
+### Club: ranking y fichas públicas (opcional)
+Sin estas cuatro, la app funciona igual y el club se muestra como no disponible. Las dos
+primeras tienen que coincidir con platenzen-api; las secretas se generan con
+`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+```
+PLATENZEN_API_URL=http://localhost:3101
+PLATENZEN_SERVER_SECRET=...      # el mismo valor que en platenzen-api
+PLATENZEN_IDENTIDAD_SECRET=...   # NO se rota: si cambia, cada corredor pasa a ser otro
+CLUB_SESION_SECRET=...           # firma la cookie del club; rotarlo sólo pide validar de nuevo
+```
+Cómo funciona y qué se publica: `docs/club.md`.
 
 ### Desarrollo local
 ```bash

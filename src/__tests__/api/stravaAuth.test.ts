@@ -187,6 +187,13 @@ describe('POST /api/strava/disconnect', () => {
     expect(cookies.get('strava_connected')).toMatch(/Max-Age=0/i);
   });
 
+  it('también cierra la sesión del club, que sale de la de Strava', async () => {
+    const cookies = cookiesDe(await disconnect());
+
+    expect(cookies.get('pz_club')).toMatch(/Max-Age=0/i);
+    expect(cookies.get('pz_club')).toMatch(/Path=\/api\/club/i);
+  });
+
   it('no llama a Strava: desconectar es local, revocar se hace desde strava.com', async () => {
     await disconnect();
 

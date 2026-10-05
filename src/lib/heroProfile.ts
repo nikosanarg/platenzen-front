@@ -3,7 +3,7 @@ import { DayStats, ProcessedStats } from '@/types/stats';
 import { BranchId, TreeSnapshot, computeBranchTree, ramaDominante, tituloDeRama } from '@/lib/branchTree';
 import { CoreRecord, computeCoreRecord } from '@/lib/coreRecord';
 import { sortActivities } from '@/lib/activityHistory';
-import { isRunning } from '@/lib/sports';
+import { isRunning, isTrailRun } from '@/lib/sports';
 import {
   Liga,
   RankingEntry,
@@ -23,7 +23,7 @@ import { mpsToSecPerKm } from '@/utils/pace';
  *
  * Es datos planos a propósito — sin `Activity`, sin trazas GPS, sin fechas
  * con hora —, porque es la forma que va a guardar y servir la API del ranking
- * (`docs/plan-api-ranking.md`): el front la arma con las mismas
+ * (`docs/club.md`): el front la arma con las mismas
  * transformaciones que usa para las vistas privadas y publica esto, no el
  * historial crudo de Strava.
  */
@@ -69,10 +69,21 @@ export const DESTACADAS: readonly { id: DestacadaKey; label: string }[] = [
 
 const TOP_DESTACADAS = 3;
 
-function aHeroActividad(a: Activity): HeroActividad {
+/**
+ * El nombre de una salida es texto libre que el corredor escribió en Strava, y
+ * puede decir dónde vive o con quién corre. La ficha que se publica no lo
+ * lleva: en su lugar va una etiqueta derivada del deporte.
+ */
+function etiquetaPublica(a: Activity): string {
+  if (isTrailRun(a)) return 'Trail';
+  if (isRunning(a)) return 'Carrera';
+  return 'Otra actividad';
+}
+
+function aHeroActividad(a: Activity, publicable: boolean): HeroActividad {
   return {
     fecha: a.start_date_local.slice(0, 10),
-    nombre: a.name,
+    nombre: publicable ? etiquetaPublica(a) : a.name,
     distanciaKm: metersToKm(a.distance),
     ritmoSegKm: isRunning(a) && a.average_speed > 0 ? mpsToSecPerKm(a.average_speed) : null,
   };
@@ -84,8 +95,8 @@ function aHeroActividad(a: Activity): HeroActividad {
  * velocidad sobre todos los deportes, el podio de un corredor serían sus
  * salidas en bici.
  */
-function destacadas(activities: Activity[]): Record<DestacadaKey, HeroActividad[]> {
-  const top = (lista: Activity[]) => lista.slice(0, TOP_DESTACADAS).map(aHeroActividad);
+function destacadas(activities: Activity[], publicable: boolean): Record<DestacadaKey, HeroActividad[]> {
+  const top = (lista: Activity[]) => lista.slice(0, TOP_DESTACADAS).map(a => aHeroActividad(a, publicable));
   const conRitmo = activities.filter(a => isRunning(a) && a.average_speed > 0);
   return {
     recientes: top(sortActivities(activities, 'fecha')),
@@ -94,11 +105,16 @@ function destacadas(activities: Activity[]): Record<DestacadaKey, HeroActividad[
   };
 }
 
+/**
+ * `publicable` arma la versión que sale del dispositivo (ver `etiquetaPublica`).
+ * La vista previa propia (`/hero`) usa la otra: ahí el que mira es el dueño.
+ */
 export function buildHeroProfile(
   activities: Activity[],
   stats: ProcessedStats,
   now: Date = new Date(),
-  nombre: string | null = null
+  nombre: string | null = null,
+  publicable = false
 ): HeroProfile {
   const tree = computeBranchTree(activities, now);
   const dominante = ramaDominante(tree);
@@ -119,7 +135,7 @@ export function buildHeroProfile(
       rachaMasLargaSemanas: computeLongestWeeklyStreak(stats.daily),
     },
     ultimos90: resumenRunning(actividadesEnVentana(activities, now)),
-    destacadas: destacadas(activities),
+    destacadas: destacadas(activities, publicable),
     dias90: stats.daily.filter(d => enVentana(d.date, now)),
     frases: generateSmartInsights(activities, stats, 'tercero').map(i => i.text),
   };

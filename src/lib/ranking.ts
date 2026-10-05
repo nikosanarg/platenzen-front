@@ -7,7 +7,7 @@ import { localDateKey } from '@/utils/localDate';
  * El ranking del club y la ficha pública miden lo mismo: los últimos 90 días.
  * Es decisión del PO que el dato "venza" — una salida de hace cuatro meses ya
  * no suma —, así que una posición se sostiene corriendo, no acumulando
- * historial. Ver `docs/plan-api-ranking.md`.
+ * historial. Ver `docs/club.md`.
  */
 export const VENTANA_DIAS = 90;
 
@@ -77,13 +77,19 @@ export function resumenRunning(activities: Activity[]): ResumenVentana {
   };
 }
 
-/** Una fila del ranking: lo que va a devolver la API por cada corredor. */
+/** Una fila del ranking: lo que devuelve platenzen-api (`EntradaRanking`) por cada corredor. */
 export interface RankingEntry extends ResumenVentana {
   id: string;
   /** `null` cuando no se conoce: la fila propia, armada con los datos locales. */
   nombre: string | null;
   rachaSemanas: number;
   liga: Liga;
+  /** ISO 3166-1 alfa-2, si el corredor lo eligió. */
+  pais?: string | null;
+  /** La fila de quien mira. */
+  esPropio?: boolean;
+  /** Si la fila abre una ficha: el corredor puede aparecer en la tabla sin mostrarla. */
+  fichaVisible?: boolean;
 }
 
 export type RankingSortKey = 'distancia' | 'ritmo' | 'actividades';

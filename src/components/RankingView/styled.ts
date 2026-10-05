@@ -111,3 +111,38 @@ export const NameButton = styled.button`
     outline-offset: 2px;
   }
 `;
+
+/** La fila propia se distingue por fondo y por texto: el color solo no la nombra. */
+export const Fila = styled.tr<{ $propia: boolean }>`
+  background: ${({ $propia }) => ($propia ? 'var(--accent-muted)' : 'transparent')};
+`;
+
+export const Propia = styled.span`
+  font-size: 0.75rem;
+  color: var(--text-muted);
+`;
+
+export const EstadoModal = styled.p`
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+`;
+
+export const Cta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius);
+  background: var(--accent-muted);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+
+  a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+`;

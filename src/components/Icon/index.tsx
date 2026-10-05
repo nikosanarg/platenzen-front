@@ -141,3 +141,10 @@ export const IconTrophy: React.FC<Props> = ({ size = 20, color = 'currentColor' 
     <path d="M10 11.5v3M7 16.5h6" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
+
+export const IconUser: React.FC<Props> = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <circle cx="10" cy="7" r="3.5" stroke={color} strokeWidth="1.5" />
+    <path d="M3.5 17c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);

@@ -46,6 +46,11 @@ export const Nombre = styled.p`
   color: var(--text-secondary);
 `;
 
+export const Publicada = styled.p`
+  font-size: 0.75rem;
+  color: var(--text-muted);
+`;
+
 export const Badges = styled.div`
   display: flex;
   flex-wrap: wrap;

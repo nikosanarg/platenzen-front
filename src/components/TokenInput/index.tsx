@@ -80,9 +80,10 @@ const TokenInput: React.FC<TokenInputProps> = ({ error }) => {
         <TokenTitle>Tus estadísticas de running</TokenTitle>
         <TokenSubtitle>
           Conectá tu cuenta y Platenzen analiza tu historial de actividades para mostrar métricas,
-          récords y tendencias en un dashboard personal. Solo accede a tus propias actividades — sin
-          almacenar información en servidores ni compartir nada con otros usuarios. Todo queda
-          guardado únicamente en este dispositivo.
+          récords y tendencias en un dashboard personal. Solo accede a tus propias actividades, y tu
+          historial queda guardado únicamente en este dispositivo. Si después te sumás al ranking
+          del club, se publican números calculados a partir de él, con el nombre que elijas: nunca
+          tus recorridos ni tus datos de Strava.
         </TokenSubtitle>
 
         <ProviderStack>

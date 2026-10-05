@@ -7,6 +7,7 @@ import { formatRecordTime } from '@/lib/recordHistory';
 import { kmToString } from '@/utils/units';
 import { secPerKmToString } from '@/utils/pace';
 import { parseLocalDate } from '@/utils/localDate';
+import { banderaPais, nombrePais } from '@/lib/paises';
 import { IconRoute, IconCalendar, IconFlame, IconRun } from '@/components/Icon';
 import ActivityHeatmap from '@/components/charts/ActivityHeatmap';
 import BranchProfile from '@/components/PersonajeCard/BranchProfile';
@@ -42,6 +43,7 @@ import {
   PlainRoot,
   Header,
   Nombre,
+  Publicada,
   Badges,
   Body,
   RadarCol,
@@ -61,6 +63,10 @@ interface HeroCardProps {
    * la pone y una card adentro de otra se lee como dos capas.
    */
   variant?: HeroCardVariant;
+  /** ISO 3166-1 alfa-2, si el corredor lo eligió. Vive en el perfil, no en la ficha. */
+  pais?: string | null;
+  /** Cuándo se publicó la ficha: es una foto, y quien la mira tiene que saber de cuándo. */
+  publicadaAt?: string | null;
 }
 
 const VACIO_DESTACADAS: Record<DestacadaKey, string> = {
@@ -81,10 +87,10 @@ function statsDe(a: HeroActividad): string {
 
 /**
  * La ficha pública de un corredor: lo que ve un tercero. Recibe la ficha ya
- * calculada (`HeroProfile`) y no sabe de dónde vino — hoy sale de los datos
- * locales, mañana de la API del ranking.
+ * calculada (`HeroProfile`) y no sabe de dónde vino: de los datos locales
+ * (la vista previa propia) o de la API del club.
  */
-const HeroCard: React.FC<HeroCardProps> = ({ profile, variant = 'card' }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ profile, variant = 'card', pais, publicadaAt }) => {
   const [orden, setOrden] = useState<DestacadaKey>('recientes');
   const Root = variant === 'card' ? CardRoot : PlainRoot;
   const lista = profile.destacadas[orden];
@@ -93,7 +99,16 @@ const HeroCard: React.FC<HeroCardProps> = ({ profile, variant = 'card' }) => {
   return (
     <Root>
       <Header>
-        {profile.nombre && <Nombre>{profile.nombre}</Nombre>}
+        {(profile.nombre || pais) && (
+          <Nombre>
+            {pais && (
+              <span role="img" aria-label={nombrePais(pais)} title={nombrePais(pais)}>
+                {banderaPais(pais)}{' '}
+              </span>
+            )}
+            {profile.nombre}
+          </Nombre>
+        )}
         <RoleNamePrimary>{profile.titulo}</RoleNamePrimary>
         <Badges>
           <LevelBadge>{profile.rama}</LevelBadge>
@@ -107,6 +122,9 @@ const HeroCard: React.FC<HeroCardProps> = ({ profile, variant = 'card' }) => {
             </CoreRecordValue>
             <CoreRecordLabel>su mejor marca</CoreRecordLabel>
           </CoreRecord>
+        )}
+        {publicadaAt && (
+          <Publicada>Actualizada el {new Date(publicadaAt).toLocaleDateString('es-AR')}</Publicada>
         )}
       </Header>
 

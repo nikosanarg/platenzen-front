@@ -28,3 +28,11 @@ export function parseLocalDate(iso: string): Date {
 export function localDateKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+
+/** El lunes (`YYYY-MM-DD`) de la semana de un día `YYYY-MM-DD`. Cuenta en UTC sobre los números del día. */
+export function lunesDe(dia: string): string {
+  const [y, m, d] = dia.split('-').map(Number);
+  const fecha = new Date(Date.UTC(y, m - 1, d));
+  fecha.setUTCDate(fecha.getUTCDate() - ((fecha.getUTCDay() + 6) % 7));
+  return fecha.toISOString().slice(0, 10);
+}

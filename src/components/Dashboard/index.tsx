@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState as useStateReact } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IconButton, Relieve } from 'kaizen-lib/ui';
-import { IconRefresh, IconLogout, IconDownload } from '@/components/Icon';
+import { IconRefresh, IconLogout, IconDownload, IconUser } from '@/components/Icon';
 import { useBotonInstalacionInline } from '@/components/pwa/useInstalacionPWA';
 import BottomNav from './BottomNav';
 import { NAV_ITEMS, isNavItemActive } from './navItems';
@@ -119,6 +120,12 @@ const Dashboard: React.FC<DashboardProps> = ({
               disabled={loading}
             >
               {loading ? <Spinner style={{ width: 20, height: 20 }} /> : <IconRefresh size={20} color="currentColor" />}
+            </IconButton>
+          </Relieve>
+          {/* El perfil del club no es una sección más: se configura una vez y queda. */}
+          <Relieve $prendido={pathname === '/perfil'}>
+            <IconButton as={Link} href="/perfil" label="Perfil del club" active={pathname === '/perfil'}>
+              <IconUser size={20} color="currentColor" />
             </IconButton>
           </Relieve>
           <Relieve>

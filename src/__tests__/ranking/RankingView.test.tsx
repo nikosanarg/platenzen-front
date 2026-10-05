@@ -1,6 +1,7 @@
 /**
  * La tabla del ranking: una sección por liga, el orden elegido aplicado dentro
- * de cada una, y la ficha del corredor en un modal.
+ * de cada una, la fila propia marcada, y la ficha del corredor en un modal que
+ * se carga al abrirlo.
  */
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
@@ -25,19 +26,27 @@ const ENTRIES = [
   entry({ id: 'Caro', liga: 'bronce', rachaSemanas: 1, distanciaKm: 20, actividades: 3, ritmoSegKm: 360 }),
 ];
 
+const sinFicha = async () => null;
+
 const seccion = (nombre: string) => screen.getByRole('region', { name: new RegExp(nombre) });
 const nombresEn = (nombre: string) =>
   within(seccion(nombre)).getAllByRole('row').slice(1).map(r => within(r).getAllByRole('cell')[1].textContent);
 
 it('agrupa por liga y avisa cuando una liga no tiene a nadie', () => {
-  render(<RankingView entries={ENTRIES} fichaDe={() => undefined} />);
+  render(<RankingView entries={ENTRIES} cargarFicha={sinFicha} />);
   expect(nombresEn('Liga Oro')).toEqual(['Ana', 'Beto']);
   expect(nombresEn('Liga Bronce')).toEqual(['Caro']);
   expect(within(seccion('Liga Plata')).getByText('Nadie en esta liga todavía.')).toBeInTheDocument();
 });
 
+it('mientras no hay tabla no dice que las ligas están vacías', () => {
+  render(<RankingView entries={null} cargarFicha={sinFicha} aviso={<p>Cargando el ranking…</p>} />);
+  expect(screen.getByText('Cargando el ranking…')).toBeInTheDocument();
+  expect(screen.queryByText('Nadie en esta liga todavía.')).not.toBeInTheDocument();
+});
+
 it('ordena por distancia por defecto y cambia con el orden elegido', () => {
-  render(<RankingView entries={ENTRIES} fichaDe={() => undefined} />);
+  render(<RankingView entries={ENTRIES} cargarFicha={sinFicha} />);
   expect(screen.getByRole('button', { name: 'Distancia' })).toHaveAttribute('aria-pressed', 'true');
 
   fireEvent.click(screen.getByRole('button', { name: 'Ritmo' }));
@@ -47,28 +56,45 @@ it('ordena por distancia por defecto y cambia con el orden elegido', () => {
   expect(nombresEn('Liga Oro')).toEqual(['Beto', 'Ana']);
 });
 
-it('con sólo la fila propia lo dice, y la nombra "Vos"', () => {
-  render(
-    <RankingView
-      entries={[entry({ id: 'yo', nombre: null })]}
-      propioId="yo"
-      fichaDe={() => undefined}
-    />,
-  );
-  expect(screen.getByRole('status')).toHaveTextContent('por ahora la tabla muestra sólo la tuya');
+it('marca la fila propia con texto, no sólo con color', () => {
+  render(<RankingView entries={[entry({ id: 'yo', nombre: 'pepino357619', esPropio: true })]} cargarFicha={sinFicha} />);
+  expect(nombresEn('Liga Bronce')).toEqual(['pepino357619 (vos)']);
+});
+
+it('una fila propia sin nombre se nombra "Vos"', () => {
+  render(<RankingView entries={[entry({ id: 'local', nombre: null, esPropio: true })]} cargarFicha={sinFicha} />);
   expect(nombresEn('Liga Bronce')).toEqual(['Vos']);
 });
 
-it('una fila con ficha la abre en un modal', () => {
-  const ficha = buildHeroProfile([], computeStats([]), new Date(2026, 6, 15), 'Ana');
-  render(<RankingView entries={ENTRIES} fichaDe={id => (id === 'Ana' ? ficha : undefined)} />);
+it('muestra el país con su nombre accesible', () => {
+  render(<RankingView entries={[entry({ id: 'Ana', pais: 'AR' })]} cargarFicha={sinFicha} />);
+  expect(screen.getByRole('img', { name: 'Argentina' })).toBeInTheDocument();
+});
 
-  expect(screen.queryByRole('button', { name: 'Ver la ficha de Beto' })).not.toBeInTheDocument();
+it('quien eligió "sólo ranking" aparece sin ficha para abrir', () => {
+  render(<RankingView entries={[entry({ id: 'Ana', fichaVisible: false })]} cargarFicha={sinFicha} />);
+  expect(screen.queryByRole('button', { name: /Ver la ficha/ })).not.toBeInTheDocument();
+});
+
+it('la ficha se carga al abrirla y se muestra en un modal', async () => {
+  const profile = buildHeroProfile([], computeStats([]), new Date(2026, 6, 15), 'Ana');
+  const cargarFicha = jest.fn(async () => ({ profile, pais: null, publicadaAt: '2026-07-14T10:00:00Z' }));
+  render(<RankingView entries={ENTRIES} cargarFicha={cargarFicha} />);
+
   fireEvent.click(screen.getByRole('button', { name: 'Ver la ficha de Ana' }));
-
   const dialog = screen.getByRole('dialog', { name: 'Ficha del corredor' });
-  expect(within(dialog).getByText('Corredor')).toBeInTheDocument();
+  expect(within(dialog).getByText('Cargando la ficha…')).toBeInTheDocument();
+
+  expect(await within(dialog).findByText('Corredor')).toBeInTheDocument();
+  expect(within(dialog).getByText(/Actualizada el/)).toBeInTheDocument();
+  expect(cargarFicha).toHaveBeenCalledWith('Ana');
 
   fireEvent.click(within(dialog).getByRole('button', { name: 'Cerrar' }));
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('una ficha que ya no está se dice, no deja el modal colgado', async () => {
+  render(<RankingView entries={ENTRIES} cargarFicha={sinFicha} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Ver la ficha de Caro' }));
+  expect(await screen.findByText('Esta ficha no está disponible.')).toBeInTheDocument();
 });

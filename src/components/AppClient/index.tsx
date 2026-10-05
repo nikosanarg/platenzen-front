@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useToken, StoredToken } from '@/hooks/useToken';
 import { useActivities } from '@/hooks/useActivities';
 import { StravaDataProvider } from '@/hooks/useStravaData';
+import { ClubProvider } from '@/hooks/useClub';
 import { computeStats } from '@/lib/stats';
 import { isStravaMockMode } from '@/lib/authMode';
 import TokenInput from '@/components/TokenInput';
@@ -165,19 +166,27 @@ const AppClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   const stats = status === 'success' ? computeStats(activities) : null;
+  const statsListas = stats ?? computeStats([]);
 
   return (
-    <StravaDataProvider value={{ activities, stats: stats ?? computeStats([]) }}>
-      <Dashboard
-        loading={reconectando || status === 'loading' || status === 'idle'}
-        loadingCount={loadingCount}
-        isFromCache={isFromCache}
-        cacheAge={cacheAge}
-        onRefresh={handleRefresh}
-        onLogout={handleLogout}
+    <StravaDataProvider value={{ activities, stats: statsListas }}>
+      <ClubProvider
+        obtenerToken={getValidToken}
+        datosListos={status === 'success'}
+        activities={activities}
+        stats={statsListas}
       >
-        {children}
-      </Dashboard>
+        <Dashboard
+          loading={reconectando || status === 'loading' || status === 'idle'}
+          loadingCount={loadingCount}
+          isFromCache={isFromCache}
+          cacheAge={cacheAge}
+          onRefresh={handleRefresh}
+          onLogout={handleLogout}
+        >
+          {children}
+        </Dashboard>
+      </ClubProvider>
     </StravaDataProvider>
   );
 };
