@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'kaizen-lib/ui';
 import { useStravaData } from '@/hooks/useStravaData';
 import { useClub } from '@/hooks/useClub';
 import { buildHeroProfile, rankingEntryDe } from '@/lib/heroProfile';
@@ -60,7 +61,7 @@ const RankingClub: React.FC = () => {
   );
 
   if (tabla.estado === 'cargando') {
-    return <RankingView entries={null} cargarFicha={cargarFicha} aviso={<Notice role="status">Cargando el ranking…</Notice>} />;
+    return <RankingView entries={null} cargarFicha={cargarFicha} aviso={<Skeleton lines={6} label="Cargando el ranking…" />} />;
   }
 
   if (tabla.estado === 'error') {

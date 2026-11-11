@@ -2,12 +2,9 @@ import styled from 'styled-components';
 import { bottomNavOffset } from 'kaizen-lib/ui';
 
 /**
- * Los tres avisos flotantes del ciclo de vida de la PWA (instalar, iOS,
- * actualización disponible) comparten posición y superficie. Se apilan si
- * más de uno estuviera visible a la vez (no debería pasar en la práctica:
- * `beforeinstallprompt` no dispara en iOS, y el banner de actualización sólo
- * aparece tras una instalación previa, momento en el que ya no tiene sentido
- * seguir ofreciendo instalar).
+ * Los avisos flotantes de instalación (botón e indicación para iOS) comparten
+ * posición y superficie. La versión nueva disponible no va acá: es un toast de
+ * kaizen-lib (ver `RegistroServiceWorker`).
  */
 const AvisoFlotante = styled.div`
   position: fixed;
@@ -87,25 +84,3 @@ export const IOSBanner = styled(AvisoFlotante)`
   }
 `;
 
-export const UpdateBanner = styled(AvisoFlotante)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-`;
-
-export const UpdateButton = styled.button`
-  flex-shrink: 0;
-  padding: 8px 14px;
-  background: var(--accent);
-  color: var(--text-on-accent);
-  border: none;
-  border-radius: var(--radius);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--accent-hover);
-  }
-`;

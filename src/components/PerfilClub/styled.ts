@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Combobox } from 'kaizen-lib/ui';
 import { Panel } from '@/components/Panel';
 import { OAuthButton } from '@/components/TokenInput/styled';
 
@@ -109,8 +110,21 @@ export const Prefijo = styled.span`
   }
 `;
 
-export const Select = styled.select`
-  ${control}
+/**
+ * El `Combobox` de kaizen-lib con la caja de los otros campos del formulario:
+ * sin esto queda con el fondo hundido de la lib y se lee como otro control.
+ */
+export const PaisCombobox = styled(Combobox<string>)`
+  min-height: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+
+  input {
+    padding: 0.6rem 0.75rem;
+  }
 `;
 
 export const Opciones = styled.fieldset`

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { AnimatedNumber } from 'kaizen-lib/motion';
 import { Activity } from '@/types/activity';
 import { ProcessedStats } from '@/types/stats';
 import { computeRoles } from '@/lib/roles';
@@ -158,7 +159,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           <StatCard>
             <StatIcon><IconRoute size={18} color="currentColor" /></StatIcon>
             <StatBody>
-              <StatValue>{Math.round(stats.totalDistance).toLocaleString('es-AR')}</StatValue>
+              <StatValue><AnimatedNumber value={Math.round(stats.totalDistance)} locale="es-AR" /></StatValue>
               <StatLabel $compact={compactStats}>kilómetros recorridos</StatLabel>
             </StatBody>
           </StatCard>
@@ -166,7 +167,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           <StatCard>
             <StatIcon><IconCalendar size={18} color="currentColor" /></StatIcon>
             <StatBody>
-              <StatValue>{stats.totalActivities.toLocaleString('es-AR')}</StatValue>
+              <StatValue><AnimatedNumber value={stats.totalActivities} locale="es-AR" /></StatValue>
               <StatLabel $compact={compactStats}>actividades registradas</StatLabel>
             </StatBody>
           </StatCard>
@@ -174,7 +175,7 @@ const PersonajeCard: React.FC<PersonajeCardProps> = ({ activities, stats }) => {
           <StatCard>
             <StatIcon><IconFlame size={18} color="currentColor" /></StatIcon>
             <StatBody>
-              <StatValue>{longestStreak}</StatValue>
+              <StatValue><AnimatedNumber value={longestStreak} locale="es-AR" /></StatValue>
               <StatLabel $compact={compactStats}>semanas seguidas</StatLabel>
             </StatBody>
           </StatCard>

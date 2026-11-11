@@ -18,7 +18,7 @@ import {
   Opciones,
   ConPrefijo,
   Prefijo,
-  Select,
+  PaisCombobox,
 } from './styled';
 
 export const VISIBILIDADES: readonly { id: Visibilidad; titulo: string; detalle: string }[] = [
@@ -77,7 +77,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({ inicial, alias, textoBoton, ped
   const [acepta, setAcepta] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const paises = useMemo(() => paisesOrdenados(), []);
+  const paises = useMemo(() => paisesOrdenados().map(p => ({ value: p.codigo, label: p.nombre })), []);
 
   const bloqueado = enviando || (pedirAcuerdos && !acepta);
 
@@ -143,14 +143,16 @@ const PerfilForm: React.FC<PerfilFormProps> = ({ inicial, alias, textoBoton, ped
 
       <Campo>
         <Etiqueta htmlFor={`${id}-pais`}>País</Etiqueta>
-        <Select id={`${id}-pais`} value={pais} onChange={e => setPais(e.target.value)}>
-          <option value="">Sin especificar</option>
-          {paises.map(p => (
-            <option key={p.codigo} value={p.codigo}>
-              {p.nombre}
-            </option>
-          ))}
-        </Select>
+        <PaisCombobox
+          id={`${id}-pais`}
+          label="País"
+          placeholder="Sin especificar"
+          emptyText="Ningún país coincide."
+          clearLabel="Quitar el país"
+          value={pais || null}
+          onChange={v => setPais(v ?? '')}
+          options={paises}
+        />
       </Campo>
 
       <Opciones>

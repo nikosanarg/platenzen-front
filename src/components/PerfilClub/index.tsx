@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Modal } from 'kaizen-lib/ui';
+import { Skeleton } from 'kaizen-lib/ui';
+import { AnimatedModal } from 'kaizen-lib/motion';
 import { useClub, acuerdosAlDia } from '@/hooks/useClub';
 import { SectionTitle } from '@/components/Dashboard/styled';
 import PerfilForm, { mensajeDeError } from './PerfilForm';
@@ -60,7 +61,7 @@ const PerfilClub: React.FC = () => {
     return (
       <Root>
         <SectionTitle>Perfil del club</SectionTitle>
-        <Estado role="status">Cargando tu perfil…</Estado>
+        <Skeleton lines={4} label="Cargando tu perfil…" />
       </Root>
     );
   }
@@ -161,7 +162,7 @@ const PerfilClub: React.FC = () => {
       </BotonPeligro>
       {errorAccion && <MensajeError role="alert">{errorAccion}</MensajeError>}
 
-      <Modal
+      <AnimatedModal
         open={confirmandoBaja}
         onClose={() => setConfirmandoBaja(false)}
         title="¿Dejar el club?"
@@ -184,7 +185,7 @@ const PerfilClub: React.FC = () => {
         }
       >
         {errorAccion && <MensajeError role="alert">{errorAccion}</MensajeError>}
-      </Modal>
+      </AnimatedModal>
     </Root>
   );
 };
