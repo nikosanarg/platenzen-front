@@ -4,6 +4,7 @@ import StyledComponentsRegistry from '@/lib/registry';
 import RegistroServiceWorker from '@/components/pwa/RegistroServiceWorker';
 import { InstalacionPWAProvider } from '@/components/pwa/useInstalacionPWA';
 import AppBackground from '@/components/AppBackground';
+import ProveedoresUI from '@/components/ProveedoresUI';
 import './globals.css';
 
 const yantramanav = Yantramanav({
@@ -61,10 +62,12 @@ export default function RootLayout({
             llega una sola vez, y tanto las pantallas como el botón flotante tienen que
             leerlo del mismo lugar.
           */}
-          <InstalacionPWAProvider>
-            {children}
-            <RegistroServiceWorker />
-          </InstalacionPWAProvider>
+          <ProveedoresUI>
+            <InstalacionPWAProvider>
+              {children}
+              <RegistroServiceWorker />
+            </InstalacionPWAProvider>
+          </ProveedoresUI>
         </StyledComponentsRegistry>
       </body>
     </html>

@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ClubProvider } from '@/hooks/useClub';
 import PerfilClub from '@/components/PerfilClub';
 import { computeStats } from '@/lib/stats';
@@ -82,7 +83,8 @@ it('al sumarse manda el perfil elegido y después publica sus números solo', as
 
   fireEvent.change(await screen.findByLabelText('Usuario'), { target: { value: ' @NSande ' } });
   fireEvent.change(screen.getByLabelText('Nombre visible'), { target: { value: '  Ana ' } });
-  fireEvent.change(screen.getByLabelText('País'), { target: { value: 'AR' } });
+  await userEvent.type(screen.getByRole('combobox', { name: 'País' }), 'argent');
+  await userEvent.click(await screen.findByRole('option', { name: 'Argentina' }));
   fireEvent.click(screen.getByRole('radio', { name: /Sólo en el ranking/ }));
   fireEvent.click(screen.getByRole('checkbox'));
   await act(async () => {

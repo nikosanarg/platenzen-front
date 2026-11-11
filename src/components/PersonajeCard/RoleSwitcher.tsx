@@ -1,14 +1,9 @@
 'use client';
 
 import React from 'react';
-import { IconChevronDown, IconChevronUp } from '@/components/Icon';
-import {
-  RoleNamePrimary,
-  RoleDropdown,
-  RoleDropdownTrigger,
-  RoleDropdownList,
-  RoleDropdownOptionButton,
-} from './styled';
+import { Menu } from 'kaizen-lib/ui';
+import { IconChevronDown } from '@/components/Icon';
+import { RoleNamePrimary, RoleDropdownTrigger } from './styled';
 
 export interface RoleSwitcherOption {
   id: string;
@@ -28,67 +23,40 @@ interface RoleSwitcherProps {
  * mismo nivel, elegir cuál mostrar deja de ser un botón aparte ("Cambiar a
  * X") y pasa a ser esto mismo, desplegado. Sin otra rama con la que
  * empatar, es sólo el título — sin borde, sin flecha, no hay nada que abrir.
+ *
+ * Es el `Menu` de kaizen-lib y no su `Select`: el disparador tiene que seguir
+ * siendo el título (sólo el nombre, sin el porcentaje), y `Select` muestra la
+ * etiqueta entera de la opción elegida. La rama actual va con tilde y
+ * deshabilitada: elegirla otra vez no cambiaría nada.
  */
 const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ selectedId, selectedLabel, options, onSelect }) => {
-  const [open, setOpen] = React.useState(false);
-  const rootRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
-
   if (options.length <= 1) {
     return <RoleNamePrimary>{selectedLabel}</RoleNamePrimary>;
   }
 
   return (
-    <RoleDropdown ref={rootRef}>
-      <RoleDropdownTrigger
-        type="button"
-        $interactive
-        $open={open}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen(o => !o)}
-      >
-        {selectedLabel}
-        {open
-          ? <IconChevronUp size={20} color="var(--border-light)" />
-          : <IconChevronDown size={20} color="var(--border-light)" />}
-      </RoleDropdownTrigger>
-
-      {open && (
-        <RoleDropdownList role="listbox">
-          {options.map(opt => (
-            <li key={opt.id} role="option" aria-selected={opt.id === selectedId}>
-              <RoleDropdownOptionButton
-                type="button"
-                $active={opt.id === selectedId}
-                onClick={() => {
-                  onSelect(opt.id);
-                  setOpen(false);
-                }}
-              >
-                {opt.label} ({Math.round(opt.pct)}%)
-              </RoleDropdownOptionButton>
-            </li>
-          ))}
-        </RoleDropdownList>
-      )}
-    </RoleDropdown>
+    <Menu
+      align="start"
+      trigger={
+        <RoleDropdownTrigger type="button">
+          {selectedLabel}
+          <IconChevronDown size={20} color="var(--border-light)" />
+        </RoleDropdownTrigger>
+      }
+      items={options.map(opt => ({
+        label: `${opt.label} (${Math.round(opt.pct)}%)`,
+        onSelect: () => onSelect(opt.id),
+        disabled: opt.id === selectedId,
+        icon: opt.id === selectedId ? <Tilde /> : undefined,
+      }))}
+    />
   );
 };
+
+const Tilde = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--gold)" strokeWidth="2" aria-hidden="true">
+    <path d="m3 8.5 3 3 7-7" />
+  </svg>
+);
 
 export default RoleSwitcher;

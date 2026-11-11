@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { InstallButton, IOSBanner, UpdateBanner, UpdateButton } from './styled';
+import { useToast } from 'kaizen-lib/ui';
+import { InstallButton, IOSBanner } from './styled';
 import { useInstalacionPWA } from './useInstalacionPWA';
 
 /**
@@ -22,11 +23,14 @@ import { useInstalacionPWA } from './useInstalacionPWA';
  *   `innerHTML`. Es deuda de aquel repo: un banner es un componente de React,
  *   va con estado y JSX como el resto de la UI.
  * - El `console.log('SW registered:', registration)`: ruido en producción.
- * - `useToast`: Platenzen no tiene ese contexto.
+ *
+ * La versión nueva se avisa con `useToast()` de kaizen-lib: sin vencimiento y
+ * con la acción de recargar.
  */
 export default function RegistroServiceWorker() {
   const [actualizacionLista, setActualizacionLista] = useState(false);
   const { sePuedeInstalar, instalar, esIOS, anclajesInline } = useInstalacionPWA();
+  const toast = useToast();
 
   useEffect(() => {
     /**
@@ -83,9 +87,13 @@ export default function RegistroServiceWorker() {
     }
   }, []);
 
-  const handleRecargarClick = () => {
-    window.location.reload();
-  };
+  useEffect(() => {
+    if (!actualizacionLista) return;
+    toast.info('Hay una versión nueva de Platenzen disponible.', {
+      duration: null,
+      action: { label: 'Recargar', onClick: () => window.location.reload() },
+    });
+  }, [actualizacionLista, toast]);
 
   return (
     <>
@@ -98,13 +106,6 @@ export default function RegistroServiceWorker() {
           <strong>Agregar a pantalla de inicio</strong>
           <span>Tocá el ícono compartir (↗) y elegí &ldquo;Agregar a inicio&rdquo;.</span>
         </IOSBanner>
-      )}
-
-      {actualizacionLista && (
-        <UpdateBanner role="status">
-          <span>Hay una versión nueva de Platenzen disponible.</span>
-          <UpdateButton onClick={handleRecargarClick}>Recargar</UpdateButton>
-        </UpdateBanner>
       )}
     </>
   );

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal } from 'kaizen-lib/ui';
+import { Skeleton } from 'kaizen-lib/ui';
+import { AnimatedModal } from 'kaizen-lib/motion';
 import { HeroProfile } from '@/lib/heroProfile';
 import {
   LIGAS,
@@ -184,13 +185,13 @@ const RankingView: React.FC<RankingViewProps> = ({ entries, cargarFicha, aviso }
           </>
         )}
 
-        <Modal
+        <AnimatedModal
           open={ficha.estado !== 'cerrada'}
           onClose={() => setFicha({ estado: 'cerrada' })}
           ariaLabel="Ficha del corredor"
           size="lg"
         >
-          {ficha.estado === 'cargando' && <EstadoModal role="status">Cargando la ficha…</EstadoModal>}
+          {ficha.estado === 'cargando' && <Skeleton variant="block" height="22rem" label="Cargando la ficha…" />}
           {ficha.estado === 'no-disponible' && (
             <EstadoModal role="status">Esta ficha no está disponible.</EstadoModal>
           )}
@@ -205,7 +206,7 @@ const RankingView: React.FC<RankingViewProps> = ({ entries, cargarFicha, aviso }
               variant="modal"
             />
           )}
-        </Modal>
+        </AnimatedModal>
       </Root>
     </PageColumn>
   );

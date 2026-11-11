@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { Skeleton } from 'kaizen-lib/ui';
 import { FichaPublica as Ficha, obtenerFicha } from '@/lib/club/cliente';
 import HeroCard from '@/components/HeroCard';
 
@@ -40,7 +41,7 @@ const FichaPublica: React.FC<{ clave: string }> = ({ clave }) => {
     };
   }, [clave]);
 
-  if (estado.estado === 'cargando') return <Estado role="status">Cargando la ficha…</Estado>;
+  if (estado.estado === 'cargando') return <Skeleton variant="block" height="28rem" label="Cargando la ficha…" />;
   if (estado.estado === 'no-existe') return <Estado>Esta ficha no existe o no es pública.</Estado>;
   if (estado.estado === 'error') return <Estado role="alert">No se pudo cargar la ficha. Probá más tarde.</Estado>;
 
